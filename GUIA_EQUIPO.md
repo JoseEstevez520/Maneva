@@ -188,6 +188,8 @@ Antes de preguntar al grupo, comprueba en orden:
 1. ¿Tienes el `.env` con las claves correctas?
 2. ¿Has ejecutado `npm install` después del último `git pull`?
 3. ¿Has regenerado los tipos de Supabase si cambiaste algo en la base de datos?
-4. ¿La consola del simulador o dispositivo muestra algún error?
+4. **¿Has tocado `babel.config.js` o `metro.config.js`?** Si alguien del equipo modificó esto, **el servidor explota silenciosamente o la app se queda en blanco**. Debes reiniciar expo con el comando mágico de limpiar caché: `npx expo start -c`.
+5. ¿Da un error raro de ADB (Android) o no arranca el simulador? Vete a Android Studio, haz *Wipe Data* al simulador y arráncalo en limpio.
+6. ¿La consola del simulador o dispositivo muestra algún error importante?
 
 Si después de eso sigue sin funcionar, comparte el error exacto de la consola en el grupo.

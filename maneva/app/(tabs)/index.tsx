@@ -1,98 +1,55 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React from 'react'
+import { View, RefreshControl } from 'react-native'
+import { ScreenLayout } from '@/components/ui/ScreenLayout'
+import { H3, Body } from '@/components/ui/Typography'
+import { SalonCard } from '@/components/salon/SalonCard'
+import { useSalons } from '@/hooks/useSalons'
+import { useAuthStore } from '@/store/authStore'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { ErrorMessage } from '@/components/ui/ErrorMessage'
 
 export default function HomeScreen() {
+  const { data: salons, loading, error, refresh } = useSalons()
+  const { user } = useAuthStore()
+
+  if (loading && salons.length === 0) {
+    return (
+      <ScreenLayout header="brand" className="justify-center items-center">
+        <LoadingSpinner />
+      </ScreenLayout>
+    )
+  }
+
+  if (error && salons.length === 0) {
+    return (
+      <ScreenLayout header="brand" className="justify-center px-4">
+        <ErrorMessage message={error} />
+      </ScreenLayout>
+    )
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScreenLayout header="brand" scrollable refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}>
+      <View className="mt-2 mb-6">
+        <Body>Hola de nuevo,</Body>
+        <Body className="font-manrope-extrabold text-2xl text-premium-black">
+          {user?.email?.split('@')[0] || 'Invitado'} 👋
+        </Body>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+      <View className="mb-4">
+        <H3 className="mb-4">Salones cerca de ti</H3>
+        {salons.map(salon => (
+          <SalonCard
+            key={salon.id}
+            salon={salon}
+            onPress={() => console.log('Ir al salón', salon.id)}
+          />
+        ))}
+        {salons.length === 0 && !loading && (
+          <Body className="text-center mt-10">No hay salones disponibles en este momento.</Body>
+        )}
+      </View>
+    </ScreenLayout>
+  )
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
