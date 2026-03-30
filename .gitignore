@@ -1,0 +1,20 @@
+# Referencias locales de diseño (Stitch)
+stitch_maneva_premium_home/
+_referencias_diseno/
+
+# Dependencias (para cuando inicialicemos Expo)
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local

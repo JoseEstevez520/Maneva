@@ -11,7 +11,7 @@ Es la única fuente de verdad del proyecto.
 |---|---|---|
 | React Native | via Expo SDK 52 | Base de la app |
 | Expo Router | v3 | Navegación por ficheros |
-| NativeWind | v4 | Estilos con clases Tailwind |
+| NativeWind | 4.2.3 | Estilos con clases Tailwind (⚠️ REQUIERE tailwindcss@3.4.x exacto, ni 3.3 ni 4.0) |
 | Supabase | latest | Auth, DB, Storage, Realtime |
 | Zustand | latest | Estado global |
 | React Hook Form + Zod | latest | Formularios y validación |
@@ -498,3 +498,20 @@ const channel = supabase
 // Limpiar al desmontar
 return () => { supabase.removeChannel(channel) }
 ```
+
+---
+
+## Solución de Problemas (Troubleshooting)
+
+### Emulador de Android bloqueado o con errores de caché
+Si el emulador no arranca, se queda en negro o da errores extraños de carga, usa este comando en PowerShell para forzar un inicio limpio (borrando los datos temporales):
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -avd "Medium_Phone_API_36.1" -wipe-data
+```
+
+**Cuándo usarlo:**
+- El emulador no pasa de la pantalla de carga.
+- Errores de "System UI not responding".
+- Quieres probar la app desde cero (limpiar almacenamiento local del emulador).
+

@@ -1,0 +1,37 @@
+// Catálogo centralizado de iconos de la app.
+// Si se cambia la librería de iconos, SOLO se toca este fichero.
+import {
+  Scissors,
+  Calendar,
+  Star,
+  MapPin,
+  MessageCircle,
+  ChevronRight,
+  Plus,
+  X,
+  Check,
+  User,
+  Clock,
+  Search,
+  Home,
+  AlertCircle,
+  Loader,
+} from 'lucide-react-native'
+
+export {
+  Scissors     as IconScissors,
+  Calendar     as IconCalendar,
+  Star         as IconStar,
+  MapPin       as IconLocation,
+  MessageCircle as IconChat,
+  ChevronRight as IconChevron,
+  Plus         as IconAdd,
+  X            as IconClose,
+  Check        as IconCheck,
+  User         as IconUser,
+  Clock        as IconClock,
+  Search       as IconSearch,
+  Home         as IconHome,
+  AlertCircle  as IconError,
+  Loader       as IconLoader,
+}
