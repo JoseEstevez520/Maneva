@@ -10,17 +10,40 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'gold': '#D4AF37',
-        'premium-black': '#000000',
-        'premium-white': '#FFFFFF',
-        'soft-gray': '#F5F5F5',
+        'gold': {
+          DEFAULT: '#D4AF37',
+          light: '#F4E0A0',
+          dark: '#A48A27',
+        },
+        'premium': {
+          black: '#000000',
+          'black-soft': '#121212',
+          white: '#FFFFFF',
+          'white-soft': '#FAFAFA',
+          gray: {
+            DEFAULT: '#737373',
+            light: '#E5E5E5',
+            dark: '#404040',
+          }
+        },
       },
       fontFamily: {
-        'display': ['Manrope_400Regular', 'sans-serif'],
+        manrope: ['Manrope_400Regular'],
+        'manrope-medium': ['Manrope_500Medium'],
+        'manrope-semibold': ['Manrope_600SemiBold'],
+        'manrope-bold': ['Manrope_700Bold'],
+        'manrope-extrabold': ['Manrope_800ExtraBold'],
       },
       boxShadow: {
-        'premium': '0 15px 35px -5px rgba(0, 0, 0, 0.15), 0 8px 15px -3px rgba(0, 0, 0, 0.08)',
-        'premium-gold': '0 10px 20px -5px rgba(212, 175, 55, 0.4)',
+        'premium-gold': '0 10px 25px -5px rgba(212, 175, 55, 0.4)',
+        'premium-black': '0 20px 40px -12px rgba(0, 0, 0, 0.3)',
+        'premium-soft': '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+      },
+      borderRadius: {
+        'premium-sm': '12px',
+        'premium-md': '20px',
+        'premium-lg': '28px',
+        'premium-xl': '36px',
       }
     },
   },

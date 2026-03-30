@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-premium-white-soft text-premium-black;
+  }
+}
+
+/* Custom Premium Utilities */
+.shadow-premium-gold {
+  shadow-color: #D4AF37;
+  shadow-offset: 0px 10px;
+  shadow-opacity: 0.4;
+  shadow-radius: 25px;
+  elevation: 10;
+}
+
+.shadow-premium-black {
+  shadow-color: #000000;
+  shadow-offset: 0px 20px;
+  shadow-opacity: 0.3;
+  shadow-radius: 40px;
+  elevation: 20;
+}

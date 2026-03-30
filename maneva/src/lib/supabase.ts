@@ -1,19 +1,20 @@
-// Instancia única de Supabase.
-// TODO: Instalar @supabase/supabase-js y configurar las variables de entorno en .env
-// import { createClient } from '@supabase/supabase-js'
-// import AsyncStorage from '@react-native-async-storage/async-storage'
-//
-// export const supabase = createClient(
-//   process.env.EXPO_PUBLIC_SUPABASE_URL!,
-//   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-//   {
-//     auth: {
-//       storage: AsyncStorage,
-//       autoRefreshToken: true,
-//       persistSession: true,
-//       detectSessionInUrl: false,
-//     },
-//   }
-// )
+// Instancia única de Supabase. NUNCA crear otra fuera de este fichero.
+import { createClient } from '@supabase/supabase-js'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Database } from '@/types/database.types'
 
-export const supabase = null as any // placeholder
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient<Database>(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false, // No es una web
+    },
+  }
+)

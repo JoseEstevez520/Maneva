@@ -1,6 +1,7 @@
+import React from 'react'
 import { TouchableOpacity, Text, ActivityIndicator, View } from 'react-native'
 
-type Variant = 'primary' | 'secondary'
+type Variant = 'primary' | 'secondary' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
 
 type ButtonProps = {
@@ -19,13 +20,15 @@ type ButtonProps = {
  * secondary: Fondo blanco, borde grueso negro, uppercase
  */
 const variantStyles: Record<Variant, string> = {
-  primary:   'bg-gold shadow-premium-gold border-0',
+  primary:   'bg-gold border-0',
   secondary: 'bg-premium-white border-4 border-premium-black shadow-xl',
+  danger:    'bg-red-600 border-0',
 }
 
 const textStyles: Record<Variant, string> = {
   primary:   'text-premium-black',
   secondary: 'text-premium-black',
+  danger:    'text-white',
 }
 
 const sizeStyles: Record<Size, string> = {
@@ -55,8 +58,8 @@ export function Button({
     <TouchableOpacity
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.8}
-      className={`w-full flex-col items-center justify-center gap-3 active:scale-95 transition-transform ${variantStyles[variant]} ${sizeStyles[size]} ${isDisabled ? 'opacity-50' : ''}`}
+      activeOpacity={0.75}
+      className={`w-full flex-row items-center justify-center gap-3 ${variantStyles[variant]} ${sizeStyles[size]} ${isDisabled ? 'opacity-50' : ''}`}
     >
       {loading ? (
         <ActivityIndicator size="small" color="#000000" />

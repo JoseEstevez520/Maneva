@@ -16,7 +16,7 @@ export function Input({ label, error, leftIcon, containerClassName = '', ...prop
     ? 'border-red-500' 
     : isFocused 
       ? 'border-premium-black' 
-      : 'border-soft-gray'
+      : 'border-premium-gray-light'
 
   return (
     <View className={`gap-2 ${containerClassName}`}>
@@ -27,7 +27,7 @@ export function Input({ label, error, leftIcon, containerClassName = '', ...prop
       )}
       
       <View 
-        className={`flex-row items-center bg-soft-gray bg-opacity-50 border-2 rounded-2xl px-5 py-4 ${borderColor} bg-white transition-colors`}
+        className={`flex-row items-center bg-white/50 border-2 rounded-2xl px-5 py-4 ${borderColor}`}
       >
         {leftIcon && <View className="mr-3">{leftIcon}</View>}
         
