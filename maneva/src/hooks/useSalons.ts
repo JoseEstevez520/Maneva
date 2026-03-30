@@ -7,7 +7,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { useState, useEffect, useCallback } from 'react'
-import { getSalons, getSalonById, UnifiedSalon } from '@/services/salons.service'
+import { getSalons, getSalonById, getFavoriteSalon, getSalonsWithRating, UnifiedSalon, FavoriteSalonInfo } from '@/services/salons.service'
+import { useAuthStore } from '@/store/authStore'
 
 /** Hook principal — devuelve todas las sedes activas con refresh */
 export function useSalons() {
@@ -20,6 +21,32 @@ export function useSalons() {
     setError(null)
     try {
       const result = await getSalons()
+      setData(result)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al cargar salones')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchSalons()
+  }, [fetchSalons])
+
+  return { data, loading, error, refresh: fetchSalons }
+}
+
+/** Hook para la búsqueda — devuelve sedes activas con rating promedio */
+export function useSalonsWithRating() {
+  const [data, setData] = useState<(UnifiedSalon & { avgRating: number | null })[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchSalons = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await getSalonsWithRating()
       setData(result)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar salones')
@@ -62,3 +89,33 @@ export function useSalon(id: string) {
   return { data, loading, error, refresh: fetchSalon }
 }
 
+/**
+ * Devuelve el salón favorito del usuario autenticado.
+ * Usado en la sección "TU SALÓN" de la HomeScreen.
+ */
+export function useFavoriteSalon() {
+  const [data, setData] = useState<FavoriteSalonInfo | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuthStore()
+
+  const fetch = useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await getFavoriteSalon(user.id)
+      setData(result)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al cargar salón favorito')
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    fetch()
+  }, [fetch])
+
+  return { data, loading, error, refresh: fetch }
+}

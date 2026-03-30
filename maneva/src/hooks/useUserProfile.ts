@@ -18,8 +18,8 @@ export function useUserProfile() {
     try {
       const result = await getUserProfile(user.id)
       setData(result)
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error')
     } finally {
       setLoading(false)
     }
@@ -36,8 +36,8 @@ export function useUserProfile() {
     try {
       await updateUserProfile(user.id, updates)
       await fetchProfile()
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error')
       throw e
     } finally {
       setLoading(false)

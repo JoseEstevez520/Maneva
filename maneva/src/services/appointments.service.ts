@@ -42,6 +42,74 @@ export async function getMyAppointments(userId: string): Promise<Appointment[]> 
 }
 
 /**
+ * Tipo enriquecido para la próxima cita con datos de salón y servicios.
+ */
+export type NextAppointment = {
+  id: string
+  scheduled_at: string
+  status: string
+  salon_name: string
+  service_name: string | null
+  location_id: string
+}
+
+/**
+ * Devuelve la próxima cita confirmada o pendiente del usuario,
+ * ordenada por fecha ascendente (la más inminente primero).
+ */
+export async function getNextAppointment(userId: string): Promise<NextAppointment | null> {
+  const now = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select(`
+      id,
+      scheduled_at,
+      status,
+      location_id,
+      salon_locations (
+        name
+      ),
+      appointment_services (
+        services (
+          name
+        )
+      )
+    `)
+    .eq('client_id', userId)
+    .in('status', ['pending', 'confirmed'])
+    .gte('scheduled_at', now)
+    .order('scheduled_at', { ascending: true })
+    .limit(1)
+    .single()
+
+  if (error) {
+    // PGRST116 = no rows found — no es un error real
+    if (error.code === 'PGRST116') return null
+    throw error
+  }
+
+  type AppointmentQueryRow = {
+    id: string
+    scheduled_at: string
+    status: string
+    location_id: string
+    salon_locations: { name: string } | null
+    appointment_services: { services: { name: string } | null }[] | null
+  }
+
+  const raw = data as unknown as AppointmentQueryRow
+  return {
+    id: raw.id,
+    scheduled_at: raw.scheduled_at,
+    status: raw.status,
+    location_id: raw.location_id,
+    salon_name: raw.salon_locations?.name ?? 'Salón',
+    service_name: raw.appointment_services?.[0]?.services?.name ?? null,
+  }
+}
+
+/**
  * Crea una nueva cita. El `client_id` se inyecta desde el hook
  * que llama a esta función — nunca se pasa desde el componente.
  */

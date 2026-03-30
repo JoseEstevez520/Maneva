@@ -10,9 +10,9 @@ type Appointment = Database['public']['Tables']['appointments']['Row']
 // We need an enhanced type here if we fetch joined data
 export type EnhancedAppointment = Appointment & {
   salon_locations?: { name: string; address: string | null } | null
-  appointment_services?: Array<{
+  appointment_services?: {
     services?: { name: string; duration: number | null; price: number | null } | null
-  }> | null
+  }[] | null
 }
 
 export function AppointmentCard({ appointment, onPress }: { appointment: EnhancedAppointment; onPress?: () => void }) {

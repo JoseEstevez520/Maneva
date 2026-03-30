@@ -16,6 +16,11 @@ import {
   Home,
   AlertCircle,
   Loader,
+  Mail,
+  Settings,
+  Navigation,
+  ChevronDown,
+  ArrowUpRight,
 } from 'lucide-react-native'
 
 export {
@@ -34,4 +39,9 @@ export {
   Home         as IconHome,
   AlertCircle  as IconError,
   Loader       as IconLoader,
+  Mail         as IconMail,
+  Settings     as IconSettings,
+  Navigation   as IconNearMe,
+  ChevronDown  as IconExpandMore,
+  ArrowUpRight as IconNorthWest,
 }

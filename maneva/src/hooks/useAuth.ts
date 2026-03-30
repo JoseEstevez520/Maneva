@@ -13,8 +13,8 @@ export function useAuth() {
     try {
       await signIn(email, password)
       // El Auth Guard en _layout.tsx gestiona la redirección automáticamente
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error')
     } finally {
       setLoading(false)
     }
@@ -25,8 +25,8 @@ export function useAuth() {
     setError(null)
     try {
       await signUp(email, password, fullName)
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error')
     } finally {
       setLoading(false)
     }
@@ -37,8 +37,8 @@ export function useAuth() {
     setError(null)
     try {
       await signOut()
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error')
     } finally {
       setLoading(false)
     }

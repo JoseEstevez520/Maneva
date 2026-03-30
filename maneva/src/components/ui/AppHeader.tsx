@@ -1,6 +1,6 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { Colors } from '@/constants/theme'
+import { View } from 'react-native'
+import { H1, H2 } from '@/components/ui/Typography'
 
 type AppHeaderProps =
   | { variant: 'brand'; title?: never }
@@ -15,41 +15,20 @@ type AppHeaderProps =
 export function AppHeader({ variant, title }: AppHeaderProps) {
   if (variant === 'brand') {
     return (
-      <View style={styles.container}>
-        <Text style={styles.brand}>MANEVA</Text>
+      <View className="flex-row items-center justify-center bg-premium-white border-b-[0.5px] border-premium-gray-light px-6 py-[18px]">
+        <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black text-center">
+          MANEVA
+        </H1>
       </View>
     )
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.pageTitle}>{title}</Text>
+    <View className="flex-row items-center justify-center bg-premium-white border-b-[0.5px] border-premium-gray-light px-6 py-[18px]">
+      <H2 className="font-manrope-bold text-[20px] tracking-[0.3px] text-premium-black">
+        {title}
+      </H2>
     </View>
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.premium.white,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.premium.gray.light,
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-  },
-  brand: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 18,
-    letterSpacing: 6,
-    color: Colors.premium.black,
-    textAlign: 'center',
-  },
-  pageTitle: {
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 20,
-    letterSpacing: 0.3,
-    color: Colors.premium.black,
-  },
-})

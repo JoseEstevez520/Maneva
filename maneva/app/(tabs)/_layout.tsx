@@ -1,26 +1,21 @@
 import { Tabs } from 'expo-router';
-import { Home, Search, Calendar, MessageCircle, User } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
+import { IconHome, IconMail, IconSettings } from '@/components/ui/icons';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarActiveTintColor: Colors.gold.DEFAULT,
         tabBarInactiveTintColor: Colors.premium.gray.DEFAULT,
         tabBarStyle: {
           backgroundColor: Colors.premium.white,
           borderTopWidth: 1,
           borderTopColor: Colors.premium.gray.light,
-          paddingBottom: 8,
-          paddingTop: 6,
-          height: 64,
-        },
-        tabBarLabelStyle: {
-          fontFamily: 'Manrope_600SemiBold',
-          fontSize: 10,
-          marginTop: 2,
+          height: 60,
+          paddingTop: 10,
         },
       }}
     >
@@ -28,35 +23,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} strokeWidth={2} />,
+          tabBarIcon: ({ color, size }) => <IconHome color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="inbox"
         options={{
-          title: 'Buscar',
-          tabBarIcon: ({ color, size }) => <Search color={color} size={size} strokeWidth={2} />,
+          title: 'Buzón',
+          tabBarIcon: ({ color, size }) => <IconMail color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
-        name="bookings"
+        name="settings"
         options={{
-          title: 'Reservas',
-          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} strokeWidth={2} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} strokeWidth={2} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} strokeWidth={2} />,
+          title: 'Ajustes',
+          tabBarIcon: ({ color, size }) => <IconSettings color={color} size={size} strokeWidth={2} />,
         }}
       />
     </Tabs>

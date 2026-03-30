@@ -42,16 +42,18 @@ export default function RootLayout() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        const inAuthScreen = segments[0] === 'login' || segments[0] === 'register';
+
         if (session?.user) {
           setUser(session.user);
-          const inAuthGroup = segments[0] === '(tabs)';
-          if (!inAuthGroup) {
+          // Si está logueado pero intenta ir a login/register, mándalo a home
+          if (inAuthScreen) {
             router.replace('/(tabs)');
           }
         } else {
           clearAuth();
-          const inAuthGroup = segments[0] === '(tabs)';
-          if (inAuthGroup) {
+          // Si NO está logueado y no está en una pantalla de auth, mándalo a login
+          if (!inAuthScreen) {
             router.replace('/login');
           }
         }
@@ -71,6 +73,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="search" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="dark" />

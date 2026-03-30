@@ -7,7 +7,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { useState, useEffect, useCallback } from 'react'
-import { getMyAppointments, createAppointment, cancelAppointment } from '@/services/appointments.service'
+import { getMyAppointments, createAppointment, cancelAppointment, getNextAppointment, NextAppointment } from '@/services/appointments.service'
 import { useAuthStore } from '@/store/authStore'
 import { Database } from '@/types/database.types'
 
@@ -78,3 +78,33 @@ export function useMyAppointments() {
   return { data, loading, error, refresh: fetchAppointments, create, cancel }
 }
 
+/**
+ * Devuelve la próxima cita futura del usuario autenticado.
+ * Usado en la sección "PRÓXIMA CITA" de la HomeScreen.
+ */
+export function useNextAppointment() {
+  const [data, setData] = useState<NextAppointment | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuthStore()
+
+  const fetch = useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await getNextAppointment(user.id)
+      setData(result)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al cargar la próxima cita')
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    fetch()
+  }, [fetch])
+
+  return { data, loading, error, refresh: fetch }
+}
