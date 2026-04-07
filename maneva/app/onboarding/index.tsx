@@ -23,12 +23,12 @@ export default function Onboarding() {
   ];
 
   const next = async () => {
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-    } else {
-      await AsyncStorage.setItem("onboarding_seen", "true");
-      router.replace("/login");
-    }
+  if (step < steps.length - 1) {
+    setStep(step + 1);
+  } else {
+    await AsyncStorage.setItem("onboarding_seen", "true");
+    router.replace("/login");
+  }
   };
 
   return (

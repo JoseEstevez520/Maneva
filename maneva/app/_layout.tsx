@@ -67,9 +67,10 @@ useEffect(() => {
       const inAuthScreen =
         segments[0] === 'login' || segments[0] === 'register';
 
-      // 🚨 NUEVO: onboarding primero
-      if (!hasSeenOnboarding) {
-        router.replace('/onboarding');
+      const inOnboarding = segments[0] === 'onboarding';
+
+      if (!hasSeenOnboarding && !inOnboarding) {
+        router.replace('/onboarding' as any);
         return;
       }
 
