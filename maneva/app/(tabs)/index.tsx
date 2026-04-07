@@ -242,22 +242,30 @@ function OfferCard({ offer, index }: { offer: { id: string; name: string; locati
 function SpecialOffersSection() {
   const { data: campaigns, loading } = useActiveCampaigns()
 
+  if (loading) {
+    return <LoadingSpinner />
+  }
+
+  if (campaigns.length === 0) {
+    return null
+  }
+
   return (
-    <View className="px-5 mt-7">
-      <SectionHeader title="OFERTAS ESPECIALES" />
-      {loading ? (
-        <LoadingSpinner className="py-6 items-center" />
-      ) : campaigns.length === 0 ? (
-        <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">Sin ofertas activas ahora mismo</Body>
-        </View>
-      ) : (
-        <View className="gap-[14px]">
-          {campaigns.map((campaign, index) => (
+    <View className="mt-8">
+      <Caption className="px-5 font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
+        OFERTAS ESPECIALES
+      </Caption>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerClassName="gap-3"
+      >
+        {campaigns.map((campaign, index) => (
+	<View key={campaign.id} className="w-80">
             <OfferCard key={campaign.id} offer={campaign} index={index} />
-          ))}
-        </View>
-      )}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   )
 }
