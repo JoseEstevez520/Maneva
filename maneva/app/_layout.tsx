@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -16,6 +17,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
 
+
 // Evitar que el SplashScreen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
 
@@ -23,6 +25,8 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const { setUser, clearAuth } = useAuthStore();
+  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
   const [loaded, error] = useFonts({
     Manrope_400Regular,
@@ -38,30 +42,55 @@ export default function RootLayout() {
     }
   }, [loaded, error]);
 
+
+useEffect(() => {
+  const checkOnboarding = async () => {
+    const seen = await AsyncStorage.getItem("onboarding_seen");
+
+    if (seen === "true") {
+      setHasSeenOnboarding(true);
+    }
+
+    setCheckedOnboarding(true);
+  };
+
+  checkOnboarding();
+}, []);
+
+
   // Auth Guard — escucha cambios de sesión y redirige
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const inAuthScreen = segments[0] === 'login' || segments[0] === 'register';
+  if (!checkedOnboarding) return;
 
-        if (session?.user) {
-          setUser(session.user);
-          // Si está logueado pero intenta ir a login/register, mándalo a home
-          if (inAuthScreen) {
-            router.replace('/(tabs)');
-          }
-        } else {
-          clearAuth();
-          // Si NO está logueado y no está en una pantalla de auth, mándalo a login
-          if (!inAuthScreen) {
-            router.replace('/login');
-          }
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      const inAuthScreen =
+        segments[0] === 'login' || segments[0] === 'register';
+
+      // 🚨 NUEVO: onboarding primero
+      if (!hasSeenOnboarding) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      if (session?.user) {
+        setUser(session.user);
+
+        if (inAuthScreen) {
+          router.replace('/(tabs)');
+        }
+      } else {
+        clearAuth();
+
+        if (!inAuthScreen) {
+          router.replace('/login');
         }
       }
-    );
+    }
+  );
 
-    return () => subscription.unsubscribe();
-  }, [segments]);
+  return () => subscription.unsubscribe();
+}, [segments, checkedOnboarding, hasSeenOnboarding]);
 
   if (!loaded && !error) {
     return null;
@@ -75,6 +104,7 @@ export default function RootLayout() {
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="search" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="dark" />
     </>
