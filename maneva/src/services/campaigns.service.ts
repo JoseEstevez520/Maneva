@@ -1,27 +1,19 @@
 /**
  * campaigns.service.ts
- * ────────────────────────────────────────────────────────────────
- * Capa de acceso a datos para campañas.
- * ────────────────────────────────────────────────────────────────
+ * ────────────────────────────────────────────────────────────────────
+ * Capa de acceso a datos para la tabla `campaigns` de Supabase.
+ * ────────────────────────────────────────────────────────────────────
  */
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database.types'
 
 type Campaign = Database['public']['Tables']['campaigns']['Row']
-type SalonLocation = Database['public']['Tables']['salon_locations']['Row']
-type Salon = Database['public']['Tables']['salons']['Row']
-
-/** Tipo enriquecido de campaña con info del salón */
-export type CampaignWithSalon = Campaign & {
-  salon_locations: (SalonLocation & {
-    salons: Pick<Salon, 'name' | 'description'> | null
-  }) | null
-}
 
 /**
- * Devuelve campañas activas para una lista de sedes con info del salón.
+ * Devuelve campañas activas para una lista de sedes CON INFO DEL SALÓN.
+ * Filtra: active=true, start_date <= NOW <= end_date.
  */
-export async function getActiveCampaigns(locationIds: string[]): Promise<CampaignWithSalon[]> {
+export async function getActiveCampaigns(locationIds: string[]): Promise<(Campaign & { salon_locations: { name: string | null; city: string | null } | null })[]> {
   if (locationIds.length === 0) return []
 
   const now = new Date().toISOString()
@@ -30,16 +22,9 @@ export async function getActiveCampaigns(locationIds: string[]): Promise<Campaig
     .from('campaigns')
     .select(`
       *,
-      salon_locations (
-        id,
+      salon_locations:location_id (
         name,
-        city,
-        address,
-        phone,
-        salons (
-          name,
-          description
-        )
+        city
       )
     `)
     .in('location_id', locationIds)
@@ -49,29 +34,23 @@ export async function getActiveCampaigns(locationIds: string[]): Promise<Campaig
     .order('start_date', { ascending: true })
 
   if (error) throw error
-  return data as CampaignWithSalon[]
+  return data || []
 }
 
 /**
- * Devuelve todas las campañas activas con info del salón.
+ * Devuelve TODAS las campañas activas CON INFO DEL SALÓN.
+ * Usado en la home cuando queremos mostrar las de todos los salones.
  */
-export async function getAllActiveCampaigns(): Promise<CampaignWithSalon[]> {
+export async function getAllActiveCampaigns(): Promise<(Campaign & { salon_locations: { name: string | null; city: string | null } | null })[]> {
   const now = new Date().toISOString()
 
   const { data, error } = await supabase
     .from('campaigns')
     .select(`
       *,
-      salon_locations (
-        id,
+      salon_locations:location_id (
         name,
-        city,
-        address,
-        phone,
-        salons (
-          name,
-          description
-        )
+        city
       )
     `)
     .eq('active', true)
@@ -80,36 +59,5 @@ export async function getAllActiveCampaigns(): Promise<CampaignWithSalon[]> {
     .order('start_date', { ascending: true })
 
   if (error) throw error
-  return data as CampaignWithSalon[]
-}
-
-/**
- * Devuelve una campaña específica por ID con todos los detalles.
- */
-export async function getCampaignById(id: string): Promise<CampaignWithSalon | null> {
-  const { data, error } = await supabase
-    .from('campaigns')
-    .select(`
-      *,
-      salon_locations (
-        id,
-        name,
-        city,
-        address,
-        phone,
-        salons (
-          name,
-          description
-        )
-      )
-    `)
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    if (error.code === 'PGRST116') return null
-    throw error
-  }
-
-  return data as CampaignWithSalon
+  return data || []
 }

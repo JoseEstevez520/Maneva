@@ -14,6 +14,14 @@ import { useActiveCampaigns } from '@/hooks/useCampaigns'
 import { useRouter } from 'expo-router'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Database } from '@/types/database.types'
+
+type Campaign = Database['public']['Tables']['campaigns']['Row'] & {
+  salon_locations?: {
+    name: string | null
+    city: string | null
+  }
+}
 
 // ─── Imagen placeholder (fondo gris) para salones sin cover ───────────────────
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
@@ -222,20 +230,38 @@ function AvailableTodaySection() {
 
 // ─── Sección E: Ofertas Especiales ────────────────────────────────────────────
 
-function OfferCard({ offer, index }: { offer: { id: string; name: string; location_id: string }; index: number }) {
+function OfferCard({ 
+  offer, 
+  index 
+}: { 
+  offer: any
+  index: number 
+}) {
   const isGold = index % 2 === 0
+  const salonName = offer.salon_locations?.name ?? 'Salón sin especificar'
+  const endDate = offer.end_date ? new Date(offer.end_date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : ''
+  
   return (
-    <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row items-center p-[18px] gap-4">
+    <TouchableOpacity 
+      className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row items-center p-[18px] gap-4"
+      activeOpacity={0.7}
+    >
       <View
-        className={`w-12 h-12 rounded-[14px] items-center justify-center shrink-0 ${isGold ? 'bg-gold shadow-[0_6px_12px_rgba(212,175,55,0.45)]' : 'bg-premium-black shadow-[0_4px_8px_rgba(0,0,0,0.3)]'}`}
+        className={`w-12 h-12 rounded-[14px] items-center justify-center shrink-0 ${isGold ? 'bg-gold shadow-[0_6px_12px_rgba(212,175,55,0.45)]' : 'bg-premium-black shadow-[0_4px_8px_rgba(0,0,0,0.2)]'}`}
       >
         <H1 className="font-manrope-extrabold text-[18px] text-premium-white">{isGold ? '%' : '🎀'}</H1>
       </View>
       <View className="flex-1">
         <Body className="font-manrope-bold text-[13px] text-premium-black leading-[18px]">{offer.name}</Body>
+        <Caption className="font-manrope-medium text-[11px] text-premium-gray mt-1">{salonName}</Caption>
+        {endDate && (
+          <Caption className="font-manrope-medium text-[10px] text-premium-gray-light mt-0.5">
+            Hasta {endDate}
+          </Caption>
+        )}
       </View>
       <H2 className={`font-manrope-bold text-[22px] ${isGold ? 'text-gold' : 'text-[#E5E5E5]'}`}>›</H2>
-    </View>
+    </TouchableOpacity>
   )
 }
 
