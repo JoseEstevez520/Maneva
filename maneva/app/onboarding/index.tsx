@@ -9,12 +9,13 @@ import {
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { safeStorage } from "@/lib/storage";
-
+import { useUiStore } from "@/store/uiStore";
 
 const { width } = Dimensions.get("window");
 
 export default function Onboarding() {
   const router = useRouter();
+  const setHasSeenOnboarding = useUiStore((state) => state.setHasSeenOnboarding);
   const flatListRef = useRef<FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -44,6 +45,7 @@ export default function Onboarding() {
       });
     } else {
       await safeStorage.setItem("onboarding_seen", "true");
+      setHasSeenOnboarding(true); // Actualizar el estado global inmediatamente
       router.replace("/login");
     }
   };

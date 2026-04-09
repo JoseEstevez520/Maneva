@@ -3,7 +3,7 @@ import { getUserProfile, updateUserProfile } from '@/services/users.service'
 import { useAuthStore } from '@/store/authStore'
 import { Database } from '@/types/database.types'
 
-type UserProfile = Database['public']['Tables']['user_profiles']['Row']
+type UserProfile = Database['public']['Tables']['users']['Row']
 
 export function useUserProfile() {
   const [data, setData] = useState<UserProfile | null>(null)

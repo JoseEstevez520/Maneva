@@ -1888,36 +1888,30 @@ export type Database = {
         Row: {
           created_at: string
           deleted_at: string | null
-          email: string
-          first_name: string
+          first_name: string | null
           id: string
           language_id: string | null
-          last_name: string
-          password_hash: string
+          last_name: string | null
           phone: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           deleted_at?: string | null
-          email: string
-          first_name: string
+          first_name?: string | null
           id?: string
           language_id?: string | null
-          last_name: string
-          password_hash: string
+          last_name?: string | null
           phone?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           deleted_at?: string | null
-          email?: string
-          first_name?: string
+          first_name?: string | null
           id?: string
           language_id?: string | null
-          last_name?: string
-          password_hash?: string
+          last_name?: string | null
           phone?: string | null
           updated_at?: string
         }

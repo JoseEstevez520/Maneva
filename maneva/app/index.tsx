@@ -1,7 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
-import { useEffect, useState } from 'react';
-import { safeStorage } from '@/lib/storage';
+import { useUiStore } from '@/store/uiStore';
 
 /**
  * Componente raíz que maneja la redirección inicial.
@@ -9,18 +8,7 @@ import { safeStorage } from '@/lib/storage';
  */
 export default function Index() {
   const { user } = useAuthStore();
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      const seen = await safeStorage.getItem("onboarding_seen");
-      setHasSeenOnboarding(seen === "true");
-    };
-    checkOnboarding();
-  }, []);
-
-  // Esperar a que el estado de onboarding se cargue
-  if (hasSeenOnboarding === null) return null;
+  const { hasSeenOnboarding } = useUiStore();
 
   if (!hasSeenOnboarding) {
     return <Redirect href="/onboarding" />;

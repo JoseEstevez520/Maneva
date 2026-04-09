@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { safeStorage } from "@/lib/storage";
 import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -16,6 +16,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
+import { useUiStore } from '@/store/uiStore';
 
 
 // Evitar que el SplashScreen se oculte automáticamente
@@ -25,10 +26,10 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const { setUser, clearAuth } = useAuthStore();
-  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const { hasSeenOnboarding, setHasSeenOnboarding } = useUiStore();
+  const [appIsReady, setAppIsReady] = useState(false);
 
-  const [loaded, error] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Manrope_400Regular,
     Manrope_500Medium,
     Manrope_600SemiBold,
@@ -36,64 +37,90 @@ export default function RootLayout() {
     Manrope_800ExtraBold,
   });
 
+  // Lógica de inicialización completa
   useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
+    async function prepare() {
+      try {
+        // 1. Cargar datos de onboarding y sesión inicial en paralelo
+        const [onboardingSeen, { data: { session } }] = await Promise.all([
+          safeStorage.getItem("onboarding_seen"),
+          supabase.auth.getSession(),
+        ]);
+
+        if (onboardingSeen === "true") {
+          setHasSeenOnboarding(true);
+        }
+
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          clearAuth();
+        }
+
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Marcamos como listo cuando las fuentes Y los datos están cargados
+        if (fontsLoaded || fontError) {
+          setAppIsReady(true);
+        }
+      }
     }
-  }, [loaded, error]);
 
+    prepare();
+  }, [fontsLoaded, fontError, setUser, clearAuth, setHasSeenOnboarding]);
 
-useEffect(() => {
-  const checkOnboarding = async () => {
-    const seen = await AsyncStorage.getItem("onboarding_seen");
-
-    if (seen === "true") {
-      setHasSeenOnboarding(true);
-    }
-
-    setCheckedOnboarding(true);
-  };
-
-  checkOnboarding();
-}, []);
-
-
-  // Auth Guard — escucha cambios de sesión y redirige
+  // Auth Guard y Redirección inicial
   useEffect(() => {
-  if (!checkedOnboarding) return;
+    if (!appIsReady) return;
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      const inAuthScreen =
-        segments[0] === 'login' || segments[0] === 'register';
+    const inAuthScreen = segments[0] === 'login' || segments[0] === 'register';
+    const inOnboarding = segments[0] === 'onboarding';
 
-      const inOnboarding = segments[0] === 'onboarding';
+    // Lógica de redirección inicial para evitar parpadeos
+    const checkNavigation = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
       if (!hasSeenOnboarding && !inOnboarding) {
-        router.replace('/onboarding' as any);
-        return;
-      }
-
-      if (session?.user) {
-        setUser(session.user);
-
-        if (inAuthScreen) {
+        router.replace('/onboarding');
+      } else if (session?.user) {
+        if (inAuthScreen || inOnboarding || segments.length === 0) {
           router.replace('/(tabs)');
         }
-      } else {
-        clearAuth();
+      } else if (!inAuthScreen && !inOnboarding) {
+        router.replace('/login');
+      }
 
-        if (!inAuthScreen) {
-          router.replace('/login');
+      // UNA VEZ QUE EL ROUTER HA SIDO INSTRUIDO, ocultamos el Splash
+      // Damos un pequeño respiro para que el router procese el replace
+      setTimeout(() => {
+        SplashScreen.hideAsync();
+      }, 50);
+    };
+
+    checkNavigation();
+
+    // Listener para cambios de sesión futuros
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          if (segments[0] === 'login' || segments[0] === 'register') {
+            router.replace('/(tabs)');
+          }
+        } else {
+          clearAuth();
+          if (segments[0] !== 'login' && segments[0] !== 'register' && segments[0] !== 'onboarding') {
+            router.replace('/login');
+          }
         }
       }
-    }
-  );
+    );
 
-  return () => subscription.unsubscribe();
-}, [segments, checkedOnboarding, hasSeenOnboarding]);
+    return () => subscription.unsubscribe();
+  }, [appIsReady, segments, hasSeenOnboarding, router, setUser, clearAuth]);
 
-  if (!loaded && !error) {
+  if (!appIsReady) {
     return null;
   }
 
