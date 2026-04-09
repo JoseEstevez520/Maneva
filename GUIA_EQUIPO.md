@@ -109,7 +109,7 @@ Cada funcionalidad tiene su propia rama. El flujo es:
 
 Hay tres lugares donde se guardan cosas y cada uno tiene su uso:
 
-**AsyncStorage** — el cajón del móvil. Guarda el token de sesión de Supabase para que el usuario no tenga que hacer login cada vez que abre la app. Nosotros no gestionamos esto directamente — está configurado en `src/lib/supabase.ts` y funciona solo.
+**AsyncStorage** — el cajón del móvil. Guarda el token de sesión de Supabase para que el usuario no tenga que hacer login cada vez que abre la app. Usamos `src/lib/storage.ts` (`safeStorage`) para que sea compatible con Web/SSR sin dar errores de `window is not defined`.
 
 **Supabase Storage** — la nube. Aquí van las fotos del portfolio de los salones, las imágenes de perfil... Se sube un fichero y Supabase devuelve una URL pública para mostrarlo. El servicio para esto está en `src/services/storage.service.ts`.
 

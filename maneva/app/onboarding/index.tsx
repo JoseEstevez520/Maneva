@@ -4,11 +4,11 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { FlatList } from "react-native";
+import { safeStorage } from "@/lib/storage";
 
 
 const { width } = Dimensions.get("window");
@@ -43,7 +43,7 @@ export default function Onboarding() {
         animated: true,
       });
     } else {
-      await AsyncStorage.setItem("onboarding_seen", "true");
+      await safeStorage.setItem("onboarding_seen", "true");
       router.replace("/login");
     }
   };
