@@ -14,6 +14,7 @@ import { useActiveCampaigns } from '@/hooks/useCampaigns'
 import { useRouter } from 'expo-router'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { TutorialModal } from '@/components/ui/TutorialModal'
 
 // ─── Imagen placeholder (fondo gris) para salones sin cover ───────────────────
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
@@ -286,6 +287,7 @@ export default function HomeScreen() {
         {/* E: Ofertas Especiales */}
         <SpecialOffersSection />
       </ScrollView>
+      <TutorialModal />
     </ScreenLayout>
   )
 }

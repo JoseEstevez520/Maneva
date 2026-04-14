@@ -27,7 +27,7 @@ export function Input({ label, error, leftIcon, containerClassName = '', ...prop
       )}
       
       <View 
-        className={`flex-row items-center bg-white/50 border-2 rounded-2xl px-5 py-4 ${borderColor}`}
+        className={`flex-row items-center bg-white/50 border-2 rounded-2xl px-5 py-2.5 ${borderColor}`}
       >
         {leftIcon && <View className="mr-3">{leftIcon}</View>}
         
