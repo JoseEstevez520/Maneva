@@ -9,36 +9,42 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated'
 import { H1, Body, Caption } from '@/components/ui/Typography'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { IconMail, IconUser } from '@/components/ui/icons'
+import { IconMail, IconUser, IconPhone } from '@/components/ui/icons'
 import { useAuth } from '@/hooks/useAuth'
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Debe contener al menos 2 caracteres'),
   email: z.string().email('Email inválido o incorrecto'),
+  phone: z
+    .string()
+    .min(9, 'Debe contener al menos 9 dígitos')
+    .regex(/^\+?[0-9\s\-().]{9,20}$/, 'Teléfono inválido')
+    .optional()
+    .or(z.literal('')),
   password: z.string().min(6, 'Debe contener al menos 6 caracteres'),
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"],
+  message: 'Las contraseñas no coinciden',
+  path: ['confirmPassword'],
 })
 
 type RegisterForm = z.infer<typeof registerSchema>
 
 export default function RegisterScreen() {
   const { register, loading, error } = useAuth()
-  
+
   const { control, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' }
+    defaultValues: { fullName: '', email: '', phone: '', password: '', confirmPassword: '' },
   })
 
   const onSubmit = (data: RegisterForm) => {
-    register(data.email, data.password, data.fullName)
+    register(data.email, data.password, data.fullName, data.phone || undefined)
   }
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-premium-white-soft"
     >
       {/* Cabecera: logo + nombre pequeños en esquina superior izquierda */}
@@ -51,12 +57,12 @@ export default function RegisterScreen() {
         <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">MANEVA</H1>
       </Animated.View>
 
-      <ScrollView 
-        contentContainerClassName="flex-grow justify-center px-8 py-10"
+      <ScrollView
+        contentContainerClassName="flex-grow px-8 pt-28 pb-10"
         showsVerticalScrollIndicator={false}
       >
         {/* Título de la pantalla */}
-        <Animated.View entering={FadeInDown.delay(100).duration(800).springify()} className="mb-8 mt-6">
+        <Animated.View entering={FadeInDown.delay(100).duration(800).springify()} className="mb-8">
           <H1 className="font-manrope-extrabold text-3xl text-premium-black mb-1">Crear cuenta</H1>
           <Body className="font-manrope text-premium-gray">Únete a Maneva y descubre tu estilo</Body>
         </Animated.View>
@@ -70,6 +76,7 @@ export default function RegisterScreen() {
 
         {/* Inputs */}
         <Animated.View entering={FadeInUp.delay(200).duration(800).springify()} className="gap-4">
+          {/* Nombre completo */}
           <Controller
             control={control}
             name="fullName"
@@ -85,6 +92,7 @@ export default function RegisterScreen() {
             )}
           />
 
+          {/* Correo */}
           <Controller
             control={control}
             name="email"
@@ -102,6 +110,24 @@ export default function RegisterScreen() {
             )}
           />
 
+          {/* Teléfono */}
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Teléfono"
+                placeholder="+34 600 000 000"
+                value={value}
+                onChangeText={onChange}
+                error={errors.phone?.message}
+                keyboardType="phone-pad"
+                leftIcon={<IconPhone color="#737373" size={20} />}
+              />
+            )}
+          />
+
+          {/* Contraseña */}
           <Controller
             control={control}
             name="password"
@@ -117,6 +143,7 @@ export default function RegisterScreen() {
             )}
           />
 
+          {/* Confirmar contraseña */}
           <Controller
             control={control}
             name="confirmPassword"
@@ -136,7 +163,7 @@ export default function RegisterScreen() {
         {/* Botonera */}
         <Animated.View entering={FadeInUp.delay(400).duration(800).springify()} className="mt-8 gap-6 mb-6">
           <Button onPress={handleSubmit(onSubmit)} loading={loading} size="sm">
-            Registrarme
+            Crear cuenta
           </Button>
 
           <View className="flex-row justify-center items-center">
@@ -144,7 +171,7 @@ export default function RegisterScreen() {
             <Link href="/login" asChild>
               <TouchableOpacity activeOpacity={0.7} className="pb-1 border-b border-premium-black">
                 <Caption className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]">
-                  Inicia sesión aquí
+                  Inicia sesión
                 </Caption>
               </TouchableOpacity>
             </Link>

@@ -20,11 +20,11 @@ export function useAuth() {
     }
   }
 
-  async function register(email: string, password: string, fullName: string) {
+  async function register(email: string, password: string, fullName: string, phone?: string) {
     setLoading(true)
     setError(null)
     try {
-      await signUp(email, password, fullName)
+      await signUp(email, password, fullName, phone)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error')
     } finally {
