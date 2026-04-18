@@ -21,6 +21,17 @@ export async function signUp(
     options: { data: { full_name: fullName, phone: phone ?? "" } },
   });
   if (error) throw error;
+
+  // Si Supabase no devuelve sesion al registrarse, intentamos iniciar sesion
+  // con las mismas credenciales para garantizar login inmediato.
+  if (!data.session) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError) throw signInError;
+  }
+
   return data;
 }
 
@@ -30,7 +41,13 @@ export async function signOut() {
 }
 
 export async function deleteMyAccount() {
-  const { error } = await supabase.rpc("delete_my_account");
+  const client = supabase as unknown as {
+    rpc: (
+      fn: string,
+      args?: Record<string, unknown>,
+    ) => Promise<{ error: { message: string } | null }>;
+  };
+  const { error } = await client.rpc("delete_my_account");
   if (error) throw error;
 }
 

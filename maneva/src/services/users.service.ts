@@ -80,3 +80,37 @@ export async function setUserPreference(
     throw updateError;
   }
 }
+
+export async function replaceUserPreferences(
+  userId: string,
+  preferenceKey: string,
+  values: string[],
+): Promise<void> {
+  const sanitizedValues = Array.from(
+    new Set(
+      values.map((value) => value.trim()).filter((value) => value.length > 0),
+    ),
+  );
+
+  const { error: deleteError } = await supabase
+    .from("user_preferences")
+    .delete()
+    .eq("user_id", userId)
+    .eq("preference_key", preferenceKey);
+
+  if (deleteError) throw deleteError;
+
+  if (sanitizedValues.length === 0) return;
+
+  const rows = sanitizedValues.map((value) => ({
+    user_id: userId,
+    preference_key: preferenceKey,
+    preference_value: value,
+  }));
+
+  const { error: insertError } = await supabase
+    .from("user_preferences")
+    .insert(rows);
+
+  if (insertError) throw insertError;
+}

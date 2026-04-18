@@ -16,6 +16,7 @@ import MapView, { Circle, Region } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Body, Caption, H1 } from "@/components/ui/Typography";
+import { supabase } from "@/lib/supabase";
 import { setUserPreference } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
 
@@ -276,12 +277,18 @@ export default function LocationOnboardingScreen() {
   };
 
   const handleSave = async () => {
-    if (!user) return;
-
     setSaving(true);
     setError(null);
 
     try {
+      const currentUser = user ?? (await supabase.auth.getUser()).data.user;
+      if (!currentUser) {
+        setError(
+          "Tu sesión no está lista. Vuelve a iniciar sesión e inténtalo de nuevo.",
+        );
+        return;
+      }
+
       let finalCity = cityToSave;
 
       if (!finalCity) {
@@ -290,32 +297,32 @@ export default function LocationOnboardingScreen() {
           mapRegion.longitude,
         );
 
-        if (!detectedCity) {
-          setError(
-            "No pudimos detectar la ciudad de la zona actual. Escribe o selecciona una ciudad.",
-          );
-          return;
+        // No bloquea el flujo: si no se detecta ciudad, usa un fallback razonable.
+        finalCity = detectedCity ?? "Ubicación actual";
+        if (detectedCity) {
+          setSelectedCity(detectedCity);
+          setSearch(detectedCity);
         }
-
-        finalCity = detectedCity;
-        setSelectedCity(detectedCity);
-        setSearch(detectedCity);
       }
 
-      const localCityKey = `onboarding_city_${user.id}`;
+      const localCityKey = `onboarding_city_${currentUser.id}`;
 
       // Intento remoto: si falla por policies/RLS usamos fallback local para no bloquear.
       const citySaveResult = await Promise.allSettled([
-        setUserPreference(user.id, "city", finalCity),
+        setUserPreference(currentUser.id, "city", finalCity),
       ]);
 
       const citySavedRemotely = citySaveResult[0].status === "fulfilled";
 
       // Guardados opcionales: si una policy/constraint los bloquea no deben romper el flujo.
       await Promise.allSettled([
-        setUserPreference(user.id, "lat", mapRegion.latitude.toFixed(6)),
-        setUserPreference(user.id, "lng", mapRegion.longitude.toFixed(6)),
-        setUserPreference(user.id, "radius_km", String(radiusKm)),
+        setUserPreference(currentUser.id, "lat", mapRegion.latitude.toFixed(6)),
+        setUserPreference(
+          currentUser.id,
+          "lng",
+          mapRegion.longitude.toFixed(6),
+        ),
+        setUserPreference(currentUser.id, "radius_km", String(radiusKm)),
       ]);
 
       // Persistimos localmente para que el guard permita entrar incluso con fallo remoto.
@@ -329,7 +336,7 @@ export default function LocationOnboardingScreen() {
         );
       }
 
-      router.replace("/(tabs)");
+      router.replace("/onboarding/preferences");
     } catch (e: unknown) {
       const message =
         e instanceof Error

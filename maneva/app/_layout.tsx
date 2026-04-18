@@ -58,6 +58,8 @@ export default function RootLayout() {
         segments[0] === "welcome";
       const isLocationSetup =
         segments[0] === "onboarding" && segments[1] === "location";
+      const isPreferencesSetup =
+        segments[0] === "onboarding" && segments[1] === "preferences";
 
       if (session?.user) {
         setUser(session.user);
@@ -88,6 +90,25 @@ export default function RootLayout() {
           if (!hasCityPreference) {
             if (!isLocationSetup) {
               router.replace("/onboarding/location");
+            }
+            return;
+          }
+
+          const servicePreference = await getUserPreference(
+            session.user.id,
+            "service_interest",
+          );
+          const localServicesFallback = await AsyncStorage.getItem(
+            `onboarding_services_${session.user.id}`,
+          );
+          const hasServicePreference = Boolean(
+            servicePreference?.preference_value?.trim() ||
+            (localServicesFallback && localServicesFallback !== "[]"),
+          );
+
+          if (!hasServicePreference) {
+            if (!isPreferencesSetup) {
+              router.replace("/onboarding/preferences");
             }
             return;
           }
@@ -140,6 +161,10 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="onboarding/location"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="onboarding/preferences"
           options={{ headerShown: false }}
         />
         <Stack.Screen name="welcome" options={{ headerShown: false }} />

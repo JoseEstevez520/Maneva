@@ -99,7 +99,7 @@ export default function OnboardingScreen() {
       <FlatList
         ref={slidesRef}
         data={slides}
-        contentContainerClassName="pb-10"
+        contentContainerClassName="flex-grow"
         showsHorizontalScrollIndicator={false}
         horizontal
         pagingEnabled
@@ -107,13 +107,16 @@ export default function OnboardingScreen() {
         onMomentumScrollEnd={updateCurrentSlideIndex}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={{ width }} className="items-center px-8">
+          <View
+            style={{ width }}
+            className="flex-1 items-center justify-center px-8 pb-6"
+          >
             <Image
               source={item.image}
-              className="w-full h-80 rounded-premium-xl mt-4 mb-10 border-4 border-white shadow-premium-soft"
+              className="w-full h-72 rounded-premium-xl mb-8 border-4 border-white shadow-premium-soft"
               resizeMode="cover"
             />
-            <Text className="text-3xl font-manrope-extrabold text-premium-black text-center mb-4 leading-tight">
+            <Text className="text-3xl font-manrope-extrabold text-premium-black text-center mb-3 leading-tight">
               {item.title}
             </Text>
             <Text className="text-base text-premium-gray font-manrope-regular text-center leading-relaxed">

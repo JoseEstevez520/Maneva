@@ -3,12 +3,12 @@ import { Link, useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as z from "zod";
@@ -75,23 +75,25 @@ export default function RegisterScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-premium-white-soft"
     >
-      {/* Cabecera: logo + nombre pequeños en esquina superior izquierda */}
+      {/* Cabecera fija con fondo para que el contenido haga scroll por detrás sin solaparse */}
       <Animated.View
         entering={FadeInDown.duration(600).springify()}
-        className="absolute top-14 left-6 z-10 flex-row items-center gap-2"
+        className="absolute top-0 left-0 right-0 z-20 bg-premium-white-soft px-6 pt-14 pb-4"
       >
-        <Image
-          source={require("../assets/images/logo.png")}
-          className="w-10 h-10"
-          resizeMode="contain"
-        />
-        <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">
-          MANEVA
-        </H1>
+        <View className="flex-row items-center gap-2">
+          <Image
+            source={require("../assets/images/logo.png")}
+            className="w-10 h-10"
+            resizeMode="contain"
+          />
+          <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">
+            MANEVA
+          </H1>
+        </View>
       </Animated.View>
 
       <ScrollView
-        contentContainerClassName="flex-grow px-8 pt-28 pb-10"
+        contentContainerClassName="flex-grow px-8 pt-32 pb-0"
         showsVerticalScrollIndicator={false}
       >
         {/* Título de la pantalla */}
@@ -211,26 +213,58 @@ export default function RegisterScreen() {
         {/* Botonera */}
         <Animated.View
           entering={FadeInUp.delay(400).duration(800).springify()}
-          className="mt-8 gap-6 mb-6"
+          className="mt-8 mb-0 relative -mx-8 px-8"
         >
-          <Button onPress={handleSubmit(onSubmit)} loading={loading} size="sm">
-            Crear cuenta
-          </Button>
+          <Image
+            source={require("../assets/images/onboarding/flores.png")}
+            className="absolute w-60 h-60 opacity-35"
+            resizeMode="contain"
+            style={{
+              bottom: -12,
+              left: 0,
+              zIndex: 0,
+              transform: [{ rotate: "-90deg" }],
+            }}
+          />
 
-          <View className="flex-row justify-center items-center">
-            <Body className="font-manrope text-premium-gray">
-              ¿Ya tienes cuenta?{" "}
-            </Body>
-            <Link href="/login" asChild>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                className="pb-1 border-b border-premium-black"
+          <View className="relative z-10 gap-6">
+            <Button
+              onPress={handleSubmit(onSubmit)}
+              loading={loading}
+              size="sm"
+            >
+              Crear cuenta
+            </Button>
+
+            <View className="flex-row justify-center items-center">
+              <Body
+                className="font-manrope text-premium-gray"
+                style={{
+                  textShadowColor: "#FFFFFF",
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 2,
+                }}
               >
-                <Caption className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]">
-                  Inicia sesión
-                </Caption>
-              </TouchableOpacity>
-            </Link>
+                ¿Ya tienes cuenta?{" "}
+              </Body>
+              <Link href="/login" asChild>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  className="pb-1 border-b border-premium-black"
+                >
+                  <Caption
+                    className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]"
+                    style={{
+                      textShadowColor: "#FFFFFF",
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: 2,
+                    }}
+                  >
+                    Inicia sesión
+                  </Caption>
+                </TouchableOpacity>
+              </Link>
+            </View>
           </View>
         </Animated.View>
       </ScrollView>
