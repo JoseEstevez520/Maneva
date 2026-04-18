@@ -1,9 +1,12 @@
-import { supabase } from '@/lib/supabase'
+import { supabase } from "@/lib/supabase";
 
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) throw error
-  return data
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw error;
+  return data;
 }
 
 export async function signUp(
@@ -15,29 +18,34 @@ export async function signUp(
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, phone: phone ?? '' } },
-  })
-  if (error) throw error
-  return data
+    options: { data: { full_name: fullName, phone: phone ?? "" } },
+  });
+  if (error) throw error;
+  return data;
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  if (error) throw error
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+}
+
+export async function deleteMyAccount() {
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) throw error;
 }
 
 export async function getSession() {
-  const { data, error } = await supabase.auth.getSession()
-  if (error) throw error
-  return data.session
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  return data.session;
 }
 
 export async function getProfile(userId: string) {
   const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-  if (error) throw error
-  return data
+    .from("user_profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  if (error) throw error;
+  return data;
 }

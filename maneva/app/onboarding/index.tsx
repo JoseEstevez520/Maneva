@@ -1,46 +1,60 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, FlatList, useWindowDimensions, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity, Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
+import {
+    FlatList,
+    Image,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
+} from "react-native";
+import Animated, {
+    useAnimatedStyle,
+    withSpring,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Dot = ({ isActive }: { isActive: boolean }) => {
   const animatedStyle = useAnimatedStyle(() => {
     return {
       width: withSpring(isActive ? 24 : 8),
-      backgroundColor: isActive ? '#000000' : '#E5E5E5'
+      backgroundColor: isActive ? "#000000" : "#E5E5E5",
     };
   });
-  
+
   return (
-    <Animated.View 
+    <Animated.View
       style={[
         { height: 8, borderRadius: 4, marginHorizontal: 4 },
-        animatedStyle
-      ]} 
+        animatedStyle,
+      ]}
     />
   );
 };
 
 const slides = [
   {
-    id: '1',
-    title: 'Tu peluquería, a un toque',
-    description: 'Reserva en segundos con los mejores profesionales de tu zona.',
-    image: require('../../assets/images/onboarding/slide1.png'),
+    id: "1",
+    title: "Tu peluquería, a un toque",
+    description:
+      "Reserva en segundos con los mejores profesionales de tu zona.",
+    image: require("../../assets/images/onboarding/slide1.png"),
   },
   {
-    id: '2',
-    title: 'Elige quién te atiende',
-    description: 'Conoce a nuestro equipo de estilistas y lee reseñas reales.',
-    image: require('../../assets/images/onboarding/slide2.png'),
+    id: "2",
+    title: "Elige quién te atiende",
+    description: "Conoce a nuestro equipo de estilistas y lee reseñas reales.",
+    image: require("../../assets/images/onboarding/slide2.png"),
   },
   {
-    id: '3',
-    title: 'Ofertas exclusivas',
-    description: 'Accede a campañas especiales y descuentos solo en tus salones favoritos.',
-    image: require('../../assets/images/onboarding/slide3.png'),
+    id: "3",
+    title: "Ofertas exclusivas",
+    description:
+      "Accede a campañas especiales y descuentos solo en tus salones favoritos.",
+    image: require("../../assets/images/onboarding/slide3.png"),
   },
 ];
 
@@ -51,8 +65,8 @@ export default function OnboardingScreen() {
   const slidesRef = useRef<FlatList>(null);
 
   const completeOnboarding = async () => {
-    await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-    router.replace('/(tabs)');
+    await AsyncStorage.setItem("hasSeenOnboarding", "true");
+    router.replace("/onboarding/location");
   };
 
   const scrollToNext = () => {
@@ -63,7 +77,9 @@ export default function OnboardingScreen() {
     }
   };
 
-  const updateCurrentSlideIndex = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const updateCurrentSlideIndex = (
+    e: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
     const contentOffsetX = e.nativeEvent.contentOffset.x;
     const newIndex = Math.round(contentOffsetX / width);
     setCurrentIndex(newIndex);
@@ -74,7 +90,9 @@ export default function OnboardingScreen() {
       {/* Header con botón Saltar */}
       <View className="flex-row justify-end px-6 pt-4 pb-2">
         <TouchableOpacity onPress={completeOnboarding}>
-          <Text className="text-premium-gray font-manrope-medium text-base">Saltar</Text>
+          <Text className="text-premium-gray font-manrope-medium text-base">
+            Saltar
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -90,8 +108,8 @@ export default function OnboardingScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={{ width }} className="items-center px-8">
-            <Image 
-              source={item.image} 
+            <Image
+              source={item.image}
               className="w-full h-80 rounded-premium-xl mt-4 mb-10 border-4 border-white shadow-premium-soft"
               resizeMode="cover"
             />
@@ -112,13 +130,13 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           className="w-full bg-premium-black h-14 rounded-premium-xl items-center justify-center flex-row shadow-premium-black"
           onPress={scrollToNext}
           activeOpacity={0.8}
         >
           <Text className="text-white font-manrope-semibold text-lg tracking-wide">
-            {currentIndex === slides.length - 1 ? 'Empezar' : 'Siguiente'}
+            {currentIndex === slides.length - 1 ? "Empezar" : "Siguiente"}
           </Text>
         </TouchableOpacity>
       </View>
