@@ -128,8 +128,8 @@ export default function RootLayout() {
             return;
           }
 
-          // Onboarding completo — redirigir al home desde pantallas de auth
-          if (isAuthGroup) {
+          // Onboarding completo — redirigir al home desde pantallas de auth o raíz
+          if (isAuthGroup || segments.length === 0) {
             router.replace("/(tabs)");
           }
         } catch (e) {
