@@ -1,32 +1,52 @@
-import React from 'react'
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ScreenLayout } from "@/components/ui/ScreenLayout";
+import { TutorialModal } from "@/components/ui/TutorialModal";
+import { Body, Caption, H1, H2 } from "@/components/ui/Typography";
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-} from 'react-native'
-import { ScreenLayout } from '@/components/ui/ScreenLayout'
-import { IconSearch, IconCalendar, IconLocation, IconStar } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
-import { useNextAppointment } from '@/hooks/useAppointments'
-import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
-import { useActiveCampaigns } from '@/hooks/useCampaigns'
-import { useRouter } from 'expo-router'
-import { H1, H2, Body, Caption } from '@/components/ui/Typography'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+    IconCalendar,
+    IconLocation,
+    IconSearch,
+    IconStar,
+} from "@/components/ui/icons";
+import { Colors } from "@/constants/theme";
+import { useNextAppointment } from "@/hooks/useAppointments";
+import { useActiveCampaigns } from "@/hooks/useCampaigns";
+import { useFavoriteSalon, useSalons } from "@/hooks/useSalons";
+import { useRouter } from "expo-router";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type MutableRefObject,
+} from "react";
+import { Image, ScrollView, TouchableOpacity, View } from "react-native";
+
+type AnchorRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type AnchorMap = Record<string, AnchorRect>;
+
+type ContentOffsetMap = Record<string, number>;
 
 // ─── Imagen placeholder (fondo gris) para salones sin cover ───────────────────
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
+const PLACEHOLDER_IMAGE =
+  "https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatAppointmentDate(iso: string): string {
-  const date = new Date(iso)
-  return date.toLocaleString('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const date = new Date(iso);
+  return date.toLocaleString("es-ES", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 // ─── Componentes internos ──────────────────────────────────────────────────────
@@ -35,13 +55,18 @@ function SectionHeader({
   title,
   actionLabel,
   onAction,
+  containerRef,
 }: {
-  title: string
-  actionLabel?: string
-  onAction?: () => void
+  title: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  containerRef?: (node: View | null) => void;
 }) {
   return (
-    <View className="flex-row justify-between items-center mb-[14px]">
+    <View
+      ref={containerRef}
+      className="flex-row justify-between items-center mb-[14px]"
+    >
       <Caption className="font-manrope-extrabold text-[11px] tracking-[2.5px] text-premium-black uppercase">
         {title}
       </Caption>
@@ -53,33 +78,53 @@ function SectionHeader({
         </TouchableOpacity>
       )}
     </View>
-  )
+  );
 }
 
-function SearchBar() {
-  const router = useRouter()
+function SearchBar({ anchorRef }: { anchorRef?: (node: View | null) => void }) {
+  const router = useRouter();
   return (
     <View className="px-5 pt-6 pb-2">
-      <TouchableOpacity 
-        className="flex-row items-center bg-premium-white rounded-2xl px-4 py-[14px] gap-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.1)]"
-        activeOpacity={0.9}
-        onPress={() => router.push('/search')}
-      >
-        <IconSearch color={Colors.premium.gray.DEFAULT} size={20} strokeWidth={2} />
-        <View className="flex-1">
-          <Body className="font-manrope-medium text-[14px] text-premium-gray">
-            Busca una peluquería o servicio
-          </Body>
-        </View>
-      </TouchableOpacity>
+      <View ref={anchorRef}>
+        <TouchableOpacity
+          className="flex-row items-center bg-premium-white rounded-2xl px-4 py-[14px] gap-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.1)]"
+          activeOpacity={0.9}
+          onPress={() => router.push("/search")}
+        >
+          <IconSearch
+            color={Colors.premium.gray.DEFAULT}
+            size={20}
+            strokeWidth={2}
+          />
+          <View className="flex-1">
+            <Body className="font-manrope-medium text-[14px] text-premium-gray">
+              Busca una peluquería o servicio
+            </Body>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
-  )
+  );
+}
+
+type MeasurableNode = {
+  measureInWindow: (
+    callback: (x: number, y: number, width: number, height: number) => void,
+  ) => void;
+};
+
+function setNodeRef(
+  refObject: MutableRefObject<Record<string, MeasurableNode | null>>,
+  key: string,
+  node: MeasurableNode | null,
+) {
+  refObject.current[key] = node;
 }
 
 // ─── Sección B: Próxima Cita ──────────────────────────────────────────────────
 
 function NextAppointmentSection() {
-  const { data: appt, loading } = useNextAppointment()
+  const { data: appt, loading } = useNextAppointment();
 
   return (
     <View className="px-5 mt-7">
@@ -91,7 +136,11 @@ function NextAppointmentSection() {
           <View className="flex-row items-start gap-3">
             <View className="flex-1 gap-1">
               <View className="flex-row items-center gap-1.5 mb-1">
-                <IconCalendar color={Colors.gold.DEFAULT} size={13} strokeWidth={2.5} />
+                <IconCalendar
+                  color={Colors.gold.DEFAULT}
+                  size={13}
+                  strokeWidth={2.5}
+                />
                 <Caption className="font-manrope-extrabold text-[9px] tracking-[1.2px] uppercase text-gold">
                   {formatAppointmentDate(appt.scheduled_at)}
                 </Caption>
@@ -105,28 +154,43 @@ function NextAppointmentSection() {
                 </Body>
               )}
             </View>
-            <Image source={{ uri: PLACEHOLDER_IMAGE }} className="w-20 h-20 rounded-2xl shrink-0" />
+            <Image
+              source={{ uri: PLACEHOLDER_IMAGE }}
+              className="w-20 h-20 rounded-2xl shrink-0"
+            />
           </View>
-          <TouchableOpacity className="border border-premium-black rounded-xl py-3 items-center" activeOpacity={0.7}>
-            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-black">VER DETALLES</Caption>
+          <TouchableOpacity
+            className="border border-premium-black rounded-xl py-3 items-center"
+            activeOpacity={0.7}
+          >
+            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-black">
+              VER DETALLES
+            </Caption>
           </TouchableOpacity>
         </View>
       ) : (
         <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">No tienes citas próximas</Body>
-          <TouchableOpacity className="bg-gold rounded-lg py-2 px-10 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]" activeOpacity={0.85}>
-            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">RESERVAR AHORA</Caption>
+          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+            No tienes citas próximas
+          </Body>
+          <TouchableOpacity
+            className="bg-gold rounded-lg py-2 px-10 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]"
+            activeOpacity={0.85}
+          >
+            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
+              RESERVAR AHORA
+            </Caption>
           </TouchableOpacity>
         </View>
       )}
     </View>
-  )
+  );
 }
 
 // ─── Sección C: Tu Salón ─────────────────────────────────────────────────────
 
 function MySalonSection() {
-  const { data: salon, loading } = useFavoriteSalon()
+  const { data: salon, loading } = useFavoriteSalon();
 
   return (
     <View className="px-5 mt-7">
@@ -139,32 +203,51 @@ function MySalonSection() {
           <View className="flex-1 p-[14px] justify-between">
             <View>
               <View className="flex-row items-center justify-between mb-1">
-                <Body className="font-manrope-bold text-[14px] text-premium-black flex-1 mr-1.5" numberOfLines={1}>
+                <Body
+                  className="font-manrope-bold text-[14px] text-premium-black flex-1 mr-1.5"
+                  numberOfLines={1}
+                >
                   {salon.salons?.name ?? salon.name}
                 </Body>
                 {salon.avgRating !== null && (
                   <View className="flex-row items-center gap-[3px]">
-                    <IconStar color={Colors.gold.DEFAULT} size={11} fill={Colors.gold.DEFAULT} />
-                    <Caption className="font-manrope-extrabold text-[11px] text-premium-black">{salon.avgRating.toFixed(1)}</Caption>
+                    <IconStar
+                      color={Colors.gold.DEFAULT}
+                      size={11}
+                      fill={Colors.gold.DEFAULT}
+                    />
+                    <Caption className="font-manrope-extrabold text-[11px] text-premium-black">
+                      {salon.avgRating.toFixed(1)}
+                    </Caption>
                   </View>
                 )}
               </View>
-              <Caption className="font-manrope-medium text-[10px] text-premium-gray leading-[14px]" numberOfLines={1}>
-                {salon.salons?.description ?? 'Tu salón de confianza'}
+              <Caption
+                className="font-manrope-medium text-[10px] text-premium-gray leading-[14px]"
+                numberOfLines={1}
+              >
+                {salon.salons?.description ?? "Tu salón de confianza"}
               </Caption>
             </View>
-            <TouchableOpacity className="bg-gold rounded-lg py-2 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]" activeOpacity={0.85}>
-              <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">VER SALÓN</Caption>
+            <TouchableOpacity
+              className="bg-gold rounded-lg py-2 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]"
+              activeOpacity={0.85}
+            >
+              <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
+                VER SALÓN
+              </Caption>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
         <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">Aún no tienes un salón favorito</Body>
+          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+            Aún no tienes un salón favorito
+          </Body>
         </View>
       )}
     </View>
-  )
+  );
 }
 
 // ─── Sección D: Disponible Hoy ────────────────────────────────────────────────
@@ -173,24 +256,40 @@ function TodayCard({ name, city }: { name: string; city: string | null }) {
   return (
     <View className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)]">
       <View>
-        <Image source={{ uri: PLACEHOLDER_IMAGE }} className="w-full h-[140px]" />
+        <Image
+          source={{ uri: PLACEHOLDER_IMAGE }}
+          className="w-full h-[140px]"
+        />
         <View className="absolute top-2.5 left-2.5 bg-gold px-2.5 py-1 rounded-lg">
-          <Caption className="font-manrope-extrabold text-[7px] tracking-[1.5px] uppercase text-premium-white">DISPONIBLE HOY</Caption>
+          <Caption className="font-manrope-extrabold text-[7px] tracking-[1.5px] uppercase text-premium-white">
+            DISPONIBLE HOY
+          </Caption>
         </View>
       </View>
       <View className="p-[14px] gap-1.5">
-        <Body className="font-manrope-bold text-[14px] text-premium-black" numberOfLines={1}>{name}</Body>
+        <Body
+          className="font-manrope-bold text-[14px] text-premium-black"
+          numberOfLines={1}
+        >
+          {name}
+        </Body>
         <View className="flex-row items-center gap-1">
-          <IconLocation color={Colors.premium.gray.DEFAULT} size={13} strokeWidth={2} />
-          <Caption className="font-manrope-medium text-[11px] text-premium-gray">{city ?? 'Madrid'}</Caption>
+          <IconLocation
+            color={Colors.premium.gray.DEFAULT}
+            size={13}
+            strokeWidth={2}
+          />
+          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+            {city ?? "Madrid"}
+          </Caption>
         </View>
       </View>
     </View>
-  )
+  );
 }
 
 function AvailableTodaySection() {
-  const { data: salons, loading } = useSalons()
+  const { data: salons, loading } = useSalons();
 
   return (
     <View className="px-5 mt-7">
@@ -204,9 +303,11 @@ function AvailableTodaySection() {
           contentContainerClassName="gap-4 pb-2"
         >
           {salons.length === 0 ? (
-            <Body className="font-manrope-medium text-[13px] text-premium-gray text-center py-4">Sin salones disponibles</Body>
+            <Body className="font-manrope-medium text-[13px] text-premium-gray text-center py-4">
+              Sin salones disponibles
+            </Body>
           ) : (
-            salons.map(salon => (
+            salons.map((salon) => (
               <TodayCard
                 key={salon.id}
                 name={salon.salons?.name ?? salon.name}
@@ -217,39 +318,62 @@ function AvailableTodaySection() {
         </ScrollView>
       )}
     </View>
-  )
+  );
 }
 
 // ─── Sección E: Ofertas Especiales ────────────────────────────────────────────
 
-function OfferCard({ offer, index }: { offer: { id: string; name: string; location_id: string }; index: number }) {
-  const isGold = index % 2 === 0
+function OfferCard({
+  offer,
+  index,
+}: {
+  offer: { id: string; name: string; location_id: string };
+  index: number;
+}) {
+  const isGold = index % 2 === 0;
   return (
     <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row items-center p-[18px] gap-4">
       <View
-        className={`w-12 h-12 rounded-[14px] items-center justify-center shrink-0 ${isGold ? 'bg-gold shadow-[0_6px_12px_rgba(212,175,55,0.45)]' : 'bg-premium-black shadow-[0_4px_8px_rgba(0,0,0,0.3)]'}`}
+        className={`w-12 h-12 rounded-[14px] items-center justify-center shrink-0 ${isGold ? "bg-gold shadow-[0_6px_12px_rgba(212,175,55,0.45)]" : "bg-premium-black shadow-[0_4px_8px_rgba(0,0,0,0.3)]"}`}
       >
-        <H1 className="font-manrope-extrabold text-[18px] text-premium-white">{isGold ? '%' : '🎀'}</H1>
+        <H1 className="font-manrope-extrabold text-[18px] text-premium-white">
+          {isGold ? "%" : "🎀"}
+        </H1>
       </View>
       <View className="flex-1">
-        <Body className="font-manrope-bold text-[13px] text-premium-black leading-[18px]">{offer.name}</Body>
+        <Body className="font-manrope-bold text-[13px] text-premium-black leading-[18px]">
+          {offer.name}
+        </Body>
       </View>
-      <H2 className={`font-manrope-bold text-[22px] ${isGold ? 'text-gold' : 'text-[#E5E5E5]'}`}>›</H2>
+      <H2
+        className={`font-manrope-bold text-[22px] ${isGold ? "text-gold" : "text-[#E5E5E5]"}`}
+      >
+        ›
+      </H2>
     </View>
-  )
+  );
 }
 
-function SpecialOffersSection() {
-  const { data: campaigns, loading } = useActiveCampaigns()
+function SpecialOffersSection({
+  headerAnchorRef,
+}: {
+  headerAnchorRef?: (node: View | null) => void;
+}) {
+  const { data: campaigns, loading } = useActiveCampaigns();
 
   return (
     <View className="px-5 mt-7">
-      <SectionHeader title="OFERTAS ESPECIALES" />
+      <SectionHeader
+        title="OFERTAS ESPECIALES"
+        containerRef={headerAnchorRef}
+      />
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : campaigns.length === 0 ? (
         <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">Sin ofertas activas ahora mismo</Body>
+          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+            Sin ofertas activas ahora mismo
+          </Body>
         </View>
       ) : (
         <View className="gap-[14px]">
@@ -259,33 +383,160 @@ function SpecialOffersSection() {
         </View>
       )}
     </View>
-  )
+  );
 }
 
 // ─── Pantalla principal ────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
+  const scrollRef = useRef<ScrollView | null>(null);
+  const sectionRefs = useRef<Record<string, MeasurableNode | null>>({});
+  const [anchors, setAnchors] = useState<AnchorMap>({});
+  const contentOffsetsRef = useRef<ContentOffsetMap>({});
+
+  const setSectionRef = useCallback(
+    (key: string) => (node: MeasurableNode | null) => {
+      setNodeRef(sectionRefs, key, node);
+    },
+    [],
+  );
+
+  const onSectionLayout = useCallback((key: string, y: number) => {
+    contentOffsetsRef.current[key] = y;
+  }, []);
+
+  const measureAnchors = useCallback(() => {
+    const entries = Object.entries(sectionRefs.current);
+
+    if (entries.length === 0) {
+      return;
+    }
+
+    const nextAnchors: AnchorMap = {};
+    let pending = entries.length;
+
+    entries.forEach(([key, node]) => {
+      if (!node) {
+        pending -= 1;
+        return;
+      }
+
+      node.measureInWindow((x, y, width, height) => {
+        if (width > 0 && height > 0) {
+          nextAnchors[key] = { x, y, width, height };
+        }
+
+        pending -= 1;
+        if (pending === 0) {
+          setAnchors((prev) => {
+            const same =
+              Object.keys(prev).length === Object.keys(nextAnchors).length &&
+              Object.entries(nextAnchors).every(([anchorKey, value]) => {
+                const current = prev[anchorKey];
+                return (
+                  current &&
+                  current.x === value.x &&
+                  current.y === value.y &&
+                  current.width === value.width &&
+                  current.height === value.height
+                );
+              });
+
+            return same ? prev : nextAnchors;
+          });
+        }
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      measureAnchors();
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [measureAnchors]);
+
+  const handleStepChange = useCallback(
+    (anchorKey?: string) => {
+      if (!anchorKey) return;
+
+      const y = contentOffsetsRef.current[anchorKey];
+      if (typeof y !== "number") {
+        measureAnchors();
+        return;
+      }
+
+      const scrollY = Math.max(0, y - 120);
+      scrollRef.current?.scrollTo({ y: scrollY, animated: true });
+
+      setTimeout(() => {
+        measureAnchors();
+      }, 260);
+    },
+    [measureAnchors],
+  );
+
+  const scrollHandlers = useMemo(
+    () => ({
+      onScrollEndDrag: () => measureAnchors(),
+      onMomentumScrollEnd: () => measureAnchors(),
+      onContentSizeChange: () => measureAnchors(),
+    }),
+    [measureAnchors],
+  );
+
   return (
     <ScreenLayout header="brand" scrollable={false}>
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-8"
+        scrollEventThrottle={16}
+        onScrollEndDrag={scrollHandlers.onScrollEndDrag}
+        onMomentumScrollEnd={scrollHandlers.onMomentumScrollEnd}
+        onContentSizeChange={scrollHandlers.onContentSizeChange}
       >
         {/* A: Buscador */}
-        <SearchBar />
+        <View
+          onLayout={(e) => onSectionLayout("search", e.nativeEvent.layout.y)}
+        >
+          <SearchBar anchorRef={setSectionRef("search")} />
+        </View>
 
         {/* B: Próxima Cita */}
-        <NextAppointmentSection />
+        <View
+          ref={setSectionRef("nextAppointment")}
+          onLayout={(e) =>
+            onSectionLayout("nextAppointment", e.nativeEvent.layout.y)
+          }
+        >
+          <NextAppointmentSection />
+        </View>
 
         {/* C: Tu Salón */}
-        <MySalonSection />
+        <View
+          ref={setSectionRef("mySalon")}
+          onLayout={(e) => onSectionLayout("mySalon", e.nativeEvent.layout.y)}
+        >
+          <MySalonSection />
+        </View>
 
         {/* D: Disponible Hoy */}
         <AvailableTodaySection />
 
         {/* E: Ofertas Especiales */}
-        <SpecialOffersSection />
+        <View
+          onLayout={(e) =>
+            onSectionLayout("specialOffers", e.nativeEvent.layout.y)
+          }
+        >
+          <SpecialOffersSection
+            headerAnchorRef={setSectionRef("specialOffers")}
+          />
+        </View>
       </ScrollView>
+      <TutorialModal anchors={anchors} onStepChange={handleStepChange} />
     </ScreenLayout>
-  )
+  );
 }

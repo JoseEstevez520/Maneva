@@ -1,22 +1,22 @@
+import { Stack, useRouter, useSegments } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import "react-native-reanimated";
+import "../global.css";
+
+import { supabase } from "@/lib/supabase";
+import { getUserPreference } from "@/services/users.service";
+import { useAuthStore } from "@/store/authStore";
+import {
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
+  useFonts,
+} from "@expo-google-fonts/manrope";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import '../global.css';
-
-import { 
-  useFonts, 
-  Manrope_400Regular, 
-  Manrope_500Medium, 
-  Manrope_600SemiBold, 
-  Manrope_700Bold, 
-  Manrope_800ExtraBold 
-} from '@expo-google-fonts/manrope';
-import * as SplashScreen from 'expo-splash-screen';
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/authStore';
-
+import * as SplashScreen from "expo-splash-screen";
 
 // Evitar que el SplashScreen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
@@ -42,56 +42,126 @@ export default function RootLayout() {
     }
   }, [loaded, error]);
 
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      const seen = await AsyncStorage.getItem("onboarding_seen");
 
-useEffect(() => {
-  const checkOnboarding = async () => {
-    const seen = await AsyncStorage.getItem("onboarding_seen");
+      if (seen === "true") {
+        setHasSeenOnboarding(true);
+      }
 
-    if (seen === "true") {
-      setHasSeenOnboarding(true);
-    }
+      setCheckedOnboarding(true);
+    };
 
-    setCheckedOnboarding(true);
-  };
-
-  checkOnboarding();
-}, []);
-
+    checkOnboarding();
+  }, []);
 
   // Auth Guard — escucha cambios de sesión y redirige
   useEffect(() => {
-  if (!checkedOnboarding) return;
+    let isMounted = true;
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      const inAuthScreen =
-        segments[0] === 'login' || segments[0] === 'register';
+    const checkState = async (session: any) => {
+      // Evitar redirigir antes de que las fuentes y el layout base estén cargados
+      if (!isMounted || !loaded) return;
 
-      const inOnboarding = segments[0] === 'onboarding';
-
-      if (!hasSeenOnboarding && !inOnboarding) {
-        router.replace('/onboarding' as any);
-        return;
-      }
+      // Grupos de autenticación básicos
+      const isLoginOrRegister =
+        segments[0] === "login" || segments[0] === "register";
+      // Todas las pantallas de antes de ver el contenido principal
+      const isAuthGroup =
+        isLoginOrRegister ||
+        segments[0] === "onboarding" ||
+        segments[0] === "welcome";
+      const isLocationSetup =
+        segments[0] === "onboarding" && segments[1] === "location";
+      const isPreferencesSetup =
+        segments[0] === "onboarding" && segments[1] === "preferences";
 
       if (session?.user) {
         setUser(session.user);
 
-        if (inAuthScreen) {
-          router.replace('/(tabs)');
+        try {
+          // Primero respetamos el onboarding visual de slides para cuentas nuevas.
+          const hasSeen = await AsyncStorage.getItem("hasSeenOnboarding");
+
+          if (hasSeen !== "true") {
+            if (segments[0] !== "onboarding" || segments[1] === "location") {
+              router.replace("/onboarding");
+            }
+            return;
+          }
+
+          const cityPreference = await getUserPreference(
+            session.user.id,
+            "city",
+          );
+          const localCityFallback = await AsyncStorage.getItem(
+            `onboarding_city_${session.user.id}`,
+          );
+          const hasCityPreference = Boolean(
+            cityPreference?.preference_value?.trim() ||
+            localCityFallback?.trim(),
+          );
+
+          if (!hasCityPreference) {
+            if (!isLocationSetup) {
+              router.replace("/onboarding/location");
+            }
+            return;
+          }
+
+          const servicePreference = await getUserPreference(
+            session.user.id,
+            "service_interest",
+          );
+          const localServicesFallback = await AsyncStorage.getItem(
+            `onboarding_services_${session.user.id}`,
+          );
+          const hasServicePreference = Boolean(
+            servicePreference?.preference_value?.trim() ||
+            (localServicesFallback && localServicesFallback !== "[]"),
+          );
+
+          if (!hasServicePreference) {
+            if (!isPreferencesSetup) {
+              router.replace("/onboarding/preferences");
+            }
+            return;
+          }
+
+          // Si ya vio onboarding y tiene ciudad, manda al home desde auth screens.
+          if (isAuthGroup) {
+            router.replace("/(tabs)");
+          }
+        } catch (e) {
+          console.error("Error reading Onboarding flag:", e);
         }
       } else {
         clearAuth();
 
-        if (!inAuthScreen) {
-          router.replace('/login');
+        // Si NO está logueado, redirige a la pantalla de bienvenida
+        if (!isAuthGroup) {
+          router.replace("/welcome");
         }
       }
-    }
-  );
+    };
 
-  return () => subscription.unsubscribe();
-}, [segments, checkedOnboarding, hasSeenOnboarding]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      checkState(session);
+    });
+
+    // Initial check en caso de que cambien los segments o al cargar por primera vez
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      checkState(session);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [segments, loaded, clearAuth, router, setUser]);
 
   if (!loaded && !error) {
     return null;
@@ -101,11 +171,29 @@ useEffect(() => {
     <>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="onboarding/index"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="onboarding/location"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="onboarding/preferences"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="search" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="search"
+          options={{ headerShown: false, presentation: "fullScreenModal" }}
+        />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
       </Stack>
       <StatusBar style="dark" />
     </>
