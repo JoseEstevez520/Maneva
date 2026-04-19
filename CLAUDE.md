@@ -17,7 +17,7 @@ Es la única fuente de verdad del proyecto.
 | React Hook Form + Zod | latest | Formularios y validación |
 | date-fns | latest | Fechas y horas |
 | lucide-react-native | latest | Iconos |
-| @react-native-async-storage/async-storage | latest | Persistencia de sesión |
+| @react-native-async-storage/async-storage | latest | Persistencia de sesión (usar vía `@/lib/storage`) |
 
 ---
 
@@ -102,18 +102,20 @@ El fichero `.env` nunca va al repositorio. El `.env.example` sí.
 ```typescript
 // src/lib/supabase.ts — ÚNICA instancia en todo el proyecto
 import { createClient } from '@supabase/supabase-js'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { safeStorage } from '@/lib/storage'
 import { Database } from '@/types/database.types'
+
+const isBrowser = typeof window !== 'undefined'
 
 export const supabase = createClient<Database>(
   process.env.EXPO_PUBLIC_SUPABASE_URL!,
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
   {
     auth: {
-      storage: AsyncStorage,       // Persiste sesión entre cierres de app
-      autoRefreshToken: true,      // Renueva el token automáticamente
-      persistSession: true,        // Mantiene la sesión activa
-      detectSessionInUrl: false,   // No es una web
+      storage: safeStorage as any,  // Seguro para SSR y Native
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: isBrowser,
     },
   }
 )
