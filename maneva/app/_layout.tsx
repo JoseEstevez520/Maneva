@@ -5,6 +5,7 @@ import "react-native-reanimated";
 import "../global.css";
 
 import { supabase } from "@/lib/supabase";
+import { safeStorage } from "@/lib/storage";
 import { getUserPreference } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -15,7 +16,6 @@ import {
   Manrope_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/manrope";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 
 // Evitar que el SplashScreen se oculte automáticamente
@@ -44,7 +44,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     const checkOnboarding = async () => {
-      const seen = await AsyncStorage.getItem("onboarding_seen");
+      const seen = await safeStorage.getItem("onboarding_seen");
 
       if (seen === "true") {
         setHasSeenOnboarding(true);
@@ -61,13 +61,10 @@ export default function RootLayout() {
     let isMounted = true;
 
     const checkState = async (session: any) => {
-      // Evitar redirigir antes de que las fuentes y el layout base estén cargados
       if (!isMounted || !loaded) return;
 
-      // Grupos de autenticación básicos
       const isLoginOrRegister =
         segments[0] === "login" || segments[0] === "register";
-      // Todas las pantallas de antes de ver el contenido principal
       const isAuthGroup =
         isLoginOrRegister ||
         segments[0] === "onboarding" ||
@@ -81,8 +78,8 @@ export default function RootLayout() {
         setUser(session.user);
 
         try {
-          // Primero respetamos el onboarding visual de slides para cuentas nuevas.
-          const hasSeen = await AsyncStorage.getItem("hasSeenOnboarding");
+          // Verificar si el usuario ya vio los slides de onboarding
+          const hasSeen = await safeStorage.getItem("hasSeenOnboarding");
 
           if (hasSeen !== "true") {
             if (segments[0] !== "onboarding" || segments[1] === "location") {
@@ -91,16 +88,17 @@ export default function RootLayout() {
             return;
           }
 
+          // Verificar preferencia de ciudad
           const cityPreference = await getUserPreference(
             session.user.id,
             "city",
           );
-          const localCityFallback = await AsyncStorage.getItem(
+          const localCityFallback = await safeStorage.getItem(
             `onboarding_city_${session.user.id}`,
           );
           const hasCityPreference = Boolean(
             cityPreference?.preference_value?.trim() ||
-            localCityFallback?.trim(),
+              localCityFallback?.trim(),
           );
 
           if (!hasCityPreference) {
@@ -110,16 +108,17 @@ export default function RootLayout() {
             return;
           }
 
+          // Verificar preferencia de servicios
           const servicePreference = await getUserPreference(
             session.user.id,
             "service_interest",
           );
-          const localServicesFallback = await AsyncStorage.getItem(
+          const localServicesFallback = await safeStorage.getItem(
             `onboarding_services_${session.user.id}`,
           );
           const hasServicePreference = Boolean(
             servicePreference?.preference_value?.trim() ||
-            (localServicesFallback && localServicesFallback !== "[]"),
+              (localServicesFallback && localServicesFallback !== "[]"),
           );
 
           if (!hasServicePreference) {
@@ -129,7 +128,7 @@ export default function RootLayout() {
             return;
           }
 
-          // Si ya vio onboarding y tiene ciudad, manda al home desde auth screens.
+          // Onboarding completo — redirigir al home desde pantallas de auth
           if (isAuthGroup) {
             router.replace("/(tabs)");
           }
@@ -139,7 +138,6 @@ export default function RootLayout() {
       } else {
         clearAuth();
 
-        // Si NO está logueado, redirige a la pantalla de bienvenida
         if (!isAuthGroup) {
           router.replace("/welcome");
         }
@@ -152,7 +150,6 @@ export default function RootLayout() {
       checkState(session);
     });
 
-    // Initial check en caso de que cambien los segments o al cargar por primera vez
     supabase.auth.getSession().then(({ data: { session } }) => {
       checkState(session);
     });

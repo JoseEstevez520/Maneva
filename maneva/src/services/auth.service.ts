@@ -15,14 +15,25 @@ export async function signUp(
   fullName: string,
   phone?: string,
 ) {
+  // Separar nombre y apellido para el trigger de la base de datos (tabla users)
+  const [firstName, ...lastNameParts] = fullName.split(" ");
+  const lastName = lastNameParts.join(" ") || "";
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, phone: phone ?? "" } },
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: fullName,
+        phone: phone ?? "",
+      },
+    },
   });
   if (error) throw error;
 
-  // Si Supabase no devuelve sesion al registrarse, intentamos iniciar sesion
+  // Si Supabase no devuelve sesión al registrarse, iniciamos sesión
   // con las mismas credenciales para garantizar login inmediato.
   if (!data.session) {
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -59,7 +70,7 @@ export async function getSession() {
 
 export async function getProfile(userId: string) {
   const { data, error } = await supabase
-    .from("user_profiles")
+    .from("users")
     .select("*")
     .eq("id", userId)
     .single();

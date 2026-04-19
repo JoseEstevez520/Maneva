@@ -20,7 +20,7 @@ export async function getReviewsBySalon(locationId: string): Promise<Review[]> {
     .from('reviews')
     .select(`
       *,
-      user_profiles (
+      users (
         first_name,
         last_name
       )

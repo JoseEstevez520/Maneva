@@ -1,19 +1,19 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { safeStorage } from "@/lib/storage";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
-    FlatList,
-    Image,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  FlatList,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    withSpring,
+  useAnimatedStyle,
+  withSpring,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -65,7 +65,7 @@ export default function OnboardingScreen() {
   const slidesRef = useRef<FlatList>(null);
 
   const completeOnboarding = async () => {
-    await AsyncStorage.setItem("hasSeenOnboarding", "true");
+    await safeStorage.setItem("hasSeenOnboarding", "true");
     router.replace("/onboarding/location");
   };
 

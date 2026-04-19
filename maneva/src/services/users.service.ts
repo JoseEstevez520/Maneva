@@ -1,17 +1,19 @@
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database.types";
 
-type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
+// users → identidad básica (nombre, teléfono, idioma)
+type UserBasicInfo = Database["public"]["Tables"]["users"]["Row"];
+// user_preferences → preferencias del onboarding (ciudad, servicios, etc.)
 type UserPreference = Database["public"]["Tables"]["user_preferences"]["Row"];
 
 export async function getUserProfile(
   userId: string,
-): Promise<UserProfile | null> {
+): Promise<UserBasicInfo | null> {
   const { data, error } = await supabase
-    .from("user_profiles")
+    .from("users")
     .select("*")
-    .eq("user_id", userId)
-    .maybeSingle(); // No lanza error si el perfil aún no existe
+    .eq("id", userId)
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -19,14 +21,12 @@ export async function getUserProfile(
 
 export async function updateUserProfile(
   userId: string,
-  updates: Partial<
-    Omit<UserProfile, "id" | "user_id" | "created_at" | "updated_at">
-  >,
-): Promise<UserProfile> {
+  updates: Partial<Omit<UserBasicInfo, "id" | "created_at" | "updated_at">>,
+): Promise<UserBasicInfo> {
   const { data, error } = await supabase
-    .from("user_profiles")
+    .from("users")
     .update(updates)
-    .eq("user_id", userId)
+    .eq("id", userId)
     .select()
     .single();
 
