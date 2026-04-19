@@ -5,6 +5,10 @@ import { Database } from "@/types/database.types";
 type UserBasicInfo = Database["public"]["Tables"]["users"]["Row"];
 // user_preferences → preferencias del onboarding (ciudad, servicios, etc.)
 type UserPreference = Database["public"]["Tables"]["user_preferences"]["Row"];
+// user_profiles → estilo personal (tipo de pelo, estilos preferidos, modo simple)
+type UserStyleProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
+// languages → idiomas disponibles
+type Language = Database["public"]["Tables"]["languages"]["Row"];
 
 export async function getUserProfile(
   userId: string,
@@ -91,6 +95,57 @@ export async function setUserPreference(
   if (updateError) {
     throw updateError;
   }
+}
+
+// Devuelve todos los valores de una preferencia multi-valor (ej: service_interest)
+export async function getAllUserPreferences(
+  userId: string,
+  preferenceKey: string,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("user_preferences")
+    .select("preference_value")
+    .eq("user_id", userId)
+    .eq("preference_key", preferenceKey);
+
+  if (error) throw error;
+  return (data ?? []).map((r) => r.preference_value ?? "").filter(Boolean);
+}
+
+export async function getLanguages(): Promise<Language[]> {
+  const { data, error } = await supabase
+    .from("languages")
+    .select("*")
+    .order("name");
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getUserStyleProfile(
+  userId: string,
+): Promise<UserStyleProfile | null> {
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertUserStyleProfile(
+  userId: string,
+  updates: Partial<
+    Omit<UserStyleProfile, "id" | "user_id" | "created_at" | "updated_at">
+  >,
+): Promise<void> {
+  const { error } = await supabase
+    .from("user_profiles")
+    .upsert({ user_id: userId, ...updates }, { onConflict: "user_id" });
+
+  if (error) throw error;
 }
 
 export async function replaceUserPreferences(
