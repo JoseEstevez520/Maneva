@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { safeStorage } from "@/lib/storage";
 import Slider from "@react-native-community/slider";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
@@ -326,9 +326,9 @@ export default function LocationOnboardingScreen() {
       ]);
 
       // Persistimos localmente para que el guard permita entrar incluso con fallo remoto.
-      await AsyncStorage.setItem(localCityKey, finalCity);
+      await safeStorage.setItem(localCityKey, finalCity);
 
-      await AsyncStorage.setItem("hasSeenOnboarding", "true");
+      await safeStorage.setItem("hasSeenOnboarding", "true");
 
       if (!citySavedRemotely) {
         console.warn(

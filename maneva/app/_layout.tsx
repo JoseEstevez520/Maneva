@@ -44,7 +44,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     const checkOnboarding = async () => {
-      const seen = await safeStorage.getItem("onboarding_seen");
+      const seen = await safeStorage.getItem("hasSeenOnboarding");
 
       if (seen === "true") {
         setHasSeenOnboarding(true);

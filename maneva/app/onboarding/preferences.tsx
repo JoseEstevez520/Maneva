@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { safeStorage } from "@/lib/storage";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
@@ -76,7 +76,7 @@ export default function PreferencesOnboardingScreen() {
       const servicesSavedRemotely = remoteSave[0].status === "fulfilled";
 
       // Fallback local para no bloquear la entrada al home si falla RLS/policies.
-      await AsyncStorage.setItem(localServicesKey, JSON.stringify(selected));
+      await safeStorage.setItem(localServicesKey, JSON.stringify(selected));
 
       if (!servicesSavedRemotely) {
         console.warn(
