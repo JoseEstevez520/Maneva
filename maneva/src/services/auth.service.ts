@@ -43,6 +43,20 @@ export async function signUp(
     if (signInError) throw signInError;
   }
 
+  // El trigger de Supabase crea la fila en public.users con first_name y last_name
+  // pero normalmente no copia el teléfono desde raw_user_meta_data.
+  // Lo escribimos explícitamente para garantizar que quede guardado.
+  if (phone?.trim()) {
+    const { data: sessionData } = await supabase.auth.getUser();
+    if (sessionData?.user) {
+      await supabase
+        .from("users")
+        .update({ phone: phone.trim() })
+        .eq("id", sessionData.user.id);
+      // Fallo silencioso: no bloqueamos el registro si esta escritura falla.
+    }
+  }
+
   return data;
 }
 

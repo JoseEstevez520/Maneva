@@ -31,6 +31,18 @@ export async function updateUserProfile(
     .single();
 
   if (error) throw error;
+
+  // Detectar si el DB devuelve un valor distinto al enviado (trigger sobrescribiendo).
+  if (__DEV__) {
+    for (const key of Object.keys(updates) as (keyof typeof updates)[]) {
+      if (data[key] !== (updates as Record<string, unknown>)[key]) {
+        console.warn(
+          `[updateUserProfile] Campo "${String(key)}" no se guardó. Enviado: ${(updates as Record<string, unknown>)[key]}, DB devolvió: ${data[key]}. Posible trigger o RLS bloqueando la escritura.`,
+        );
+      }
+    }
+  }
+
   return data;
 }
 
