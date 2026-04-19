@@ -1,3 +1,4 @@
+import React, { useRef, useState, useCallback, useEffect, useMemo, MutableRefObject } from 'react'
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ScreenLayout } from "@/components/ui/ScreenLayout";
 import { TutorialModal } from "@/components/ui/TutorialModal";
@@ -8,15 +9,12 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native'
-import { ScreenLayout } from '@/components/ui/ScreenLayout'
 import { IconSearch, IconCalendar, IconLocation, IconStar } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useNextAppointment } from '@/hooks/useAppointments'
 import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
 import { useActiveCampaigns } from '@/hooks/useCampaigns'
 import { useRouter } from 'expo-router'
-import { H1, H2, Body, Caption } from '@/components/ui/Typography'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 // ─── Imagen placeholder (fondo gris) para salones sin cover ───────────────────
 const PLACEHOLDER_IMAGE =
@@ -96,6 +94,10 @@ type MeasurableNode = {
     callback: (x: number, y: number, width: number, height: number) => void,
   ) => void;
 };
+
+type AnchorMap = Record<string, { x: number; y: number; width: number; height: number }>;
+
+type ContentOffsetMap = Record<string, number>;
 
 function setNodeRef(
   refObject: MutableRefObject<Record<string, MeasurableNode | null>>,
@@ -325,7 +327,7 @@ function OfferCard({ offer, index }: { offer: { id: string; name: string; locati
         <Body className="font-manrope-bold text-[13px] text-premium-black leading-[18px]">{offer.name}</Body>
       </View>
       <H2 className={`font-manrope-bold text-[22px] ${isGold ? 'text-gold' : 'text-[#E5E5E5]'}`}>›</H2>
-    </View>
+    </TouchableOpacity>
   )
 }
 
@@ -345,9 +347,9 @@ function SpecialOffersSection() {
         <View className="gap-[14px]">
           {campaigns.map((campaign, index) => (
             <OfferCard key={campaign.id} offer={campaign} index={index} />
-          </View>
-        ))}
-      </ScrollView>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -497,9 +499,7 @@ export default function HomeScreen() {
             onSectionLayout("specialOffers", e.nativeEvent.layout.y)
           }
         >
-          <SpecialOffersSection
-            headerAnchorRef={setSectionRef("specialOffers")}
-          />
+          <SpecialOffersSection />
         </View>
       </ScrollView>
       <TutorialModal anchors={anchors} onStepChange={handleStepChange} />
