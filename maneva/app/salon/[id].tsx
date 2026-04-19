@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   View,
   ScrollView,
@@ -8,233 +8,341 @@ import {
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { IconArrowLeft, IconStar, IconPhone, IconLocationOn, IconClock } from '@/components/ui/icons'
+import {
+  IconStar,
+  IconPhone,
+  IconLocation,
+  IconClock,
+  IconClose,
+  IconNorthWest,
+} from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useSalon } from '@/hooks/useSalons'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { useMediaUrl } from '@/hooks/useMediaUrl'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { ErrorMessage } from '@/components/ui/ErrorMessage'
+import { Button } from '@/components/ui/Button'
+
+const PLACEHOLDER_IMAGE =
+  'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=600&h=400&fit=crop&q=80'
 
 export default function SalonDetailScreen() {
-  const { id } = useLocalSearchParams() as { id: string }
+  const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const { data: salon, loading } = useSalon(id)
+  const { data: salon, loading, error } = useSalon(id || '')
+  const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null)
 
-  if (loading) {
+  if (loading)
     return (
       <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
         <LoadingSpinner />
       </SafeAreaView>
     )
-  }
 
-  if (!salon) {
+  if (error || !salon)
     return (
       <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
-        <Body className="text-premium-gray">Salón no encontrado</Body>
+        <ErrorMessage message={error || 'Salón no encontrado'} />
       </SafeAreaView>
     )
-  }
 
-  const salonName = salon.salons?.name ?? salon.name ?? 'Salón'
-  const headerImageUrl = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=500&h=300&fit=crop&q=80'
+  const salonName = salon.salons?.name || 'Salón'
+  const avgRating = salon.avgRating ?? 0
+  const reviewCount = salon.reviews?.length ?? 0
+  const hasEcoBadge = (salon.eco_labels?.length ?? 0) > 0
+  const services = salon.services ?? []
+  const employees = salon.employees ?? []
+  const campaigns = salon.campaigns ?? []
+  const reviews = salon.reviews ?? []
 
   return (
     <SafeAreaView className="flex-1 bg-premium-white" edges={['top']}>
-      {/* Header con botón de volver */}
-      <View className="absolute top-0 left-0 z-10 pt-4 px-5">
+      {/* Header Button */}
+      <View className="absolute top-0 left-0 right-0 z-10 flex-row items-center justify-between px-5 pt-4 pb-2">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 bg-premium-white rounded-full items-center justify-center shadow-md"
+          className="w-10 h-10 bg-premium-white rounded-full items-center justify-center shadow-sm"
         >
-          <IconArrowLeft size={20} color={Colors.premium.black} strokeWidth={2} />
+          <IconClose size={20} color={Colors.premium.black} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-40">
-        {/* Imagen de Portada */}
-        <Image
-          source={{ uri: headerImageUrl }}
-          className="w-full h-56 bg-[#F3F4F6]"
-        />
-
-        {/* Info Principal */}
-        <View className="px-5 pt-6 pb-6 border-b border-[#F3F4F6]">
-          <View className="flex-row items-start justify-between mb-3">
-            <View className="flex-1">
-              <H1 className="font-manrope-extrabold text-[24px] text-premium-black mb-1">
-                {salonName}
-              </H1>
-              {salon.avgRating !== null && (
-                <View className="flex-row items-center gap-2">
-                  <IconStar size={14} fill={Colors.gold.DEFAULT} color={Colors.gold.DEFAULT} />
-                  <Body className="font-manrope-bold text-[13px] text-premium-black">
-                    {salon.avgRating.toFixed(1)} ({salon.reviews?.length ?? 0} reseñas)
-                  </Body>
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Ubicación y Teléfono */}
-          <View className="gap-2">
-            {salon.address && (
-              <View className="flex-row items-center gap-2">
-                <IconLocationOn size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-                <Caption className="font-manrope-medium text-[12px] text-premium-gray flex-1">
-                  {salon.address}
-                </Caption>
-              </View>
-            )}
-            {salon.phone && (
-              <View className="flex-row items-center gap-2">
-                <IconPhone size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-                <Caption className="font-manrope-medium text-[12px] text-premium-gray">
-                  {salon.phone}
-                </Caption>
-              </View>
-            )}
-          </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-24">
+        {/* ─── Foto de Portada ─── */}
+        <View className="w-full h-[240px] bg-[#F5F5F5] mt-12">
+          <Image
+            source={{ uri: salon.cover_image || PLACEHOLDER_IMAGE }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
         </View>
 
-        {/* Horarios */}
-        {salon.open_time && (
-          <View className="px-5 py-6 border-b border-[#F3F4F6]">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-3">
-              HORARIOS
+        {/* ─── Información Principal ─── */}
+        <View className="px-5 mt-6 mb-6">
+          {/* Nombre + Eco Badge */}
+          <View className="flex-row items-start justify-between mb-3 gap-3">
+            <View className="flex-1">
+              <H1 className="font-manrope-bold text-[24px] text-premium-black leading-[32px]">
+                {salonName}
+              </H1>
+            </View>
+            {hasEcoBadge && (
+              <View className="bg-[rgba(34,197,94,0.1)] px-2.5 py-1.5 rounded-lg">
+                <Caption className="font-manrope-bold text-[10px] text-green-600">
+                  ♻️ ECO
+                </Caption>
+              </View>
+            )}
+          </View>
+
+          {/* Rating */}
+          <View className="flex-row items-center gap-2 mb-4">
+            <View className="flex-row items-center gap-0.5">
+              {[...Array(Math.round(avgRating))].map((_, i) => (
+                <IconStar
+                  key={i}
+                  color={Colors.gold}
+                  size={16}
+                  fill={Colors.gold}
+                />
+              ))}
+            </View>
+            <Body className="font-manrope-bold text-[14px] text-premium-black">
+              {avgRating.toFixed(1)}
+            </Body>
+            <Caption className="font-manrope-medium text-[12px] text-premium-gray">
+              ({reviewCount} reseñas)
             </Caption>
-            <View className="flex-row items-center gap-2">
-              <IconClock size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-premium-black">
-                {salon.open_time} - {salon.close_time ?? '19:00'}
+          </View>
+
+          {/* Dirección */}
+          {salon.street_address && (
+            <View className="flex-row items-start gap-2 mb-3">
+              <IconLocation
+                color={Colors.premium.gray.DEFAULT}
+                size={16}
+                strokeWidth={2}
+              />
+              <View className="flex-1">
+                <Body className="font-manrope-medium text-[13px] text-premium-gray">
+                  {salon.street_address}
+                </Body>
+                {salon.city && (
+                  <Caption className="font-manrope-medium text-[12px] text-premium-gray">
+                    {salon.city}
+                    {salon.postal_code && `, ${salon.postal_code}`}
+                  </Caption>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Teléfono */}
+          {salon.phone && (
+            <View className="flex-row items-center gap-2 mb-3">
+              <IconPhone
+                color={Colors.premium.gray.DEFAULT}
+                size={16}
+                strokeWidth={2}
+              />
+              <Body className="font-manrope-medium text-[13px] text-premium-gray">
+                {salon.phone}
               </Body>
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Descripción */}
-        {salon.salons?.description && (
-          <View className="px-5 py-6 border-b border-[#F3F4F6]">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-3">
-              ACERCA DE
-            </Caption>
-            <Body className="font-manrope-medium text-[13px] text-premium-gray leading-5">
+          {/* Horario */}
+          {salon.opening_time && salon.closing_time && (
+            <View className="flex-row items-center gap-2 mb-4">
+              <IconClock
+                color={Colors.premium.gray.DEFAULT}
+                size={16}
+                strokeWidth={2}
+              />
+              <Body className="font-manrope-medium text-[13px] text-premium-gray">
+                {salon.opening_time} - {salon.closing_time}
+              </Body>
+            </View>
+          )}
+
+          {/* Descripción */}
+          {salon.salons?.description && (
+            <Body className="font-manrope-medium text-[13px] text-premium-gray leading-[20px]">
               {salon.salons.description}
             </Body>
-          </View>
-        )}
+          )}
+        </View>
 
-        {/* Servicios */}
-        {salon.services && salon.services.length > 0 && (
-          <View className="px-5 py-6 border-b border-[#F3F4F6]">
+        {/* ─── Servicios ─── */}
+        {services.length > 0 && (
+          <View className="px-5 mb-8 border-t border-[#F3F4F6] pt-6">
             <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
               SERVICIOS
             </Caption>
-            {salon.services.map((service: any) => (
-              <View key={service.id} className="flex-row items-center justify-between py-3 border-b border-[#F9FAFB] last:border-0">
-                <View className="flex-1">
-                  <Body className="font-manrope-bold text-[13px] text-premium-black mb-1">
-                    {service.name}
-                  </Body>
-                  {service.description && (
-                    <Caption className="font-manrope-medium text-[11px] text-premium-gray">
-                      {service.description}
-                    </Caption>
-                  )}
-                </View>
-                <Body className="font-manrope-extrabold text-[13px] text-gold ml-4">
-                  €{service.price?.toFixed(2) ?? '0.00'}
-                </Body>
-              </View>
-            ))}
+            <View className="gap-3">
+              {services.map((service) => (
+                <TouchableOpacity
+                  key={service.id}
+                  className="bg-premium-white border border-[#F5F5F5] rounded-lg p-4 active:opacity-70"
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    setExpandedServiceId(
+                      expandedServiceId === service.id ? null : service.id
+                    )
+                  }
+                >
+                  <View className="flex-row items-start justify-between">
+                    <View className="flex-1 pr-3">
+                      <Body className="font-manrope-bold text-[14px] text-premium-black mb-1">
+                        {service.name}
+                      </Body>
+                      {expandedServiceId === service.id && service.description && (
+                        <Caption className="font-manrope-medium text-[12px] text-premium-gray mt-2">
+                          {service.description}
+                        </Caption>
+                      )}
+                    </View>
+                    <Body className="font-manrope-bold text-[14px] text-gold">
+                      {service.price ? `${service.price}€` : '-'}
+                    </Body>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
 
-        {/* Equipo */}
-        {salon.employees && salon.employees.length > 0 && (
-          <View className="px-5 py-6 border-b border-[#F3F4F6]">
+        {/* ─── Equipo de Estilistas ─── */}
+        {employees.length > 0 && (
+          <View className="px-5 mb-8 border-t border-[#F3F4F6] pt-6">
             <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
               NUESTRO EQUIPO
             </Caption>
             <FlatList
-              data={salon.employees}
-              keyExtractor={(emp) => emp.id}
-              scrollEnabled={false}
-              renderItem={({ item: employee }) => (
-                <EmployeeCard employee={employee} />
+              data={employees}
+              renderItem={({ item }) => (
+                <View className="mr-4 items-center gap-2 mb-2">
+                  <View className="w-[100px] h-[100px] rounded-lg bg-[#F5F5F5] overflow-hidden">
+                    <Image
+                      source={{
+                        uri: item.photo_url || PLACEHOLDER_IMAGE,
+                      }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <Body className="font-manrope-bold text-[12px] text-premium-black text-center">
+                    {item.first_name} {item.last_name}
+                  </Body>
+                  {item.position && (
+                    <Caption className="font-manrope-medium text-[10px] text-premium-gray text-center">
+                      {item.position}
+                    </Caption>
+                  )}
+                </View>
               )}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={true}
+              contentContainerStyle={{ paddingRight: 20 }}
             />
           </View>
         )}
 
-        {/* Reseñas */}
-        {salon.reviews && salon.reviews.length > 0 && (
-          <View className="px-5 py-6">
+        {/* ─── Campañas Activas ─── */}
+        {campaigns.length > 0 && (
+          <View className="px-5 mb-8 border-t border-[#F3F4F6] pt-6">
             <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
-              RESEÑAS
+              PROMOCIONES ACTIVAS
             </Caption>
-            {(salon.reviews as any[]).slice(0, 5).map((review, i) => (
-              <View key={i} className="mb-4 p-3 bg-[#F9FAFB] rounded-lg">
-                <View className="flex-row items-center gap-1 mb-2">
-                  {[...Array(5)].map((_, j) => (
-                    <IconStar
-                      key={j}
-                      size={12}
-                      fill={j < (review.rating || 0) ? Colors.gold.DEFAULT : '#D1D5DB'}
-                      color={j < (review.rating || 0) ? Colors.gold.DEFAULT : '#D1D5DB'}
-                    />
-                  ))}
+            <View className="gap-3">
+              {campaigns.slice(0, 3).map((campaign) => (
+                <TouchableOpacity
+                  key={campaign.id}
+                  className="bg-gradient-to-br from-[rgba(212,175,55,0.1)] to-[rgba(212,175,55,0.05)] border border-gold rounded-lg p-4 active:opacity-80"
+                  activeOpacity={0.7}
+                >
+                  <View className="flex-row items-start gap-2">
+                    <IconNorthWest color={Colors.gold} size={16} />
+                    <View className="flex-1">
+                      <Body className="font-manrope-bold text-[14px] text-premium-black">
+                        {campaign.name}
+                      </Body>
+                      {campaign.description && (
+                        <Caption className="font-manrope-medium text-[12px] text-premium-gray mt-2">
+                          {campaign.description}
+                        </Caption>
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ─── Reseñas ─── */}
+        {reviews.length > 0 && (
+          <View className="px-5 mb-8 border-t border-[#F3F4F6] pt-6">
+            <View className="flex-row items-center justify-between mb-4">
+              <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black">
+                RESEÑAS ({reviews.length})
+              </Caption>
+            </View>
+            <View className="gap-3">
+              {reviews.slice(0, 5).map((review) => (
+                <View
+                  key={review.id}
+                  className="bg-premium-white border border-[#F5F5F5] rounded-lg p-4"
+                >
+                  {/* Rating */}
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <View className="flex-row items-center gap-0.5">
+                      {[...Array(Math.round(review.rating))].map((_, i) => (
+                        <IconStar
+                          key={i}
+                          color={Colors.gold}
+                          size={14}
+                          fill={Colors.gold}
+                        />
+                      ))}
+                    </View>
+                    <Caption className="font-manrope-bold text-[11px] text-premium-black">
+                      {review.rating}
+                    </Caption>
+                  </View>
+
+                  {/* Comentario */}
+                  {review.comment && (
+                    <Body className="font-manrope-medium text-[12px] text-premium-gray leading-[18px] mb-2">
+                      {review.comment}
+                    </Body>
+                  )}
+
+                  {/* Fecha */}
+                  {review.created_at && (
+                    <Caption className="font-manrope-medium text-[10px] text-premium-gray">
+                      {new Date(review.created_at).toLocaleDateString('es-ES')}
+                    </Caption>
+                  )}
                 </View>
-                {review.comment && (
-                  <Caption className="font-manrope-medium text-[12px] text-premium-gray">
-                    {review.comment}
-                  </Caption>
-                )}
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         )}
       </ScrollView>
 
-      {/* Botón fijo "Reservar" */}
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white px-5 py-4 border-t border-[#F3F4F6]">
-        <TouchableOpacity
-          className="w-full bg-gold rounded-full py-4 items-center active:opacity-80"
-          onPress={() => {
-            // TODO: Navegar a pantalla de reserva
-            console.log('Reservar en:', salonName)
-          }}
+      {/* ─── Botón Reservar (Fijo) ─── */}
+      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-[#F3F4F6] px-5 py-4">
+        <Button
+          variant="primary"
+          size="lg"
+          onPress={() => router.push(`/booking/${id}`)}
         >
-          <Body className="font-manrope-extrabold text-[15px] text-premium-black">
-            Reservar ahora
-          </Body>
-        </TouchableOpacity>
+          Reservar ahora
+        </Button>
       </View>
     </SafeAreaView>
-  )
-}
-
-function EmployeeCard({ employee }: { employee: any }) {
-  const { url: photoUrl } = useMediaUrl(employee.photo_url, 'employee')
-
-  return (
-    <View className="flex-row items-center gap-3 mb-4 p-3 bg-[#F9FAFB] rounded-lg">
-      <Image
-        source={{ uri: photoUrl }}
-        className="w-12 h-12 rounded-full bg-[#E5E7EB]"
-      />
-      <View className="flex-1">
-        <Body className="font-manrope-bold text-[13px] text-premium-black">
-          {employee.bio ?? 'Estilista'}
-        </Body>
-        {employee.position && (
-          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
-            {employee.position}
-          </Caption>
-        )}
-      </View>
-    </View>
   )
 }

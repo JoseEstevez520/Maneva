@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native'
-import { IconSearch, IconCalendar, IconLocation, IconStar } from '@/components/ui/icons'
+import { IconSearch, IconCalendar, IconLocation, IconStar, IconTag } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useNextAppointment } from '@/hooks/useAppointments'
 import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
@@ -238,9 +238,15 @@ function MySalonSection() {
 
 // ─── Sección D: Disponible Hoy ────────────────────────────────────────────────
 
-function TodayCard({ name, city }: { name: string; city: string | null }) {
+function TodayCard({ id, name, city }: { id: string; name: string; city: string | null }) {
+  const router = useRouter()
+  
   return (
-    <View className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)]">
+    <TouchableOpacity
+      onPress={() => router.push(`/salon/${id}`)}
+      activeOpacity={0.7}
+      className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
+    >
       <View>
         <Image
           source={{ uri: PLACEHOLDER_IMAGE }}
@@ -270,7 +276,7 @@ function TodayCard({ name, city }: { name: string; city: string | null }) {
           </Caption>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -296,6 +302,7 @@ function AvailableTodaySection() {
             salons.map((salon) => (
               <TodayCard
                 key={salon.id}
+                id={salon.id}
                 name={salon.salons?.name ?? salon.name}
                 city={salon.city}
               />
@@ -309,24 +316,85 @@ function AvailableTodaySection() {
 
 // ─── Sección E: Ofertas Especiales ────────────────────────────────────────────
 
-function OfferCard({ offer, index }: { offer: { id: string; name: string; location_id: string }; index: number }) {
-  const isGold = index % 2 === 0
+function OfferCard({ offer }: { offer: any }) {
+  const router = useRouter()
+  
+  const salonName = offer.salon_locations?.salons?.name ?? offer.salon_locations?.name ?? 'Salón'
+  const salonCity = offer.salon_locations?.city ?? 'Madrid'
+  const endDate = new Date(offer.end_date)
+  const typeLabel = offer.type ? offer.type.toUpperCase() : 'OFERTA'
+  const daysRemaining = Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  
+  const formatDate = (date: Date) => {
+    const day = date.getDate()
+    const month = date.toLocaleString('es-ES', { month: 'short' })
+    return `${day} ${month}`
+  }
+  
+  const handlePress = () => {
+    router.push(`/salon/${offer.location_id}`)
+  }
+
   return (
     <TouchableOpacity 
-      className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row items-center p-[18px] gap-4"
+      onPress={handlePress}
+      className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
       activeOpacity={0.7}
     >
-      <View
-        className={`w-12 h-12 rounded-[14px] items-center justify-center shrink-0 ${isGold ? 'bg-gold shadow-[0_6px_12px_rgba(212,175,55,0.45)]' : 'bg-premium-black shadow-[0_4px_8px_rgba(0,0,0,0.3)]'}`}
-      >
-        <H1 className="font-manrope-extrabold text-[18px] text-premium-white">
-          {isGold ? "%" : "🎀"}
-        </H1>
+      {/* Encabezado con tipo de oferta */}
+      <View className="bg-[rgba(212,175,55,0.08)] border-b border-[#F5F5F5] px-5 py-3 flex-row items-center gap-2">
+        <View className="bg-[rgba(212,175,55,0.15)] rounded-lg p-1.5">
+          <IconTag size={12} color={Colors.gold.DEFAULT} strokeWidth={2} />
+        </View>
+        <Caption className="font-manrope-extrabold text-[10px] text-gold tracking-wider">
+          {typeLabel}
+        </Caption>
+        {daysRemaining > 0 && (
+          <Caption className="font-manrope-medium text-[10px] text-premium-gray ml-auto">
+            {daysRemaining} {daysRemaining === 1 ? 'día' : 'días'}
+          </Caption>
+        )}
       </View>
-      <View className="flex-1">
-        <Body className="font-manrope-bold text-[13px] text-premium-black leading-[18px]">{offer.name}</Body>
+
+      {/* Contenido principal */}
+      <View className="p-5 gap-3">
+        {/* Nombre de la campaña */}
+        <Body className="font-manrope-bold text-[15px] text-premium-black leading-[20px]">
+          {offer.name}
+        </Body>
+
+        {/* Salón */}
+        <View className="flex-row items-center gap-2">
+          <IconLocation size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+          <View className="flex-1">
+            <Caption className="font-manrope-extrabold text-[11px] text-premium-black">
+              {salonName}
+            </Caption>
+            <Caption className="font-manrope-medium text-[10px] text-premium-gray">
+              {salonCity}
+            </Caption>
+          </View>
+        </View>
+
+        {/* Período de validez */}
+        <View className="flex-row items-center gap-2">
+          <IconCalendar size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+            Válido hasta {formatDate(endDate)}
+          </Caption>
+        </View>
+
+        {/* Botón de acción */}
+        <TouchableOpacity 
+          className="mt-2 py-3 rounded-lg bg-gold items-center"
+          activeOpacity={0.85}
+          onPress={handlePress}
+        >
+          <Caption className="font-manrope-extrabold text-[10px] tracking-[1.5px] text-premium-black">
+            VER OFERTA
+          </Caption>
+        </TouchableOpacity>
       </View>
-      <H2 className={`font-manrope-bold text-[22px] ${isGold ? 'text-gold' : 'text-[#E5E5E5]'}`}>›</H2>
     </TouchableOpacity>
   )
 }
@@ -345,8 +413,8 @@ function SpecialOffersSection() {
         </View>
       ) : (
         <View className="gap-[14px]">
-          {campaigns.map((campaign, index) => (
-            <OfferCard key={campaign.id} offer={campaign} index={index} />
+          {campaigns.map((campaign) => (
+            <OfferCard key={campaign.id} offer={campaign} />
           ))}
         </View>
       )}

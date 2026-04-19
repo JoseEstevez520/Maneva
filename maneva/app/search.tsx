@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useSalonsWithRating } from '@/hooks/useSalons'
+import { useLocation } from '@/hooks/useLocation'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
@@ -33,32 +34,71 @@ const SERVICES = [
   { id: 'tratamiento', name: 'Tratamiento' },
 ]
 
+const PRICE_RANGES = [
+  { id: 0, label: 'Todas', min: 0, max: Infinity },
+  { id: 1, label: '€ (0-20€)', min: 0, max: 20 },
+  { id: 2, label: '€€ (20-50€)', min: 20, max: 50 },
+  { id: 3, label: '€€€ (50€+)', min: 50, max: Infinity },
+]
+
+const GENDERS = [
+  { id: 'unisex', label: 'Unisex' },
+  { id: 'mujer', label: 'Mujer' },
+  { id: 'hombre', label: 'Hombre' },
+]
+
 interface Filters {
   minRating: number
   selectedServices: string[]
+  priceRange: number
+  gender: string | null
+  maxDistance: number
 }
 
 export default function SearchScreen() {
   const router = useRouter()
   const [query, setQuery] = useState('')
+  const { coords } = useLocation()
   const [filters, setFilters] = useState<Filters>({
     minRating: 0,
     selectedServices: [],
+    priceRange: 0,
+    gender: null,
+    maxDistance: 50,
   })
-  const [visibleModal, setVisibleModal] = useState<'rating' | null>(null)
+  const [visibleModal, setVisibleModal] = useState<'rating' | 'price' | 'gender' | null>(null)
 
   const { data: salons, loading } = useSalonsWithRating()
 
   // Determinar si hay filtros activos
-  const hasActiveFilters = filters.minRating > 0 || filters.selectedServices.length > 0 || query.length > 0
+  const hasActiveFilters = filters.minRating > 0 || filters.selectedServices.length > 0 || filters.priceRange > 0 || filters.gender || query.length > 0
+
+  // Calcular distancia en km
+  const calculateDistance = (lat: number | null, lon: number | null) => {
+    if (!coords || !lat || !lon) return 0
+    const R = 6371
+    const dLat = ((lat - coords.latitude) * Math.PI) / 180
+    const dLon = ((lon - coords.longitude) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((coords.latitude * Math.PI) / 180) *
+        Math.cos((lat * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return Math.round(R * c * 10) / 10
+  }
 
   // Búsqueda y filtrado de salones
   const filteredSalons = useMemo(() => {
-    let result = salons
+    let result = salons.map((salon) => ({
+      ...salon,
+      distance: calculateDistance(salon.latitude ?? null, salon.longitude ?? null),
+    }))
 
     // Si no hay filtros, mostrar todos los salones ordenados por rating
     if (!hasActiveFilters) {
-      return salons.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
+      return result.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
     }
 
     // Filtro de búsqueda por nombre
@@ -75,13 +115,24 @@ export default function SearchScreen() {
       result = result.filter((salon) => (salon.avgRating ?? 0) >= filters.minRating)
     }
 
-    // Filtro de servicios (por ahora solo muestra todos)
+    // Filtro de precio - simplificado
+    // Los servicios se obtienen en query separada
+    if (filters.priceRange > 0) {
+      // Mantener activo el filtro sin aplicar lógica de precio aún
+    }
+
+    // Filtro de género - simplificado
+    if (filters.gender) {
+      // Mantener activo el filtro sin aplicar lógica de género aún
+    }
+
+    // Filtro de servicios
     if (filters.selectedServices.length > 0) {
-      // En el futuro aquí iría la lógica de filtrar por servicios específicos
+      // Mantener activo el filtro sin aplicar lógica de servicios aún
     }
 
     return result.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
-  }, [salons, query, filters, hasActiveFilters])
+  }, [salons, query, filters, hasActiveFilters, coords])
 
   const toggleService = (serviceId: string) => {
     setFilters((prev) => {
@@ -108,6 +159,9 @@ export default function SearchScreen() {
     setFilters({
       minRating: 0,
       selectedServices: [],
+      priceRange: 0,
+      gender: null,
+      maxDistance: 50,
     })
   }
 
@@ -149,6 +203,18 @@ export default function SearchScreen() {
             active={filters.minRating > 0}
             onPress={() => setVisibleModal('rating')}
           />
+          <FilterChip
+            label="Precio"
+            iconTail="expand_more"
+            active={filters.priceRange > 0}
+            onPress={() => setVisibleModal('price')}
+          />
+          <FilterChip
+            label="Género"
+            iconTail="expand_more"
+            active={filters.gender !== null}
+            onPress={() => setVisibleModal('gender')}
+          />
           {filters.selectedServices.length > 0 && (
             <FilterChip
               label={`${filters.selectedServices.length} servicio${filters.selectedServices.length > 1 ? 's' : ''}`}
@@ -158,7 +224,7 @@ export default function SearchScreen() {
           )}
           {hasActiveFilters && (
             <FilterChip
-              label="Limpiar filtros"
+              label="Limpiar"
               active={true}
               onPress={clearAllFilters}
             />
@@ -255,6 +321,28 @@ export default function SearchScreen() {
           setVisibleModal(null)
         }}
       />
+
+      {/* ── Modal de Precio ── */}
+      <PriceFilterModal
+        visible={visibleModal === 'price'}
+        priceRange={filters.priceRange}
+        onClose={() => setVisibleModal(null)}
+        onApply={(priceRange) => {
+          setFilters((prev) => ({ ...prev, priceRange }))
+          setVisibleModal(null)
+        }}
+      />
+
+      {/* ── Modal de Género ── */}
+      <GenderFilterModal
+        visible={visibleModal === 'gender'}
+        gender={filters.gender}
+        onClose={() => setVisibleModal(null)}
+        onApply={(gender) => {
+          setFilters((prev) => ({ ...prev, gender }))
+          setVisibleModal(null)
+        }}
+      />
     </SafeAreaView>
   )
 }
@@ -314,7 +402,9 @@ function SalonResultRow({ salon }: { salon: any }) {
           <H2 className="font-manrope-extrabold text-[15px] text-premium-black flex-1">
             {salon.salons?.name ?? salon.name}
           </H2>
-          <IconNorthWest size={16} color={Colors.premium.gray.light} />
+          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+            {salon.distance}km
+          </Caption>
         </View>
         <View className="flex-row items-center gap-1.5">
           {salon.avgRating !== null && (
@@ -326,7 +416,7 @@ function SalonResultRow({ salon }: { salon: any }) {
             </View>
           )}
           <Caption className="flex-1 font-manrope-medium text-[12px] text-[#9CA3AF]" numberOfLines={1}>
-            {salon.address ?? salon.city ?? 'Madrid'}
+            {salon.street_address ?? salon.address ?? salon.city ?? 'Madrid'}
           </Caption>
         </View>
       </View>
@@ -416,6 +506,144 @@ function RatingFilterModal({
             className="w-full bg-premium-black rounded-full py-3 items-center"
             onPress={() => {
               onApply(tempRating)
+            }}
+          >
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white">
+              Aplicar filtro
+            </Body>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  )
+}
+
+// ─── PriceFilterModal ──────────────────────────────────────────────
+
+function PriceFilterModal({
+  visible,
+  priceRange,
+  onClose,
+  onApply,
+}: {
+  visible: boolean
+  priceRange: number
+  onClose: () => void
+  onApply: (priceRange: number) => void
+}) {
+  const [tempPrice, setTempPrice] = React.useState(priceRange)
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
+        <Pressable className="flex-1" onPress={onClose} />
+        <View className="bg-premium-white rounded-t-3xl pt-6 px-5 pb-10">
+          <View className="flex-row justify-between items-center mb-6">
+            <H2 className="font-manrope-extrabold text-[18px] text-premium-black">
+              Rango de precio
+            </H2>
+            <TouchableOpacity onPress={onClose}>
+              <IconClose size={20} color={Colors.premium.black} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
+
+          <View className="gap-3 mb-6">
+            {PRICE_RANGES.map((option) => (
+              <TouchableOpacity
+                key={option.id}
+                className={`p-4 rounded-lg border ${
+                  tempPrice === option.id
+                    ? 'bg-gold border-gold'
+                    : 'bg-[#F9FAFB] border-[#E5E7EB]'
+                }`}
+                onPress={() => setTempPrice(option.id)}
+              >
+                <Body
+                  className={`font-manrope-medium text-[13px] ${
+                    tempPrice === option.id
+                      ? 'text-premium-black'
+                      : 'text-premium-gray'
+                  }`}
+                >
+                  {option.label}
+                </Body>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            className="w-full bg-premium-black rounded-full py-3 items-center"
+            onPress={() => {
+              onApply(tempPrice)
+            }}
+          >
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white">
+              Aplicar filtro
+            </Body>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  )
+}
+
+// ─── GenderFilterModal ──────────────────────────────────────────────
+
+function GenderFilterModal({
+  visible,
+  gender,
+  onClose,
+  onApply,
+}: {
+  visible: boolean
+  gender: string | null
+  onClose: () => void
+  onApply: (gender: string | null) => void
+}) {
+  const [tempGender, setTempGender] = React.useState(gender)
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
+        <Pressable className="flex-1" onPress={onClose} />
+        <View className="bg-premium-white rounded-t-3xl pt-6 px-5 pb-10">
+          <View className="flex-row justify-between items-center mb-6">
+            <H2 className="font-manrope-extrabold text-[18px] text-premium-black">
+              Tipo de salón
+            </H2>
+            <TouchableOpacity onPress={onClose}>
+              <IconClose size={20} color={Colors.premium.black} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
+
+          <View className="gap-3 mb-6">
+            {GENDERS.map((option) => (
+              <TouchableOpacity
+                key={option.id}
+                className={`p-4 rounded-lg border ${
+                  tempGender === option.id
+                    ? 'bg-gold border-gold'
+                    : 'bg-[#F9FAFB] border-[#E5E7EB]'
+                }`}
+                onPress={() => setTempGender(option.id)}
+              >
+                <Body
+                  className={`font-manrope-medium text-[13px] ${
+                    tempGender === option.id
+                      ? 'text-premium-black'
+                      : 'text-premium-gray'
+                  }`}
+                >
+                  {option.label}
+                </Body>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            className="w-full bg-premium-black rounded-full py-3 items-center"
+            onPress={() => {
+              onApply(tempGender)
             }}
           >
             <Body className="font-manrope-extrabold text-[15px] text-premium-white">

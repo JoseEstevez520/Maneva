@@ -18,8 +18,6 @@ import { Colors } from '@/constants/theme'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useCampaignDetail } from '@/hooks/useCampaignDetail'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 const PLACEHOLDER_IMAGE =
   'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=300&fit=crop&q=80'
@@ -53,6 +51,13 @@ export default function CampaignDetailScreen() {
   const endDate = new Date(campaign.end_date)
   const typeLabel = campaign.type ? campaign.type.toUpperCase() : 'OFERTA'
   const isActive = new Date() <= endDate
+  
+  const formatDate = (date: Date) => {
+    const day = date.getDate()
+    const month = date.toLocaleString('es-ES', { month: 'short' })
+    const year = date.getFullYear()
+    return `${day} ${month} ${year}`
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-premium-white" edges={['top']}>
@@ -121,13 +126,13 @@ export default function CampaignDetailScreen() {
             <View className="flex-row items-center gap-2">
               <IconCalendar size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
               <Body className="font-manrope-medium text-[13px] text-premium-black">
-                Desde {format(startDate, 'd MMM yyyy', { locale: es })}
+                Desde {formatDate(startDate)}
               </Body>
             </View>
             <View className="flex-row items-center gap-2">
               <IconCalendar size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-primary-black">
-                Hasta {format(endDate, 'd MMM yyyy', { locale: es })}
+              <Body className="font-manrope-medium text-[13px] text-premium-black">
+                Hasta {formatDate(endDate)}
               </Body>
             </View>
           </View>
