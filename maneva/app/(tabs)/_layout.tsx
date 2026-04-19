@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Colors } from '@/constants/theme';
-import { IconHome, IconMail, IconSettings } from '@/components/ui/icons';
+import { IconHome, IconMail, IconSettings } from "@/components/ui/icons";
+import { Colors } from "@/constants/theme";
+import { Tabs } from "expo-router";
 
 export default function TabLayout() {
   return (
@@ -22,22 +22,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color, size }) => <IconHome color={color} size={size} strokeWidth={2} />,
+          title: "Inicio",
+          tabBarIcon: ({ color, size }) => (
+            <IconHome color={color} size={size} strokeWidth={2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="inbox"
         options={{
-          title: 'Buzón',
-          tabBarIcon: ({ color, size }) => <IconMail color={color} size={size} strokeWidth={2} />,
+          title: "Buzón",
+          tabBarIcon: ({ color, size }) => (
+            <IconMail color={color} size={size} strokeWidth={2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Ajustes',
-          tabBarIcon: ({ color, size }) => <IconSettings color={color} size={size} strokeWidth={2} />,
+          title: "Ajustes",
+          tabBarIcon: ({ color, size }) => (
+            <IconSettings color={color} size={size} strokeWidth={2} />
+          ),
         }}
       />
     </Tabs>
