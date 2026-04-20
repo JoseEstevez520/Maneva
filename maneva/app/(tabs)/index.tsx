@@ -15,6 +15,9 @@ import { useNextAppointment } from '@/hooks/useAppointments'
 import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
 import { useActiveCampaigns } from '@/hooks/useCampaigns'
 import { useRouter } from 'expo-router'
+import { format, parseISO } from 'date-fns'
+import { es } from 'date-fns/locale'
+import type { CampaignWithSalon } from '@/services/campaigns.service'
 
 // ─── Imagen placeholder (fondo gris) para salones sin cover ───────────────────
 const PLACEHOLDER_IMAGE =
@@ -316,21 +319,17 @@ function AvailableTodaySection() {
 
 // ─── Sección E: Ofertas Especiales ────────────────────────────────────────────
 
-function OfferCard({ offer }: { offer: any }) {
+function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   const router = useRouter()
-  
+
   const salonName = offer.salon_locations?.salons?.name ?? offer.salon_locations?.name ?? 'Salón'
   const salonCity = offer.salon_locations?.city ?? 'Madrid'
-  const endDate = new Date(offer.end_date)
   const typeLabel = offer.type ? offer.type.toUpperCase() : 'OFERTA'
-  const daysRemaining = Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-  
-  const formatDate = (date: Date) => {
-    const day = date.getDate()
-    const month = date.toLocaleString('es-ES', { month: 'short' })
-    return `${day} ${month}`
-  }
-  
+  const endFormatted = format(parseISO(offer.end_date), "d MMM", { locale: es })
+  const daysRemaining = Math.ceil(
+    (parseISO(offer.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+  )
+
   const handlePress = () => {
     router.push(`/salon/${offer.location_id}`)
   }
@@ -380,7 +379,7 @@ function OfferCard({ offer }: { offer: any }) {
         <View className="flex-row items-center gap-2">
           <IconCalendar size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
           <Caption className="font-manrope-medium text-[11px] text-premium-gray">
-            Válido hasta {formatDate(endDate)}
+            Válido hasta {endFormatted}
           </Caption>
         </View>
 

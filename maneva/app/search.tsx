@@ -22,6 +22,7 @@ import { useSalonsWithRating } from '@/hooks/useSalons'
 import { useLocation } from '@/hooks/useLocation'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import type { SalonWithDistance } from '@/hooks/useLocationAndSalons'
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
 
@@ -115,21 +116,14 @@ export default function SearchScreen() {
       result = result.filter((salon) => (salon.avgRating ?? 0) >= filters.minRating)
     }
 
-    // Filtro de precio - simplificado
-    // Los servicios se obtienen en query separada
-    if (filters.priceRange > 0) {
-      // Mantener activo el filtro sin aplicar lógica de precio aún
-    }
+    // TODO: Filtro por precio — requiere columna `price_range` en salon_locations.
+    // Deshabilitado en UI hasta que esté implementado.
 
-    // Filtro de género - simplificado
-    if (filters.gender) {
-      // Mantener activo el filtro sin aplicar lógica de género aún
-    }
+    // TODO: Filtro por género — requiere columna `gender_focus` en salon_locations.
+    // Deshabilitado en UI hasta que esté implementado.
 
-    // Filtro de servicios
-    if (filters.selectedServices.length > 0) {
-      // Mantener activo el filtro sin aplicar lógica de servicios aún
-    }
+    // TODO: Filtro por servicios — requiere join con tabla `services` en la query.
+    // Deshabilitado en UI hasta que esté implementado.
 
     return result.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
   }, [salons, query, filters, hasActiveFilters, coords])
@@ -353,20 +347,23 @@ function FilterChip({
   label,
   iconTail,
   active,
+  disabled,
   onPress,
 }: {
   label: string
   iconTail?: 'expand_more'
   active?: boolean
+  disabled?: boolean
   onPress?: () => void
 }) {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
+      disabled={disabled}
       onPress={onPress}
       className={`flex-row items-center px-4 py-2 rounded-full border gap-1.5 ${
         active ? 'bg-gold border-gold' : 'bg-premium-white border-[#E5E7EB]'
-      }`}
+      }${disabled ? ' opacity-40' : ''}`}
     >
       <Caption
         className={`font-manrope-bold text-[12px] ${
@@ -384,7 +381,7 @@ function FilterChip({
 
 // ─── SalonResultRow ─────────────────────────────────────────────────
 
-function SalonResultRow({ salon }: { salon: any }) {
+function SalonResultRow({ salon }: { salon: SalonWithDistance }) {
   const router = useRouter()
 
   return (
