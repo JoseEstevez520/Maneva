@@ -1,6 +1,7 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import "react-native-reanimated";
 import "../global.css";
 
@@ -60,7 +61,7 @@ export default function RootLayout() {
   useEffect(() => {
     let isMounted = true;
 
-    const checkState = async (session: any) => {
+    const checkState = async (session: Session | null) => {
       if (!isMounted || !loaded) return;
 
       const isLoginOrRegister =
