@@ -65,14 +65,23 @@ export async function signOut() {
   if (error) throw error;
 }
 
+/**
+ * Devuelve el usuario autenticado actual.
+ * Usar este helper en lugar de llamar a supabase.auth.getUser() fuera de services/.
+ */
+export async function getCurrentUser() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  return data.user;
+}
+
+/**
+ * Elimina la cuenta del usuario actual via RPC.
+ * Nota: 'delete_my_account' existe en la BD pero aún no está en los tipos generados.
+ * Regenerar con: npx supabase gen types typescript --project-id <ID> > src/types/database.types.ts
+ */
 export async function deleteMyAccount() {
-  const client = supabase as unknown as {
-    rpc: (
-      fn: string,
-      args?: Record<string, unknown>,
-    ) => Promise<{ error: { message: string } | null }>;
-  };
-  const { error } = await client.rpc("delete_my_account");
+  const { error } = await supabase.rpc("delete_my_account" as never);
   if (error) throw error;
 }
 
