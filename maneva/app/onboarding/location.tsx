@@ -16,7 +16,7 @@ import MapView, { Circle, Region } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Body, Caption, H1 } from "@/components/ui/Typography";
-import { supabase } from "@/lib/supabase";
+import { getCurrentUser } from "@/services/auth.service";
 import { setUserPreference } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
 
@@ -281,7 +281,7 @@ export default function LocationOnboardingScreen() {
     setError(null);
 
     try {
-      const currentUser = user ?? (await supabase.auth.getUser()).data.user;
+      const currentUser = user ?? await getCurrentUser();
       if (!currentUser) {
         setError(
           "Tu sesión no está lista. Vuelve a iniciar sesión e inténtalo de nuevo.",
