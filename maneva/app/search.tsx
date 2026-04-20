@@ -22,7 +22,9 @@ import { useSalonsWithRating } from '@/hooks/useSalons'
 import { useLocation } from '@/hooks/useLocation'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import type { SalonWithDistance } from '@/hooks/useLocationAndSalons'
+import type { UnifiedSalon } from '@/services/salons.service'
+
+type SearchSalon = UnifiedSalon & { avgRating: number | null; distance: number }
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
 
@@ -384,7 +386,7 @@ function FilterChip({
 
 // ─── SalonResultRow ─────────────────────────────────────────────────
 
-function SalonResultRow({ salon }: { salon: SalonWithDistance }) {
+function SalonResultRow({ salon }: { salon: SearchSalon }) {
   const router = useRouter()
 
   return (
@@ -416,7 +418,7 @@ function SalonResultRow({ salon }: { salon: SalonWithDistance }) {
             </View>
           )}
           <Caption className="flex-1 font-manrope-medium text-[12px] text-[#9CA3AF]" numberOfLines={1}>
-            {salon.street_address ?? salon.address ?? salon.city ?? 'Madrid'}
+            {salon.address ?? salon.city ?? 'Madrid'}
           </Caption>
         </View>
       </View>
