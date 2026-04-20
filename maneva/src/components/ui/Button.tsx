@@ -1,7 +1,7 @@
 import React from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-type Variant = "primary" | "secondary" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "xs" | "sm" | "md" | "lg";
 
 type ButtonProps = {
@@ -22,12 +22,14 @@ type ButtonProps = {
 const variantStyles: Record<Variant, string> = {
   primary: "bg-gold border-0",
   secondary: "bg-premium-white border-4 border-premium-black shadow-xl",
+  ghost: "bg-transparent border-0",
   danger: "bg-red-600 border-0",
 };
 
 const textStyles: Record<Variant, string> = {
   primary: "text-premium-black",
   secondary: "text-premium-black",
+  ghost: "text-premium-gray",
   danger: "text-white",
 };
 
