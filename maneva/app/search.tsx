@@ -71,8 +71,8 @@ export default function SearchScreen() {
 
   const { data: salons, loading } = useSalonsWithRating()
 
-  // Determinar si hay filtros activos
-  const hasActiveFilters = filters.minRating > 0 || filters.selectedServices.length > 0 || filters.priceRange > 0 || filters.gender || query.length > 0
+  // Determinar si hay filtros activos (precio, género y servicios deshabilitados — sin lógica aún)
+  const hasActiveFilters = filters.minRating > 0 || query.length > 0
 
   // Calcular distancia en km
   const calculateDistance = (lat: number | null, lon: number | null) => {
@@ -201,18 +201,21 @@ export default function SearchScreen() {
             label="Precio"
             iconTail="expand_more"
             active={filters.priceRange > 0}
+            disabled
             onPress={() => setVisibleModal('price')}
           />
           <FilterChip
             label="Género"
             iconTail="expand_more"
             active={filters.gender !== null}
+            disabled
             onPress={() => setVisibleModal('gender')}
           />
           {filters.selectedServices.length > 0 && (
             <FilterChip
               label={`${filters.selectedServices.length} servicio${filters.selectedServices.length > 1 ? 's' : ''}`}
               active={true}
+              disabled
               onPress={clearServiceFilter}
             />
           )}
