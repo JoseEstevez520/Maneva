@@ -1,6 +1,6 @@
 import { signIn, signOut, signUp } from "@/services/auth.service";
 import { useAuthStore } from "@/store/authStore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { safeStorage } from "@/lib/storage";
 import { useState } from "react";
 
 function getFriendlyAuthError(error: unknown): string {
@@ -46,7 +46,7 @@ export function useAuth() {
     setError(null);
     try {
       await signUp(email, password, fullName, phone);
-      await AsyncStorage.setItem("hasSeenOnboarding", "false");
+      await safeStorage.setItem("hasSeenOnboarding", "false");
       return true;
     } catch (e: unknown) {
       const friendlyMessage = getFriendlyAuthError(e);
