@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/theme";
-import { supabase } from "@/lib/supabase";
+import { getCurrentUser } from "@/services/auth.service";
+import { safeStorage } from "@/lib/storage";
 import { useAuthStore } from "@/store/authStore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import {
     Dimensions,
@@ -153,7 +153,7 @@ export function TutorialModal({
 
     // Verificar si el tutorial ya se vio para el usuario actual
     const checkTutorial = async () => {
-      const resolvedUser = user ?? (await supabase.auth.getUser()).data.user;
+      const resolvedUser = user ?? await getCurrentUser();
       const userId = resolvedUser?.id;
 
       if (!isMounted || !userId) {
@@ -163,7 +163,7 @@ export function TutorialModal({
       const key = `hasSeenAppTour_${userId}`;
       setStorageKey(key);
 
-      const hasSeenAppTour = await AsyncStorage.getItem(key);
+      const hasSeenAppTour = await safeStorage.getItem(key);
       if (isMounted && hasSeenAppTour !== "true") {
         setStep(0);
         setIsVisible(true);
@@ -185,7 +185,7 @@ export function TutorialModal({
 
   const finishTutorial = async () => {
     if (storageKey) {
-      await AsyncStorage.setItem(storageKey, "true");
+      await safeStorage.setItem(storageKey, "true");
     }
     setIsVisible(false);
   };
