@@ -7,11 +7,13 @@ import {
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { format, parseISO } from 'date-fns'
+import { es } from 'date-fns/locale'
 import {
-  IconArrowLeft,
+  IconBack,
   IconCalendar,
   IconTag,
-  IconMapPin,
+  IconLocation,
   IconPhone,
 } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
@@ -25,12 +27,20 @@ const PLACEHOLDER_IMAGE =
 export default function CampaignDetailScreen() {
   const { id } = useLocalSearchParams() as { id: string }
   const router = useRouter()
-  const { data: campaign, loading } = useCampaignDetail(id)
+  const { data: campaign, loading, error } = useCampaignDetail(id)
 
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
         <LoadingSpinner />
+      </SafeAreaView>
+    )
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-premium-white items-center justify-center px-6">
+        <Body className="text-premium-gray text-center">{error}</Body>
       </SafeAreaView>
     )
   }
@@ -47,17 +57,10 @@ export default function CampaignDetailScreen() {
   const salonCity = campaign.salon_locations?.city ?? 'Madrid'
   const salonAddress = campaign.salon_locations?.address
   const salonPhone = campaign.salon_locations?.phone
-  const startDate = new Date(campaign.start_date)
-  const endDate = new Date(campaign.end_date)
+  const startFormatted = format(parseISO(campaign.start_date), "d 'de' MMMM yyyy", { locale: es })
+  const endFormatted = format(parseISO(campaign.end_date), "d 'de' MMMM yyyy", { locale: es })
   const typeLabel = campaign.type ? campaign.type.toUpperCase() : 'OFERTA'
-  const isActive = new Date() <= endDate
-  
-  const formatDate = (date: Date) => {
-    const day = date.getDate()
-    const month = date.toLocaleString('es-ES', { month: 'short' })
-    const year = date.getFullYear()
-    return `${day} ${month} ${year}`
-  }
+  const isActive = new Date() <= parseISO(campaign.end_date)
 
   return (
     <SafeAreaView className="flex-1 bg-premium-white" edges={['top']}>
@@ -67,7 +70,7 @@ export default function CampaignDetailScreen() {
           onPress={() => router.back()}
           className="w-10 h-10 bg-premium-white rounded-full items-center justify-center shadow-md"
         >
-          <IconArrowLeft size={20} color={Colors.premium.black} strokeWidth={2} />
+          <IconBack size={20} color={Colors.premium.black} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -126,13 +129,13 @@ export default function CampaignDetailScreen() {
             <View className="flex-row items-center gap-2">
               <IconCalendar size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
               <Body className="font-manrope-medium text-[13px] text-premium-black">
-                Desde {formatDate(startDate)}
+                Desde {startFormatted}
               </Body>
             </View>
             <View className="flex-row items-center gap-2">
               <IconCalendar size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
               <Body className="font-manrope-medium text-[13px] text-premium-black">
-                Hasta {formatDate(endDate)}
+                Hasta {endFormatted}
               </Body>
             </View>
           </View>
@@ -152,7 +155,7 @@ export default function CampaignDetailScreen() {
 
             {salonAddress && (
               <View className="flex-row items-flex-start gap-2">
-                <IconMapPin size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} style={{ marginTop: 2 }} />
+                <IconLocation size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} style={{ marginTop: 2 }} />
                 <Body className="font-manrope-medium text-[13px] text-premium-gray flex-1">
                   {salonAddress}
                 </Body>

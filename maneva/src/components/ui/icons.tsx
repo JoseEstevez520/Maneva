@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ArrowUpRight,
   Tag,
+  ArrowLeft,
 } from 'lucide-react-native'
 
 export {
@@ -48,4 +49,5 @@ export {
   ChevronDown  as IconExpandMore,
   ArrowUpRight as IconNorthWest,
   Tag          as IconTag,
+  ArrowLeft    as IconBack,
 }
