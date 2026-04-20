@@ -101,9 +101,9 @@ export default function SalonDetailScreen() {
               {[...Array(Math.round(avgRating))].map((_, i) => (
                 <IconStar
                   key={i}
-                  color={Colors.gold}
+                  color={Colors.gold.DEFAULT}
                   size={16}
-                  fill={Colors.gold}
+                  fill={Colors.gold.DEFAULT}
                 />
               ))}
             </View>
@@ -264,7 +264,7 @@ export default function SalonDetailScreen() {
                   activeOpacity={0.7}
                 >
                   <View className="flex-row items-start gap-2">
-                    <IconNorthWest color={Colors.gold} size={16} />
+                    <IconNorthWest color={Colors.gold.DEFAULT} size={16} />
                     <View className="flex-1">
                       <Body className="font-manrope-bold text-[14px] text-premium-black">
                         {campaign.name}
@@ -302,9 +302,9 @@ export default function SalonDetailScreen() {
                       {[...Array(Math.round(review.rating))].map((_, i) => (
                         <IconStar
                           key={i}
-                          color={Colors.gold}
+                          color={Colors.gold.DEFAULT}
                           size={14}
-                          fill={Colors.gold}
+                          fill={Colors.gold.DEFAULT}
                         />
                       ))}
                     </View>
