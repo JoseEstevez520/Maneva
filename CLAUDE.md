@@ -456,6 +456,58 @@ export async function getRecommendation(payload: {
 
 ---
 
+## Clean Code — Reglas adicionales
+
+### Tipado estricto
+- **Prohibido `any`** — si TypeScript no infiere el tipo, búscalo en `database.types.ts` o en la librería.
+- **Prohibido `as unknown as X`** — si hace falta un cast doble, significa que faltan tipos o hay que regenerarlos.
+- **No index signatures `[key: string]: any`** — extiende el tipo concreto o usa `Record<string, string>`.
+
+### Separación de capas (obligatoria)
+```
+Supabase  →  services/  →  hooks/  →  screens / components
+```
+- Los **servicios** exportan funciones puras async. Sin `useState`, sin `useEffect`.
+- Los **hooks** llaman servicios, gestionan `loading/error/data`. Nunca importan `supabase` directamente.
+- Las **pantallas** solo renderizan, llaman hooks y navegan. Ninguna lógica de negocio.
+- Los **componentes UI** (`src/components/ui/`) no conocen Supabase ni stores de dominio.
+
+### AsyncStorage / Storage
+- Usar siempre `safeStorage` de `@/lib/storage`. **Nunca** `AsyncStorage` directamente.
+
+### Fechas
+- Siempre `date-fns` + `parseISO`. **Nunca** `.toLocaleString()` nativo.
+```typescript
+import { format, parseISO } from 'date-fns'
+import { es } from 'date-fns/locale'
+format(parseISO(isoString), "d 'de' MMMM yyyy", { locale: es })
+```
+
+### Iconos
+- Todos los iconos se importan desde `@/components/ui/icons`.
+- Si un icono no existe ahí, **primero** se añade a ese fichero y luego se usa.
+- Nunca importar de `lucide-react-native` directamente en pantallas o componentes.
+
+### Colores
+- Usar siempre `Colors.gold.DEFAULT`, `Colors.premium.gray.DEFAULT`, etc.
+- `Colors.gold` es un objeto `{ DEFAULT, light, dark }`, no un string. Usar `Colors.gold` donde se espera un string es un bug silencioso.
+
+### Archivos de hooks
+- Los hooks viven en `src/hooks/`. Si un fichero empieza por `use`, no puede estar en `src/services/`.
+
+### Manejo de errores en pantallas
+```typescript
+const { data, loading, error } = useAlgo()
+if (loading) return <LoadingSpinner />
+if (error) return <ErrorMessage message={error} />
+return <ContenidoNormal />
+```
+
+### Funcionalidades pendientes (UI stub)
+Si una sección de UI existe pero la lógica no está implementada, añadir comentario `// TODO:` prominente **y** deshabilitar visualmente la UI para no engañar al usuario.
+
+---
+
 ## Cómo añadir un módulo nuevo
 
 1. Crear `src/services/nuevo.service.ts` con las funciones que hablan con Supabase
