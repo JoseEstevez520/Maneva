@@ -1,22 +1,14 @@
-/**
- * useLocationAndSalons.ts
- * ───────────────────���────────────────────────────────────────────
- * Hook combinado para obtener ubicación y salones filtrados.
- * ────────────────────────────────────────────────────────────────
- */
-import { useState, useEffect, useCallback } from 'react'
-import { useSalonsWithRating } from './useSalons'
-import { useLocation } from './useLocation'
+import { useState, useEffect } from 'react'
+import { useSalonsWithRating } from '@/hooks/useSalons'
+import { useLocation } from '@/hooks/useLocation'
 import { calculateDistance, formatDistance } from '@/lib/location.utils'
+import type { UnifiedSalon } from '@/services/salons.service'
 
-interface SalonWithDistance {
-  id: string
-  name: string
+type SalonWithRating = UnifiedSalon & { avgRating: number | null }
+
+export type SalonWithDistance = SalonWithRating & {
   distance: string
   distanceKm: number
-  rating: number | null
-  address: string
-  [key: string]: any
 }
 
 interface UseLocationAndSalonsReturn {
@@ -33,22 +25,15 @@ export function useLocationAndSalons(): UseLocationAndSalonsReturn {
 
   useEffect(() => {
     if (userCoords && salonsData.length > 0) {
-      const enhanced = salonsData.map((salon) => {
+      const enhanced: SalonWithDistance[] = salonsData.map((salon) => {
         const distanceKm = calculateDistance(
           userCoords.latitude,
           userCoords.longitude,
-          salon.latitude || 0,
-          salon.longitude || 0
+          salon.latitude ?? 0,
+          salon.longitude ?? 0,
         )
-
-        return {
-          ...salon,
-          distance: formatDistance(distanceKm),
-          distanceKm,
-        }
+        return { ...salon, distance: formatDistance(distanceKm), distanceKm }
       })
-
-      // Ordenar por distancia
       enhanced.sort((a, b) => a.distanceKm - b.distanceKm)
       setSalonsWithDistance(enhanced)
     }
