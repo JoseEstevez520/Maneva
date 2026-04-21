@@ -1,3 +1,4 @@
+import React from "react";
 import { IconHome, IconMail, IconSettings, IconSparkles } from "@/components/ui/icons";
 import { Colors } from "@/constants/theme";
 import { Tabs, useRouter } from "expo-router";
@@ -111,6 +112,42 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size }) => (
               <IconSettings color={color} size={size} strokeWidth={2} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="bookings-delegation"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="booking-preferences"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="reference-cuts"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="notifications"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="general-settings"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="privacy-policy"
+          options={{
+            href: null,
           }}
         />
       </Tabs>
