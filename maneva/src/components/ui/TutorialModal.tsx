@@ -153,8 +153,16 @@ export function TutorialModal({
 
     // Verificar si el tutorial ya se vio para el usuario actual
     const checkTutorial = async () => {
-      const resolvedUser = user ?? await getCurrentUser();
-      const userId = resolvedUser?.id;
+      let userId: string | undefined;
+
+      try {
+        const resolvedUser = user ?? (await getCurrentUser());
+        userId = resolvedUser?.id;
+      } catch (error) {
+        // Si no podemos resolver usuario, ocultamos tutorial hasta que exista sesión.
+        console.warn("Tutorial user resolution failed:", error);
+        return;
+      }
 
       if (!isMounted || !userId) {
         return;

@@ -71,7 +71,14 @@ export async function signOut() {
  */
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
-  if (error) throw error;
+  if (error) {
+    const normalized = error.message.toLowerCase();
+    // Sin sesión activa no debe romper la app; simplemente no hay usuario autenticado.
+    if (normalized.includes("auth session missing")) {
+      return null;
+    }
+    throw error;
+  }
   return data.user;
 }
 

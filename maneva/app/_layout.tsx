@@ -47,8 +47,8 @@ SplashScreen.preventAutoHideAsync();
  * SafeAreaView y no existe una barra de navegación equivalente.
  */
 async function configureNavigationBar() {
-  await NavigationBar.setPositionAsync("absolute")
-  await NavigationBar.setBackgroundColorAsync("transparent")
+  // Con edge-to-edge habilitado en Android, setPositionAsync y setBackgroundColorAsync
+  // muestran warnings porque no son compatibles. Mantenemos solo el estilo de iconos.
   await NavigationBar.setButtonStyleAsync("dark")
 }
 
