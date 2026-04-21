@@ -67,7 +67,7 @@ export default function OfferDetailScreen() {
   if (error) return <ErrorMessage message={error} />
   if (!offer) {
     return (
-      <ScreenLayout header="back" onHeaderBack={() => router.back()}>
+      <ScreenLayout header="back" onHeaderBack={() => router.back()} edges={['top', 'bottom']}>
         <View className="flex-1 items-center justify-center">
           <Body className="font-manrope-medium text-[14px] text-premium-gray">
             Oferta no encontrada
@@ -92,7 +92,7 @@ export default function OfferDetailScreen() {
     : null
 
   return (
-    <ScreenLayout header="back" onHeaderBack={() => router.back()}>
+    <ScreenLayout header="back" onHeaderBack={() => router.back()} edges={['top', 'bottom']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-8"

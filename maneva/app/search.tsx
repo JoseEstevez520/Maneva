@@ -24,7 +24,7 @@ import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import type { UnifiedSalon } from '@/services/salons.service'
 
-type SearchSalon = UnifiedSalon & { avgRating: number | null; distance: number }
+type SearchSalon = UnifiedSalon & { avgRating: number | null; avgPrice: number | null; distance: number }
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
 
@@ -73,8 +73,9 @@ export default function SearchScreen() {
 
   const { data: salons, loading } = useSalonsWithRating()
 
-  // Determinar si hay filtros activos (precio, género y servicios deshabilitados — sin lógica aún)
-  const hasActiveFilters = filters.minRating > 0 || query.length > 0
+  // Un filtro se considera activo cuando tiene un valor distinto al estado inicial.
+  // El género no se incluye aún porque requiere la columna `gender_focus` en salon_locations.
+  const hasActiveFilters = filters.minRating > 0 || filters.priceRange > 0 || query.length > 0
 
   // Calcular distancia en km
   const calculateDistance = (lat: number | null, lon: number | null) => {
@@ -113,19 +114,29 @@ export default function SearchScreen() {
       })
     }
 
-    // Filtro de rating
+    // Filtro de rating mínimo
     if (filters.minRating > 0) {
       result = result.filter((salon) => (salon.avgRating ?? 0) >= filters.minRating)
     }
 
-    // TODO: Filtro por precio — requiere columna `price_range` en salon_locations.
-    // Deshabilitado en UI hasta que esté implementado.
+    // Filtro por rango de precio.
+    // `avgPrice` se calcula en el servicio como la media de los precios de los servicios
+    // de cada sede. Los salones sin servicios registrados (avgPrice === null) se excluyen
+    // cuando hay un filtro de precio activo, ya que no hay forma de clasificarlos.
+    if (filters.priceRange > 0) {
+      const { min, max } = PRICE_RANGES[filters.priceRange]
+      result = result.filter((salon) => {
+        if (salon.avgPrice === null) return false
+        return salon.avgPrice >= min && salon.avgPrice <= max
+      })
+    }
 
-    // TODO: Filtro por género — requiere columna `gender_focus` en salon_locations.
-    // Deshabilitado en UI hasta que esté implementado.
+    // TODO: Filtro por género — requiere la columna `gender_focus` (text) en la tabla
+    // `salon_locations` con los valores posibles: 'unisex' | 'mujer' | 'hombre'.
+    // Cuando exista, añadir: result = result.filter((s) => s.gender_focus === filters.gender)
 
-    // TODO: Filtro por servicios — requiere join con tabla `services` en la query.
-    // Deshabilitado en UI hasta que esté implementado.
+    // TODO: Filtro por servicios — requiere ampliar la query para comparar los nombres
+    // de los servicios del salón contra los IDs seleccionados en `filters.selectedServices`.
 
     return result.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
   }, [salons, query, filters, hasActiveFilters, coords])
@@ -203,7 +214,6 @@ export default function SearchScreen() {
             label="Precio"
             iconTail="expand_more"
             active={filters.priceRange > 0}
-            disabled
             onPress={() => setVisibleModal('price')}
           />
           <FilterChip

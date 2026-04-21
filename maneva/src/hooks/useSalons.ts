@@ -36,9 +36,9 @@ export function useSalons() {
   return { data, loading, error, refresh: fetchSalons }
 }
 
-/** Hook para la búsqueda — devuelve sedes activas con rating promedio */
+/** Hook para la búsqueda — devuelve sedes activas con rating y precio medio */
 export function useSalonsWithRating() {
-  const [data, setData] = useState<(UnifiedSalon & { avgRating: number | null })[]>([])
+  const [data, setData] = useState<(UnifiedSalon & { avgRating: number | null; avgPrice: number | null })[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

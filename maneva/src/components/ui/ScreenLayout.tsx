@@ -1,6 +1,6 @@
 import React from 'react'
 import { ScrollView, View, RefreshControl } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, Edge } from 'react-native-safe-area-context'
 import { AppHeader } from './AppHeader'
 
 type ScreenLayoutProps = {
@@ -13,6 +13,13 @@ type ScreenLayoutProps = {
   header?: 'brand' | 'page'
   /** Título de la sección — obligatorio cuando header="page" */
   headerTitle?: string
+  /**
+   * Bordes donde aplicar el safe area inset.
+   * Por defecto solo ['top'] porque las pantallas dentro del tab navigator
+   * ya reciben el inset inferior desde la propia tab bar. Pasar
+   * ['top', 'bottom'] en pantallas fuera de tabs que lo necesiten.
+   */
+  edges?: Edge[]
 }
 
 export function ScreenLayout({
@@ -22,6 +29,7 @@ export function ScreenLayout({
   refreshControl,
   header,
   headerTitle,
+  edges = ['top'],
 }: ScreenLayoutProps) {
   const renderHeader = () => {
     if (!header) return null
@@ -30,7 +38,7 @@ export function ScreenLayout({
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft">
+    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={edges}>
       {renderHeader()}
       {scrollable ? (
         <ScrollView
@@ -42,7 +50,9 @@ export function ScreenLayout({
           {children}
         </ScrollView>
       ) : (
-        <View className={`flex-1 px-4 py-4 ${className}`}>
+        // Sin padding propio: cuando scrollable=false el contenido gestiona
+        // su propio layout y padding (p.ej. la HomeScreen con secciones px-5).
+        <View className={`flex-1 ${className}`}>
           {children}
         </View>
       )}

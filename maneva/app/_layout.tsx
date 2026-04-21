@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import "react-native-reanimated";
 import "../global.css";
+import * as NavigationBar from "expo-navigation-bar";
 
 import { supabase } from "@/lib/supabase";
 import { safeStorage } from "@/lib/storage";
@@ -21,6 +22,35 @@ import * as SplashScreen from "expo-splash-screen";
 
 // Evitar que el SplashScreen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
+
+/**
+ * Configura la barra de navegación del sistema Android en modo edge-to-edge:
+ * el contenido de la app se renderiza debajo de la barra (home, atrás, recientes)
+ * y esta queda translúcida, sin el bloque opaco de color del sistema.
+ *
+ * ALTERNATIVAS (cambiar las dos líneas de abajo):
+ *
+ * — Inmersivo: la barra se oculta al entrar en la pantalla y reaparece al
+ *   deslizar desde el borde. Útil para reproductores de video o galerías,
+ *   pero intrusivo en apps de uso cotidiano.
+ *   NavigationBar.setVisibilityAsync("hidden")
+ *   NavigationBar.setBehaviorAsync("overlay-swipe")
+ *
+ * — Color sólido personalizado: la barra queda visible con un color fijo.
+ *   NavigationBar.setBackgroundColorAsync("#FFFFFF")
+ *   NavigationBar.setButtonStyleAsync("dark")  // iconos oscuros sobre fondo claro
+ *
+ * — Sin cambios (comportamiento por defecto del SO): simplemente
+ *   eliminar este useEffect completo.
+ *
+ * Nota: solo afecta a Android. En iOS el área inferior la gestiona
+ * SafeAreaView y no existe una barra de navegación equivalente.
+ */
+async function configureNavigationBar() {
+  await NavigationBar.setPositionAsync("absolute")
+  await NavigationBar.setBackgroundColorAsync("transparent")
+  await NavigationBar.setButtonStyleAsync("dark")
+}
 
 export default function RootLayout() {
   const router = useRouter();
@@ -42,6 +72,11 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  // Configurar la barra de navegación Android al montar la app
+  useEffect(() => {
+    configureNavigationBar()
+  }, []);
 
   useEffect(() => {
     const checkOnboarding = async () => {

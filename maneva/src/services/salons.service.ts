@@ -37,9 +37,16 @@ export type FavoriteSalonInfo = UnifiedSalon & {
 }
 
 /**
- * Devuelve todas las sedes activas con sus datos de salón y rating promedio.
+ * Devuelve todas las sedes activas con sus datos de salón, rating promedio y
+ * precio medio calculado desde los servicios del salón.
+ *
+ * `avgPrice` se deriva de los precios de los servicios activos de cada sede,
+ * lo que evita necesitar una columna `price_range` explícita en salon_locations.
+ * Si una sede no tiene servicios registrados, `avgPrice` será null.
  */
-export async function getSalonsWithRating(): Promise<(UnifiedSalon & { avgRating: number | null })[]> {
+export async function getSalonsWithRating(): Promise<
+  (UnifiedSalon & { avgRating: number | null; avgPrice: number | null })[]
+> {
   const { data, error } = await supabase
     .from('salon_locations')
     .select(`
@@ -50,19 +57,35 @@ export async function getSalonsWithRating(): Promise<(UnifiedSalon & { avgRating
       ),
       reviews (
         rating
+      ),
+      services (
+        price
       )
     `)
     .eq('active', true)
 
   if (error) throw error
 
-  type SalonWithReviews = UnifiedSalon & { reviews: { rating: number }[] | null }
+  type SalonWithReviewsAndServices = UnifiedSalon & {
+    reviews: { rating: number }[] | null
+    services: { price: number }[] | null
+  }
 
-  return (data as SalonWithReviews[]).map((loc) => {
+  return (data as SalonWithReviewsAndServices[]).map((loc) => {
     const reviews = loc.reviews ?? []
     const avgRating =
-      reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null
-    return { ...loc, avgRating }
+      reviews.length > 0
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        : null
+
+    // Precio medio de los servicios de la sede. Null si aún no tiene servicios.
+    const services = loc.services ?? []
+    const avgPrice =
+      services.length > 0
+        ? services.reduce((sum, s) => sum + s.price, 0) / services.length
+        : null
+
+    return { ...loc, avgRating, avgPrice }
   })
 }
 
