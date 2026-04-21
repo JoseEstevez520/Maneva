@@ -39,7 +39,7 @@ const variantStyles: Record<Variant, string> = {
 };
 
 const textStyles: Record<Variant, string> = {
-  primary: "text-premium-black",
+  primary: "text-premium-white",
   secondary: "text-premium-black",
   ghost: "text-premium-gray",
   danger: "text-white",
@@ -98,7 +98,9 @@ export function Button({
         <View className="mb-1">{icon}</View>
       ) : null}
       <Text
-        className={`${textStyles[variant]} ${textSizeStyles[size]} font-extrabold uppercase tracking-widest text-center`}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        className={`${textStyles[variant]} ${textSizeStyles[size]} font-extrabold uppercase tracking-wide text-center`}
       >
         {children}
       </Text>

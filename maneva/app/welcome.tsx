@@ -18,12 +18,9 @@ export default function WelcomeScreen() {
           className="w-40 h-40 -mb-2"
           resizeMode="contain"
         />
-        <View className="flex-row items-baseline mb-3">
-          <H1 className="font-manrope-extrabold text-5xl tracking-tighter text-premium-black">
-            MANEVA
-          </H1>
-          <View className="w-2.5 h-2.5 rounded-full bg-gold ml-1" />
-        </View>
+        <H1 className="font-manrope-extrabold text-5xl tracking-tighter text-premium-black mb-3">
+          MANEVA
+        </H1>
         <Body className="font-manrope text-premium-gray text-center text-base">
           Tu peluquería premium, a un toque
         </Body>
@@ -40,9 +37,10 @@ export default function WelcomeScreen() {
           activeOpacity={0.85}
           className="w-full bg-gold rounded-2xl py-4 items-center shadow-premium-gold"
         >
-          <Caption className="font-manrope-extrabold !text-premium-black uppercase tracking-widest text-sm">
+          <Caption className="font-manrope-extrabold !text-premium-white uppercase tracking-wide text-sm" numberOfLines={1}>
             Iniciar sesión
           </Caption>
+
         </TouchableOpacity>
 
         {/* Botón secundario — Crear cuenta */}
