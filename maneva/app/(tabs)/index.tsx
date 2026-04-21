@@ -556,21 +556,23 @@ export default function HomeScreen() {
         {/* B: Próxima Cita */}
         <Animated.View
           entering={FadeInDown.delay(80).duration(400).springify()}
-          ref={setSectionRef("nextAppointment")}
           onLayout={(e) =>
             onSectionLayout("nextAppointment", e.nativeEvent.layout.y)
           }
         >
-          <NextAppointmentSection />
+          <View ref={setSectionRef("nextAppointment")}>
+            <NextAppointmentSection />
+          </View>
         </Animated.View>
 
         {/* C: Tu Salón */}
         <Animated.View
           entering={FadeInDown.delay(160).duration(400).springify()}
-          ref={setSectionRef("mySalon")}
           onLayout={(e) => onSectionLayout("mySalon", e.nativeEvent.layout.y)}
         >
-          <MySalonSection />
+          <View ref={setSectionRef("mySalon")}>
+            <MySalonSection />
+          </View>
         </Animated.View>
 
         {/* D: Disponible Hoy */}
