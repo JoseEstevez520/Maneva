@@ -14,7 +14,7 @@ import {
   IconLocation,
   IconClock,
   IconClose,
-  IconNorthWest,
+  IconArrowUpRight,
 } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useSalon } from '@/hooks/useSalons'
@@ -264,7 +264,7 @@ export default function SalonDetailScreen() {
                   activeOpacity={0.7}
                 >
                   <View className="flex-row items-start gap-2">
-                    <IconNorthWest color={Colors.gold.DEFAULT} size={16} />
+                    <IconArrowUpRight color={Colors.gold.DEFAULT} size={16} />
                     <View className="flex-1">
                       <Body className="font-manrope-bold text-[14px] text-premium-black">
                         {campaign.name}

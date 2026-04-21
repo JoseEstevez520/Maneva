@@ -19,7 +19,7 @@ import {
   IconSearch,
   IconClose,
   IconExpandMore,
-  IconNorthWest,
+  IconArrowUpRight,
   IconStar,
 } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
@@ -80,7 +80,12 @@ export default function SearchScreen() {
 
   // Un filtro se considera activo cuando tiene un valor distinto al estado inicial.
   // El género no se incluye aún porque requiere la columna `gender_focus` en salon_locations.
-  const hasActiveFilters = filters.minRating > 0 || filters.priceRange > 0 || query.length > 0
+  // selectedServices se incluye para que el chip "Limpiar" aparezca cuando hay servicios seleccionados.
+  const hasActiveFilters =
+    filters.minRating > 0 ||
+    filters.priceRange > 0 ||
+    filters.selectedServices.length > 0 ||
+    query.length > 0
 
   // Calcular distancia en km
   const calculateDistance = (lat: number | null, lon: number | null) => {
@@ -221,6 +226,8 @@ export default function SearchScreen() {
             active={filters.priceRange > 0}
             onPress={() => setVisibleModal('price')}
           />
+          {/* TODO: Habilitar cuando exista la columna `gender_focus` en salon_locations.
+              El modal está implementado pero no es accesible hasta entonces. */}
           <FilterChip
             label="Género"
             iconTail="expand_more"
@@ -392,7 +399,11 @@ function FilterChip({
         : 'bg-premium-white border-[#E5E7EB]'
 
   const textColor =
-    variant === 'clear' ? 'text-premium-white' : 'text-premium-black'
+    variant === 'clear'
+      ? 'text-premium-white'
+      : active
+        ? 'text-premium-white'
+        : 'text-premium-black'
 
   return (
     <AnimatedFilterChip
@@ -410,7 +421,11 @@ function FilterChip({
         {label}
       </Caption>
       {iconTail === 'expand_more' && (
-        <IconExpandMore size={16} color={Colors.premium.black} strokeWidth={2} />
+        <IconExpandMore
+          size={16}
+          color={active ? Colors.premium.white : Colors.premium.black}
+          strokeWidth={2}
+        />
       )}
     </AnimatedFilterChip>
   )
@@ -479,6 +494,9 @@ function RatingFilterModal({
 }) {
   const [tempRating, setTempRating] = React.useState(minRating)
 
+  // Sincronizar el estado temporal con el valor confirmado cada vez que el modal se abre
+  React.useEffect(() => { if (visible) setTempRating(minRating) }, [visible, minRating])
+
   const RATING_OPTIONS = [
     { value: 0, label: 'Todas las valoraciones', stars: 0 },
     { value: 3, label: '3 estrellas en adelante', stars: 3 },
@@ -532,7 +550,7 @@ function RatingFilterModal({
                 <Body
                   className={`font-manrope-medium text-[13px] ${
                     tempRating === option.value
-                      ? 'text-premium-black'
+                      ? 'text-premium-white'
                       : 'text-premium-gray'
                   }`}
                 >
@@ -573,6 +591,8 @@ function PriceFilterModal({
 }) {
   const [tempPrice, setTempPrice] = React.useState(priceRange)
 
+  React.useEffect(() => { if (visible) setTempPrice(priceRange) }, [visible, priceRange])
+
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
@@ -601,7 +621,7 @@ function PriceFilterModal({
                 <Body
                   className={`font-manrope-medium text-[13px] ${
                     tempPrice === option.id
-                      ? 'text-premium-black'
+                      ? 'text-premium-white'
                       : 'text-premium-gray'
                   }`}
                 >
@@ -642,6 +662,8 @@ function GenderFilterModal({
 }) {
   const [tempGender, setTempGender] = React.useState(gender)
 
+  React.useEffect(() => { if (visible) setTempGender(gender) }, [visible, gender])
+
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
@@ -670,7 +692,7 @@ function GenderFilterModal({
                 <Body
                   className={`font-manrope-medium text-[13px] ${
                     tempGender === option.id
-                      ? 'text-premium-black'
+                      ? 'text-premium-white'
                       : 'text-premium-gray'
                   }`}
                 >

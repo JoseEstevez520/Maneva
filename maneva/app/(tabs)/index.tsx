@@ -32,13 +32,7 @@ const PLACEHOLDER_IMAGE =
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatAppointmentDate(iso: string): string {
-  const date = new Date(iso);
-  return date.toLocaleString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return format(parseISO(iso), "dd MMM · HH:mm", { locale: es })
 }
 
 // ─── Componentes internos ──────────────────────────────────────────────────────
@@ -64,8 +58,8 @@ function SectionHeader({
         {title}
       </Caption>
       {actionLabel && (
-        <TouchableOpacity onPress={onAction} className="ml-3 shrink-0">
-          <Caption className="font-manrope-bold text-[9px] tracking-[2px] text-premium-gray uppercase border-b border-premium-gray-light pb-[1px]">
+        <TouchableOpacity onPress={onAction} className="ml-3" style={{ flexShrink: 0 }}>
+          <Caption numberOfLines={1} className="font-manrope-bold text-[9px] tracking-[2px] text-premium-gray uppercase border-b border-premium-gray-light pb-[1px]">
             {actionLabel}
           </Caption>
         </TouchableOpacity>
@@ -156,6 +150,7 @@ function NextAppointmentSection() {
               className="w-20 h-20 rounded-2xl shrink-0"
             />
           </View>
+          {/* TODO: navegar a /booking/[id] cuando exista la pantalla de detalle de cita */}
           <TouchableOpacity
             className="border border-premium-black rounded-xl py-3 items-center"
             activeOpacity={0.7}
@@ -170,6 +165,7 @@ function NextAppointmentSection() {
           <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
             No tienes citas próximas
           </Body>
+          {/* TODO: abrir flujo de reserva cuando esté implementado */}
           <TouchableOpacity
             className="bg-gold rounded-lg py-2 px-10 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]"
             activeOpacity={0.85}
@@ -226,6 +222,7 @@ function MySalonSection() {
                 {salon.salons?.description ?? "Tu salón de confianza"}
               </Caption>
             </View>
+            {/* TODO: navegar a /salon/[id] cuando MySalonSection reciba el id de la sede */}
             <TouchableOpacity
               className="bg-gold rounded-lg py-2 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]"
               activeOpacity={0.85}

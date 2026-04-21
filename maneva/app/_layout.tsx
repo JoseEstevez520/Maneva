@@ -73,9 +73,12 @@ export default function RootLayout() {
     }
   }, [loaded, error]);
 
-  // Configurar la barra de navegación Android al montar la app
+  // Configurar la barra de navegación Android al montar la app.
+  // El catch evita una promesa rechazada silenciosa en dispositivos sin soporte.
   useEffect(() => {
-    configureNavigationBar()
+    configureNavigationBar().catch((e) => {
+      console.warn('NavigationBar config failed:', e)
+    })
   }, []);
 
   useEffect(() => {
@@ -221,6 +224,10 @@ export default function RootLayout() {
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen
           name="search"
+          options={{ headerShown: false, presentation: "fullScreenModal" }}
+        />
+        <Stack.Screen
+          name="chat"
           options={{ headerShown: false, presentation: "fullScreenModal" }}
         />
         <Stack.Screen

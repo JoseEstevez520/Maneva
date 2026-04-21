@@ -17,12 +17,14 @@ type BadgeProps = {
   size?: 'sm' | 'md'
 }
 
+// Regla de contraste: fondos claros (gold, warning) → texto negro.
+// Fondos oscuros/saturados (black, success, error) → texto blanco.
 const variantStyles: Record<BadgeVariant, { bg: string; text: string }> = {
-  gold: { bg: 'bg-gold', text: 'text-premium-white' },
-  black: { bg: 'bg-premium-black', text: 'text-premium-white' },
-  success: { bg: 'bg-[#10B981]', text: 'text-premium-white' },
-  warning: { bg: 'bg-[#F59E0B]', text: 'text-premium-white' },
-  error: { bg: 'bg-[#EF4444]', text: 'text-premium-white' },
+  gold:    { bg: 'bg-gold',           text: 'text-premium-white' },
+  black:   { bg: 'bg-premium-black',  text: 'text-premium-white' },
+  success: { bg: 'bg-[#10B981]',      text: 'text-premium-white' },
+  warning: { bg: 'bg-[#F59E0B]',      text: 'text-premium-black' },
+  error:   { bg: 'bg-[#EF4444]',      text: 'text-premium-white' },
 }
 
 export function Badge({ text, variant = 'black', size = 'md' }: BadgeProps) {
