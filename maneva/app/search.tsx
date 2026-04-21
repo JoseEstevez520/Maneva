@@ -8,6 +8,11 @@ import {
   Modal,
   Pressable,
 } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
@@ -234,7 +239,7 @@ export default function SearchScreen() {
           {hasActiveFilters && (
             <FilterChip
               label="Limpiar"
-              active={true}
+              variant="clear"
               onPress={clearAllFilters}
             />
           )}
@@ -358,52 +363,75 @@ export default function SearchScreen() {
 
 // ─── FilterChip ─────────────────────────────────────────────────────
 
+const AnimatedFilterChip = Animated.createAnimatedComponent(Pressable)
+
 function FilterChip({
   label,
   iconTail,
   active,
   disabled,
+  variant = 'default',
   onPress,
 }: {
   label: string
   iconTail?: 'expand_more'
   active?: boolean
   disabled?: boolean
+  /** default: chip de filtro (dorado si activo). clear: acción de borrar (negro). */
+  variant?: 'default' | 'clear'
   onPress?: () => void
 }) {
+  const scale = useSharedValue(1)
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
+
+  const containerStyle =
+    variant === 'clear'
+      ? 'bg-premium-black border-premium-black'
+      : active
+        ? 'bg-gold border-gold'
+        : 'bg-premium-white border-[#E5E7EB]'
+
+  const textColor =
+    variant === 'clear' ? 'text-premium-white' : 'text-premium-black'
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <AnimatedFilterChip
       disabled={disabled}
       onPress={onPress}
-      className={`flex-row items-center px-4 py-2 rounded-full border gap-1.5 ${
-        active ? 'bg-gold border-gold' : 'bg-premium-white border-[#E5E7EB]'
-      }${disabled ? ' opacity-40' : ''}`}
+      onPressIn={() => { scale.value = withSpring(0.93, { damping: 15, stiffness: 300 }) }}
+      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
+      style={[animatedStyle, disabled ? { opacity: 0.4 } : undefined]}
+      className={`flex-row items-center px-4 py-2 rounded-full border gap-1.5 ${containerStyle}`}
     >
-      <Caption
-        className={`font-manrope-bold text-[12px] ${
-          active ? 'text-premium-black' : 'text-premium-black'
-        }`}
-      >
+      {variant === 'clear' && (
+        <IconClose size={12} color={Colors.premium.white} strokeWidth={2.5} />
+      )}
+      <Caption className={`font-manrope-bold text-[12px] ${textColor}`}>
         {label}
       </Caption>
       {iconTail === 'expand_more' && (
         <IconExpandMore size={16} color={Colors.premium.black} strokeWidth={2} />
       )}
-    </TouchableOpacity>
+    </AnimatedFilterChip>
   )
 }
 
 // ─── SalonResultRow ─────────────────────────────────────────────────
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+
 function SalonResultRow({ salon }: { salon: SearchSalon }) {
   const router = useRouter()
+  const scale = useSharedValue(1)
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       onPress={() => router.push(`/salon/${salon.id}`)}
-      className="flex-row items-center py-6 px-5 border-b border-[#F9FAFB] gap-5 active:bg-[#F9FAFB]"
-      activeOpacity={0.7}
+      onPressIn={() => { scale.value = withSpring(0.98, { damping: 15, stiffness: 300 }) }}
+      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
+      style={animatedStyle}
+      className="flex-row items-center py-6 px-5 border-b border-[#F9FAFB] gap-5"
     >
       <Image
         source={{ uri: PLACEHOLDER_IMAGE }}
@@ -432,7 +460,7 @@ function SalonResultRow({ salon }: { salon: SearchSalon }) {
           </Caption>
         </View>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   )
 }
 

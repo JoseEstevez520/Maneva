@@ -11,11 +11,11 @@ type InputProps = {
 export function Input({ label, error, leftIcon, containerClassName = '', ...props }: InputProps) {
   const [isFocused, setIsFocused] = useState(false)
 
-  // Diseño Stitch: Inputs redondeados, fondo gris clarito o blanco
-  const borderColor = error 
-    ? 'border-red-500' 
-    : isFocused 
-      ? 'border-premium-black' 
+  // Error → rojo, focus → dorado (identidad de marca), idle → gris claro
+  const borderColor = error
+    ? 'border-red-500'
+    : isFocused
+      ? 'border-gold'
       : 'border-premium-gray-light'
 
   return (

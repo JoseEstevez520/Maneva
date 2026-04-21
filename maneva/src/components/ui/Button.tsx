@@ -1,5 +1,10 @@
 import React from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "xs" | "sm" | "md" | "lg";
@@ -15,10 +20,17 @@ type ButtonProps = {
 };
 
 /**
- * Diseño Maneva Premium (Stitch):
- * primary: Fondo dorado, texto negro, sombra dorada, uppercase
+ * Diseño Maneva Premium:
+ * primary:   Fondo dorado, texto negro, sombra dorada, uppercase
  * secondary: Fondo blanco, borde grueso negro, uppercase
+ *
+ * Animación: scale-down suave al pulsar via Reanimated withSpring.
+ * El spring (damping 15, stiffness 300) da una respuesta rápida y orgánica
+ * sin rebotar — más premium que una transición lineal.
  */
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const variantStyles: Record<Variant, string> = {
   primary: "bg-gold border-0",
   secondary: "bg-premium-white border-4 border-premium-black shadow-xl",
@@ -36,7 +48,7 @@ const textStyles: Record<Variant, string> = {
 const sizeStyles: Record<Size, string> = {
   xs: "px-4 py-3 rounded-xl",
   sm: "px-6 py-4 rounded-2xl",
-  md: "px-8 py-6 rounded-[24px]", // equivalent to rounded-3xl roughly
+  md: "px-8 py-6 rounded-[24px]",
   lg: "px-10 py-8 rounded-[32px]",
 };
 
@@ -57,12 +69,27 @@ export function Button({
   children,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={isDisabled}
-      activeOpacity={0.75}
+      style={animatedStyle}
       className={`w-full flex-row items-center justify-center gap-3 ${variantStyles[variant]} ${sizeStyles[size]} ${isDisabled ? "opacity-50" : ""}`}
     >
       {loading ? (
@@ -75,6 +102,6 @@ export function Button({
       >
         {children}
       </Text>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }

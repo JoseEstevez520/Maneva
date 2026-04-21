@@ -8,8 +8,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Pressable,
 } from 'react-native'
-import { IconSearch, IconCalendar, IconLocation, IconStar, IconTag } from '@/components/ui/icons'
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated'
+import { IconSearch, IconCalendar, IconLocation, IconStar, IconTag, IconChevron } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useNextAppointment } from '@/hooks/useAppointments'
 import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
@@ -50,13 +57,14 @@ function SectionHeader({
   return (
     <View
       ref={containerRef}
-      className="flex-row justify-between items-center mb-[14px]"
+      className="flex-row items-center mb-[14px]"
     >
-      <Caption className="font-manrope-extrabold text-[11px] tracking-[2.5px] text-premium-black uppercase">
+      {/* flex-1 para que el título no empuje la acción a una segunda línea */}
+      <Caption className="flex-1 font-manrope-extrabold text-[11px] tracking-[2.5px] text-premium-black uppercase">
         {title}
       </Caption>
       {actionLabel && (
-        <TouchableOpacity onPress={onAction}>
+        <TouchableOpacity onPress={onAction} className="ml-3 shrink-0">
           <Caption className="font-manrope-bold text-[9px] tracking-[2px] text-premium-gray uppercase border-b border-premium-gray-light pb-[1px]">
             {actionLabel}
           </Caption>
@@ -241,13 +249,19 @@ function MySalonSection() {
 
 // ─── Sección D: Disponible Hoy ────────────────────────────────────────────────
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+
 function TodayCard({ id, name, city }: { id: string; name: string; city: string | null }) {
   const router = useRouter()
-  
+  const scale = useSharedValue(1)
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       onPress={() => router.push(`/salon/${id}`)}
-      activeOpacity={0.7}
+      onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
+      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
+      style={animatedStyle}
       className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
     >
       <View>
@@ -279,7 +293,7 @@ function TodayCard({ id, name, city }: { id: string; name: string; city: string 
           </Caption>
         </View>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
@@ -321,6 +335,8 @@ function AvailableTodaySection() {
 
 function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   const router = useRouter()
+  const scale = useSharedValue(1)
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
   const salonName = offer.salon_locations?.salons?.name ?? offer.salon_locations?.name ?? 'Salón'
   const salonCity = offer.salon_locations?.city ?? 'Madrid'
@@ -335,10 +351,12 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   }
 
   return (
-    <TouchableOpacity 
+    <AnimatedPressable
       onPress={handlePress}
+      onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
+      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
+      style={animatedStyle}
       className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
-      activeOpacity={0.7}
     >
       {/* Encabezado con tipo de oferta */}
       <View className="bg-[rgba(212,175,55,0.08)] border-b border-[#F5F5F5] px-5 py-3 flex-row items-center gap-2">
@@ -375,26 +393,24 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
           </View>
         </View>
 
-        {/* Período de validez */}
-        <View className="flex-row items-center gap-2">
-          <IconCalendar size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
-            Válido hasta {endFormatted}
-          </Caption>
+        {/* Fila inferior: validez + CTA sutil integrado */}
+        <View className="flex-row items-center justify-between mt-1">
+          <View className="flex-row items-center gap-2">
+            <IconCalendar size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+            <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+              Válido hasta {endFormatted}
+            </Caption>
+          </View>
+          {/* CTA integrado: no duplica el press de la card, guía visualmente */}
+          <View className="flex-row items-center gap-0.5">
+            <Caption className="font-manrope-extrabold text-[11px] text-gold">
+              Ver oferta
+            </Caption>
+            <IconChevron size={13} color={Colors.gold.DEFAULT} strokeWidth={2.5} />
+          </View>
         </View>
-
-        {/* Botón de acción */}
-        <TouchableOpacity 
-          className="mt-2 py-3 rounded-lg bg-gold items-center"
-          activeOpacity={0.85}
-          onPress={handlePress}
-        >
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[1.5px] text-premium-black">
-            VER OFERTA
-          </Caption>
-        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   )
 }
 
@@ -532,42 +548,48 @@ export default function HomeScreen() {
         onMomentumScrollEnd={scrollHandlers.onMomentumScrollEnd}
         onContentSizeChange={scrollHandlers.onContentSizeChange}
       >
-        {/* A: Buscador */}
-        <View
+        {/* A: Buscador — sin delay, es lo primero visible */}
+        <Animated.View
+          entering={FadeInDown.duration(400).springify()}
           onLayout={(e) => onSectionLayout("search", e.nativeEvent.layout.y)}
         >
           <SearchBar anchorRef={setSectionRef("search")} />
-        </View>
+        </Animated.View>
 
         {/* B: Próxima Cita */}
-        <View
+        <Animated.View
+          entering={FadeInDown.delay(80).duration(400).springify()}
           ref={setSectionRef("nextAppointment")}
           onLayout={(e) =>
             onSectionLayout("nextAppointment", e.nativeEvent.layout.y)
           }
         >
           <NextAppointmentSection />
-        </View>
+        </Animated.View>
 
         {/* C: Tu Salón */}
-        <View
+        <Animated.View
+          entering={FadeInDown.delay(160).duration(400).springify()}
           ref={setSectionRef("mySalon")}
           onLayout={(e) => onSectionLayout("mySalon", e.nativeEvent.layout.y)}
         >
           <MySalonSection />
-        </View>
+        </Animated.View>
 
         {/* D: Disponible Hoy */}
-        <AvailableTodaySection />
+        <Animated.View entering={FadeInDown.delay(240).duration(400).springify()}>
+          <AvailableTodaySection />
+        </Animated.View>
 
         {/* E: Ofertas Especiales */}
-        <View
+        <Animated.View
+          entering={FadeInDown.delay(320).duration(400).springify()}
           onLayout={(e) =>
             onSectionLayout("specialOffers", e.nativeEvent.layout.y)
           }
         >
           <SpecialOffersSection />
-        </View>
+        </Animated.View>
       </ScrollView>
       <TutorialModal anchors={anchors} onStepChange={handleStepChange} />
     </ScreenLayout>
