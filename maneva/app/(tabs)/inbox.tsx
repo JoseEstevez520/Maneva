@@ -1,32 +1,26 @@
 import React from 'react'
 import { View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import { Body, H2, Caption } from '@/components/ui/Typography'
+import { Button } from '@/components/ui/Button'
+import { IconChat } from '@/components/ui/icons'
 import { ScreenLayout } from '@/components/ui/ScreenLayout'
-import { Body, Caption } from '@/components/ui/Typography'
 import { IconMail } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 
 export default function InboxScreen() {
   return (
-    <ScreenLayout header="brand" scrollable={false}>
-      <Animated.View
-        entering={FadeInDown.duration(400).springify()}
-        className="flex-1 items-center justify-center px-8"
-      >
-        <View
-          className="w-[68px] h-[68px] rounded-full border border-gold items-center justify-center mb-5"
-          accessibilityElementsHidden={true}
-          importantForAccessibility="no-hide-descendants"
-        >
-          <IconMail size={26} color={Colors.gold.DEFAULT} strokeWidth={1.7} />
+    <ScreenLayout header="brand">
+      <View className="flex-1 items-center justify-center px-2 py-10">
+        <View className="w-20 h-20 rounded-full bg-[rgba(212,175,55,0.12)] items-center justify-center mb-5">
+          <IconChat size={34} color={Colors.gold.DEFAULT} strokeWidth={2.2} />
         </View>
-        <Body className="font-manrope-extrabold text-[17px] text-premium-black text-center mb-2">
-          Tu buzón está vacío
+
+        <H2 className="text-center text-[28px] mb-2">Tu inbox está vacío</H2>
+        <Body className="text-center text-[15px] leading-6 max-w-[310px] mb-8">
+          Aquí verás mensajes, recordatorios de citas y novedades de tus salones favoritos.
         </Body>
-        <Caption className="font-manrope-medium text-[13px] text-premium-gray text-center leading-relaxed">
-          Aquí aparecerán tus conversaciones y notificaciones
-        </Caption>
-      </Animated.View>
+
+      </View>
     </ScreenLayout>
   )
 }

@@ -77,7 +77,6 @@ export async function setUserPreference(
     preference_key: preferenceKey,
     preference_value: preferenceValue,
   };
-
   // Intento 1: insertar directo (funciona si no existe o no hay restricción única).
   const { error: insertError } = await supabase
     .from("user_preferences")
@@ -107,6 +106,8 @@ export async function getAllUserPreferences(
     .select("preference_value")
     .eq("user_id", userId)
     .eq("preference_key", preferenceKey);
+  
+  
 
   if (error) throw error;
   return (data ?? []).map((r) => r.preference_value ?? "").filter(Boolean);

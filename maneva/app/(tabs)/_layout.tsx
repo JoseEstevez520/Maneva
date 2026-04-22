@@ -1,3 +1,4 @@
+import React from "react";
 import { IconHome, IconMail, IconSettings, IconSparkles } from "@/components/ui/icons";
 import { Colors } from "@/constants/theme";
 import { Tabs, useRouter } from "expo-router";

@@ -1,0 +1,194 @@
+import React, { useEffect, useMemo, useState } from 'react'
+import { Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import Constants from 'expo-constants'
+
+import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
+import { Input } from '@/components/ui/Input'
+import { IconBack, IconChevron } from '@/components/ui/icons'
+import { Colors } from '@/constants/theme'
+import { useUserProfile } from '@/hooks/useUserProfile'
+import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
+
+function BrandHeader() {
+  const router = useRouter()
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back()
+      return
+    }
+
+    router.replace('/(tabs)/settings')
+  }
+
+  return (
+    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
+      <TouchableOpacity onPress={handleBack} className="absolute left-5">
+        <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
+      </TouchableOpacity>
+      <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
+    </View>
+  )
+}
+
+function Row({
+  title,
+  subtitle,
+  onPress,
+  showChevron = true,
+}: {
+  title: string
+  subtitle?: string
+  onPress?: () => void
+  showChevron?: boolean
+}) {
+  const clickable = !!onPress
+
+  return (
+    <TouchableOpacity
+      disabled={!clickable}
+      onPress={onPress}
+      activeOpacity={0.78}
+      className={`px-6 py-6 bg-premium-white border-b border-[#ECECEC] ${!clickable ? 'opacity-80' : ''}`}
+    >
+      <View className="flex-row items-center justify-between gap-3">
+        <View className="flex-1">
+          <Body className="font-manrope-medium text-[17px] text-premium-black">{title}</Body>
+          {subtitle ? <Body className="mt-1 text-[14px] text-[#9CA3AF]">{subtitle}</Body> : null}
+        </View>
+        {showChevron ? <IconChevron size={20} color="#C7CBD1" strokeWidth={2.2} /> : null}
+      </View>
+    </TouchableOpacity>
+  )
+}
+
+export default function GeneralSettingsScreen() {
+  const router = useRouter()
+  const { data: profile, loading: profileLoading, updateProfile } = useUserProfile()
+  const { languages, styleProfile, saveStyleProfile } = useUserStyleProfile()
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+
+  useEffect(() => {
+    setFirstName(profile?.first_name ?? '')
+    setLastName(profile?.last_name ?? '')
+  }, [profile])
+
+  useEffect(() => {
+    setAvatarUrl(styleProfile?.avatar_url ?? '')
+  }, [styleProfile])
+
+  const currentLanguage = useMemo(() => {
+    const current = languages.find((language) => language.id === profile?.language_id)
+    return current?.name ?? 'Castellano'
+  }, [languages, profile?.language_id])
+
+  const userInitials = useMemo(() => {
+    const initials = `${firstName.trim().charAt(0)}${lastName.trim().charAt(0)}`.trim()
+    return initials || 'U'
+  }, [firstName, lastName])
+
+  const handleSaveUserProfile = async () => {
+    try {
+      await updateProfile({
+        first_name: firstName.trim() || null,
+        last_name: lastName.trim() || null,
+      })
+      await saveStyleProfile({
+        avatar_url: avatarUrl.trim() || null,
+      })
+      Alert.alert('Guardado', 'Los datos del usuario se han actualizado.')
+    } catch {
+      Alert.alert('Error', 'No se pudieron guardar los datos del usuario.')
+    }
+  }
+
+  const version = Constants.expoConfig?.version ?? '1.0.0'
+
+  return (
+    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
+      <BrandHeader />
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
+        <View className="px-6 py-8">
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Ajustes generales</H2>
+        </View>
+
+        <View className="bg-premium-white border-y border-[#ECECEC]">
+          <View className="px-6 py-5">
+            <Caption className="font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-[#9CA3AF]">
+              Tus datos
+            </Caption>
+          </View>
+
+          <View className="px-6 pb-6 gap-5">
+            <View className="items-center gap-4">
+              <View className="w-24 h-24 rounded-full bg-[#F4F4F4] border border-[#ECECEC] items-center justify-center overflow-hidden">
+                {avatarUrl.trim() ? (
+                  <Image source={{ uri: avatarUrl.trim() }} className="w-full h-full" />
+                ) : (
+                  <Body className="font-manrope-extrabold text-[26px] text-[#D0A52B]">{userInitials}</Body>
+                )}
+              </View>
+              <Caption className="font-manrope-semibold text-[12px] tracking-[2px] uppercase text-[#9CA3AF] text-center">
+                Foto de perfil
+              </Caption>
+            </View>
+
+            <Input
+              label="Nombre"
+              value={firstName}
+              onChangeText={setFirstName}
+              placeholder="Tu nombre"
+              autoCapitalize="words"
+            />
+
+            <Input
+              label="Apellidos"
+              value={lastName}
+              onChangeText={setLastName}
+              placeholder="Tus apellidos"
+              autoCapitalize="words"
+            />
+
+            <Input
+              label="Foto de perfil"
+              value={avatarUrl}
+              onChangeText={setAvatarUrl}
+              placeholder="Pega la URL de tu foto"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+            />
+
+            <TouchableOpacity
+              onPress={() => {
+                void handleSaveUserProfile()
+              }}
+              disabled={profileLoading}
+              activeOpacity={0.82}
+              className={`h-12 rounded-full bg-gold items-center justify-center ${profileLoading ? 'opacity-60' : ''}`}
+            >
+              <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-[#000000]">
+                {profileLoading ? 'Guardando...' : 'Guardar cambios'}
+              </Caption>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* TODO: abrir selector de idioma con persistencia completa */}
+        <Row title="Idioma" subtitle={currentLanguage} />
+        {/* TODO: enlazar contenido legal y seguridad reales */}
+        <Row title="Privacidad y Seguridad" />
+        <Row title="Términos de Servicio" />
+        <Row title="Política de Privacidad" onPress={() => router.push('/(tabs)/settings/privacy-policy')} />
+        <Row title="Versión de la app" subtitle={`v${version}`} showChevron={false} />
+
+    
+      </ScrollView>
+    </SafeAreaView>
+  )
+}
