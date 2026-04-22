@@ -4,34 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import Constants from 'expo-constants'
 
-import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
+import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { Input } from '@/components/ui/Input'
-import { IconBack, IconChevron } from '@/components/ui/icons'
+import { IconChevron } from '@/components/ui/icons'
+import { BrandHeader } from '@/components/ui/BrandHeader'
 import { Colors } from '@/constants/theme'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
 
-function BrandHeader() {
-  const router = useRouter()
-
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-      return
-    }
-
-    router.replace('/(tabs)/settings')
-  }
-
-  return (
-    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
-      <TouchableOpacity onPress={handleBack} className="absolute left-5">
-        <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
-      </TouchableOpacity>
-      <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
-    </View>
-  )
-}
 
 function Row({
   title,
@@ -130,7 +110,7 @@ export default function GeneralSettingsScreen() {
                 {avatarUrl.trim() ? (
                   <Image source={{ uri: avatarUrl.trim() }} className="w-full h-full" />
                 ) : (
-                  <Body className="font-manrope-extrabold text-[26px] text-[#D0A52B]">{userInitials}</Body>
+                  <Body className="font-manrope-extrabold text-[26px] text-gold">{userInitials}</Body>
                 )}
               </View>
               <Caption className="font-manrope-semibold text-[12px] tracking-[2px] uppercase text-[#9CA3AF] text-center">
@@ -172,7 +152,7 @@ export default function GeneralSettingsScreen() {
               activeOpacity={0.82}
               className={`h-12 rounded-full bg-gold items-center justify-center ${profileLoading ? 'opacity-60' : ''}`}
             >
-              <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-[#000000]">
+              <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white">
                 {profileLoading ? 'Guardando...' : 'Guardar cambios'}
               </Caption>
             </TouchableOpacity>

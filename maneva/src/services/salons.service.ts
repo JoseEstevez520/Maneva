@@ -11,6 +11,11 @@ type SalonLocation = Database['public']['Tables']['salon_locations']['Row']
 type Salon = Database['public']['Tables']['salons']['Row']
 type Service = Database['public']['Tables']['services']['Row']
 type Employee = Database['public']['Tables']['employees']['Row']
+type User = Database['public']['Tables']['users']['Row']
+
+export type EmployeeWithUser = Employee & {
+  users: Pick<User, 'first_name' | 'last_name'> | null
+}
 type Campaign = Database['public']['Tables']['campaigns']['Row']
 type Review = Database['public']['Tables']['reviews']['Row']
 type EcoLabel = Database['public']['Tables']['eco_labels']['Row']
@@ -25,7 +30,7 @@ export type UnifiedSalon = SalonLocation & {
 /** Tipo para el perfil detallado del salón */
 export type SalonDetail = UnifiedSalon & {
   services: Service[] | null
-  employees: Employee[] | null
+  employees: EmployeeWithUser[] | null
   campaigns: Campaign[] | null
   reviews: Review[] | null
   ecoLabels: EcoLabel[] | null
@@ -131,7 +136,11 @@ export async function getSalonById(id: string): Promise<SalonDetail> {
         photo_url,
         bio,
         position,
-        specialties
+        specialties,
+        users (
+          first_name,
+          last_name
+        )
       ),
       campaigns (
         id,

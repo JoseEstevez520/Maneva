@@ -184,6 +184,7 @@ function NextAppointmentSection() {
 
 function MySalonSection() {
   const { data: salon, loading } = useFavoriteSalon();
+  const router = useRouter();
 
   return (
     <View className="px-5 mt-7">
@@ -222,10 +223,10 @@ function MySalonSection() {
                 {salon.salons?.description ?? "Tu salón de confianza"}
               </Caption>
             </View>
-            {/* TODO: navegar a /salon/[id] cuando MySalonSection reciba el id de la sede */}
             <TouchableOpacity
               className="bg-gold rounded-lg py-2 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]"
               activeOpacity={0.85}
+              onPress={() => router.push(`/salon/${salon.id}`)}
             >
               <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
                 VER SALÓN

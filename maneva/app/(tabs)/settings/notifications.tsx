@@ -3,22 +3,13 @@ import { Alert, ScrollView, Switch, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 
-import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
-import { IconBack, IconChevron } from '@/components/ui/icons'
+import { Body, Caption, H2 } from '@/components/ui/Typography'
+import { IconChevron } from '@/components/ui/icons'
+import { BrandHeader } from '@/components/ui/BrandHeader'
 import { Colors } from '@/constants/theme'
 import { useNotificationSettings } from '@/hooks/useNotificationSettings'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 
-function BrandHeader({ onBack }: { onBack: () => void }) {
-  return (
-    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
-      <TouchableOpacity onPress={onBack} className="absolute left-5">
-        <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
-      </TouchableOpacity>
-      <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
-    </View>
-  )
-}
 
 export default function NotificationsScreen() {
   const router = useRouter()
@@ -68,18 +59,9 @@ export default function NotificationsScreen() {
     void saveHomeServiceEnabled(nextValue)
   }
 
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-      return
-    }
-
-    router.replace('/(tabs)/settings')
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
-      <BrandHeader onBack={handleBack} />
+      <BrandHeader />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">

@@ -226,7 +226,7 @@ export default function SalonDetailScreen() {
                         <Image source={{ uri: employee.photo_url || PLACEHOLDER_IMAGE }} className="w-full h-full" resizeMode="cover" />
                       </View>
                       <Caption className="mt-1.5 font-manrope-semibold text-[10px] text-[#7A7A7A]" numberOfLines={1}>
-                        {employee.first_name}
+                        {[employee.users?.first_name, employee.users?.last_name].filter(Boolean).join(' ') || 'Estilista'}
                       </Caption>
                     </View>
                   ))}

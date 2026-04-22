@@ -11,10 +11,9 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-
-import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
+import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconAdd, IconBack, IconClose, IconStar, IconTrash } from '@/components/ui/icons'
+import { BrandHeader } from '@/components/ui/BrandHeader'
 import { Colors } from '@/constants/theme'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
 
@@ -162,7 +161,7 @@ function TimeWheel({
               }}
             >
               <Caption
-                className={`font-manrope-extrabold text-[20px] tracking-[2px] ${isSelected ? 'text-[#D0A52B]' : 'text-[#8A94A6]'}`}
+                className={`font-manrope-extrabold text-[20px] tracking-[2px] ${isSelected ? 'text-gold' : 'text-[#8A94A6]'}`}
                 style={{
                   position: 'relative',
                   zIndex: 30,
@@ -178,27 +177,7 @@ function TimeWheel({
   )
 }
 
-function BrandHeader() {
-  const router = useRouter()
 
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-      return
-    }
-
-    router.replace('/(tabs)/settings')
-  }
-
-  return (
-    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
-      <TouchableOpacity onPress={handleBack} className="absolute left-5">
-        <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
-      </TouchableOpacity>
-      <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
-    </View>
-  )
-}
 
 function SectionTitle({ title }: { title: string }) {
   return (
@@ -479,7 +458,7 @@ export default function BookingPreferencesScreen() {
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
               <IconAdd size={11} color={Colors.premium.white} strokeWidth={3} />
             </View>
-            <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-[#D0A52B]">
+            <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
               Añadir servicio
             </Caption>
           </TouchableOpacity>
@@ -494,7 +473,7 @@ export default function BookingPreferencesScreen() {
                     activeOpacity={0.78}
                     className="px-3 py-2 rounded-full border border-[#E4D39C] bg-[#F9F7F0]"
                   >
-                    <Caption className="font-manrope-extrabold text-[11px] text-[#D0A52B]">{option}</Caption>
+                    <Caption className="font-manrope-extrabold text-[11px] text-gold">{option}</Caption>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -576,7 +555,7 @@ export default function BookingPreferencesScreen() {
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
               <IconAdd size={11} color={Colors.premium.white} strokeWidth={3} />
             </View>
-            <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-[#D0A52B]">
+            <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
               Añadir hora personalizada
             </Caption>
           </TouchableOpacity>
@@ -615,7 +594,7 @@ export default function BookingPreferencesScreen() {
                   <Body className="font-manrope-medium text-[13px] text-[#6B7280]">
                     Hora seleccionada:
                   </Body>
-                  <Body className="mt-2 font-manrope-extrabold text-[16px] text-[#D0A52B]">
+                  <Body className="mt-2 font-manrope-extrabold text-[16px] text-gold">
                     {availabilityPickerStep === 'start'
                       ? `${formatTimeFromMinutes(availabilityStartMinutes)} - --:--`
                       : `${formatTimeFromMinutes(availabilityStartMinutes)} - ${formatTimeFromMinutes(availabilityEndMinutes)}`}
@@ -630,7 +609,7 @@ export default function BookingPreferencesScreen() {
                     activeOpacity={0.8}
                     className="h-12 rounded-full bg-gold items-center justify-center"
                   >
-                    <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-[#000000]">
+                    <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white">
                       Continuar
                     </Caption>
                   </TouchableOpacity>
@@ -644,7 +623,7 @@ export default function BookingPreferencesScreen() {
                     activeOpacity={0.8}
                     className="h-12 rounded-full bg-gold items-center justify-center"
                   >
-                    <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-[#000000]">
+                    <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white">
                       Guardar hora personalizada
                     </Caption>
                   </TouchableOpacity>

@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { format, parseISO } from 'date-fns'
 
-import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
-import { IconAdd, IconBack, IconChevron } from '@/components/ui/icons'
+import { Body, Caption, H2 } from '@/components/ui/Typography'
+import { IconAdd, IconChevron } from '@/components/ui/icons'
+import { BrandHeader } from '@/components/ui/BrandHeader'
 import { Colors } from '@/constants/theme'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -13,27 +14,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { useLinkedProfiles } from '@/hooks/useLinkedProfiles'
 
-function BrandHeader() {
-  const router = useRouter()
-
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-      return
-    }
-
-    router.replace('/(tabs)/settings')
-  }
-
-  return (
-    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
-      <TouchableOpacity onPress={handleBack} className="absolute left-5">
-        <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
-      </TouchableOpacity>
-      <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
-    </View>
-  )
-}
 
 function fullName(firstName: string | null, lastName: string | null): string {
   const value = [firstName ?? '', lastName ?? ''].map((item) => item.trim()).filter(Boolean).join(' ')
@@ -132,7 +112,7 @@ function AddPersonTrigger({ onPress }: { onPress: () => void }) {
       <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
         <IconAdd size={11} color={Colors.premium.white} strokeWidth={3} />
       </View>
-      <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-[#D0A52B]">
+      <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
         Añadir persona
       </Caption>
     </TouchableOpacity>
@@ -163,7 +143,7 @@ function InfoCard({
         </View>
 
         <TouchableOpacity onPress={onPress} activeOpacity={0.75} className="flex-row items-center gap-1">
-          <Caption className="font-manrope-extrabold text-[11px] tracking-[1px] uppercase text-[#D0A52B]">
+          <Caption className="font-manrope-extrabold text-[11px] tracking-[1px] uppercase text-gold">
             {actionLabel}
           </Caption>
           <IconChevron size={13} color={Colors.gold.DEFAULT} strokeWidth={2.4} />
@@ -323,7 +303,7 @@ export default function BookingsDelegationScreen() {
               permissionLabel={formatPermissionsLabel(delegate.permissions)}
               dateLabel={formatDateLabel(delegate.link.created_at)}
               primaryLabel="Editar"
-              primaryColorClassName="text-[#D0A52B]"
+              primaryColorClassName="text-gold"
               onPrimaryPress={() => handleEditPermissions(delegate.link.id)}
               secondaryLabel="Eliminar"
               secondaryColorClassName="text-red-600"
@@ -400,8 +380,8 @@ export default function BookingsDelegationScreen() {
               permissionLabel={formatPermissionsLabel(managed.permissions)}
               dateLabel={formatDateLabel(managed.link.created_at)}
               primaryLabel="Gestionar citas"
-              primaryColorClassName="text-[#D0A52B]"
-              onPrimaryPress={() => router.push('./index')}
+              primaryColorClassName="text-gold"
+              onPrimaryPress={() => router.push('/(tabs)/bookings')}
               secondaryLabel="Dejar de gestionar"
               secondaryColorClassName="text-red-600"
               onSecondaryPress={() => handleStopManaging(managed.link.id)}
@@ -416,7 +396,8 @@ export default function BookingsDelegationScreen() {
             </View>
           ) : null}
 
-          <InfoCard title="Cómo añadir administradores" actionLabel="Ver más" onPress={refresh} />
+          {/* TODO: enlazar a contenido de ayuda real cuando esté disponible */}
+          <InfoCard title="Cómo añadir administradores" actionLabel="Ver más" onPress={() => {}} />
 
           <View className="mx-6 mt-4 rounded-[18px] bg-[#F4F4F4] px-5 py-5 flex-row items-center gap-3">
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(scripts/start-server.sh:*)"
+      "Bash(scripts/start-server.sh:*)",
+      "Bash(awk '/Tables.*employees/,/Tables.*[a-z]/' maneva/src/types/database.types.ts)"
     ]
   }
 }

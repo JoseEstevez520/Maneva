@@ -1,11 +1,10 @@
 import React from 'react'
 import { Image, ScrollView, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-
-import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
-import { IconAdd, IconBack } from '@/components/ui/icons'
+import { Body, Caption, H2 } from '@/components/ui/Typography'
+import { IconAdd } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
+import { BrandHeader } from '@/components/ui/BrandHeader'
 
 const REFERENCE_IMAGES = [
   'https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?w=800&h=1000&fit=crop',
@@ -14,27 +13,6 @@ const REFERENCE_IMAGES = [
   'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&h=1000&fit=crop',
 ]
 
-function BrandHeader() {
-  const router = useRouter()
-
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-      return
-    }
-
-    router.replace('/(tabs)/settings')
-  }
-
-  return (
-    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
-      <TouchableOpacity onPress={handleBack} className="absolute left-5">
-        <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
-      </TouchableOpacity>
-      <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
-    </View>
-  )
-}
 
 export default function ReferenceCutsScreen() {
   return (
@@ -64,7 +42,7 @@ export default function ReferenceCutsScreen() {
           <View className="w-12 h-12 rounded-full bg-gold items-center justify-center">
             <IconAdd size={22} color={Colors.premium.white} strokeWidth={2.8} />
           </View>
-          <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-[#D0A52B]">Añadir imagen</Caption>
+          <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-gold">Añadir imagen</Caption>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
