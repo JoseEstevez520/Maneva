@@ -267,11 +267,7 @@ function TodayCard({ id, name, city }: { id: string; name: string; city: string 
           source={{ uri: PLACEHOLDER_IMAGE }}
           className="w-full h-[140px]"
         />
-        <View className="absolute top-2.5 left-2.5 bg-gold px-2.5 py-1 rounded-lg">
-          <Caption className="font-manrope-extrabold text-[7px] tracking-[1.5px] uppercase text-premium-white">
-            DISPONIBLE HOY
-          </Caption>
-        </View>
+
       </View>
       <View className="p-[14px] gap-1.5">
         <Body
