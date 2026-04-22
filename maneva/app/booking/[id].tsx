@@ -1,12 +1,12 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import {
   View,
   ScrollView,
   TouchableOpacity,
   TextInput,
-  FlatList,
   Image,
 } from 'react-native'
+import { Calendar, LocaleConfig } from 'react-native-calendars'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { format, addDays, parseISO } from 'date-fns'
@@ -27,6 +27,16 @@ import { Colors } from '@/constants/theme'
 import { useBookingFlow, BookingStep } from '@/hooks/useAppointments'
 import { AvailableSlot, EmployeeInfo, Service } from '@/services/appointments.service'
 
+// ─── Locale español para react-native-calendars ───────────────────────────────
+
+LocaleConfig.locales['es'] = {
+  monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+  monthNamesShort: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+  dayNames: ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
+  dayNamesShort: ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],
+}
+LocaleConfig.defaultLocale = 'es'
+
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
 const STEP_TITLES: Record<BookingStep, string> = {
@@ -40,49 +50,47 @@ const STEP_TITLES: Record<BookingStep, string> = {
 
 const STEP_ORDER: BookingStep[] = ['services', 'employee', 'date', 'slot', 'confirm', 'done']
 
-function buildDateRange(): Date[] {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return Array.from({ length: 60 }, (_, i) => addDays(today, i))
-}
-
-const DATE_RANGE = buildDateRange()
-
 // ─── Header ────────────────────────────────────────────────────────────────────
 
 function BookingHeader({ step, onBack }: { step: BookingStep; onBack: () => void }) {
   const stepIndex = STEP_ORDER.indexOf(step)
   const totalSteps = STEP_ORDER.length - 1
 
+  if (step === 'done') {
+    return (
+      <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 items-center justify-center">
+        <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">
+          MANEVA
+        </H1>
+      </View>
+    )
+  }
+
   return (
     <View className="px-5 pt-4 pb-3 border-b border-[#F3F4F6]">
       <View className="flex-row items-center gap-4 mb-3">
-        {step !== 'done' && (
-          <TouchableOpacity
-            onPress={onBack}
-            className="w-9 h-9 rounded-full bg-[#F5F5F5] items-center justify-center"
-            activeOpacity={0.7}
-          >
-            <IconBack size={18} color={Colors.premium.black} strokeWidth={2} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          onPress={onBack}
+          className="w-9 h-9 rounded-full bg-[#F5F5F5] items-center justify-center"
+          activeOpacity={0.7}
+        >
+          <IconBack size={18} color={Colors.premium.black} strokeWidth={2} />
+        </TouchableOpacity>
         <H2 className="font-manrope-bold text-[18px] text-premium-black flex-1">
           {STEP_TITLES[step]}
         </H2>
       </View>
 
-      {step !== 'done' && (
-        <View className="flex-row gap-1.5">
-          {STEP_ORDER.slice(0, totalSteps).map((s, i) => (
-            <View
-              key={s}
-              className={`h-1 flex-1 rounded-full ${
-                i <= stepIndex ? 'bg-gold' : 'bg-[#F0F0F0]'
-              }`}
-            />
-          ))}
-        </View>
-      )}
+      <View className="flex-row gap-1.5">
+        {STEP_ORDER.slice(0, totalSteps).map((s, i) => (
+          <View
+            key={s}
+            className={`h-1 flex-1 rounded-full ${
+              i <= stepIndex ? 'bg-gold' : 'bg-[#F0F0F0]'
+            }`}
+          />
+        ))}
+      </View>
     </View>
   )
 }
@@ -391,6 +399,9 @@ function EmployeeStep({
 
 // ─── Paso 3: Fecha ─────────────────────────────────────────────────────────────
 
+const MIN_DATE = format(new Date(), 'yyyy-MM-dd')
+const MAX_DATE = format(addDays(new Date(), 60), 'yyyy-MM-dd')
+
 function DateStep({
   selectedDate,
   onSelect,
@@ -400,61 +411,37 @@ function DateStep({
   onSelect: (date: string) => void
   onContinue: () => void
 }) {
-  const flatRef = useRef<FlatList>(null)
+  const markedDates = selectedDate
+    ? { [selectedDate]: { selected: true, selectedColor: Colors.gold.DEFAULT, selectedTextColor: '#FFFFFF' } }
+    : {}
 
   return (
     <View className="flex-1">
-      <View className="flex-1 px-5 pt-6">
-        <Body className="font-manrope-medium text-[13px] text-premium-gray mb-5">
-          Selecciona el día que mejor te venga
-        </Body>
-        <FlatList
-          ref={flatRef}
-          data={DATE_RANGE}
-          keyExtractor={(d) => d.toISOString()}
-          showsVerticalScrollIndicator={false}
-          numColumns={4}
-          contentContainerStyle={{ gap: 10, paddingBottom: 16 }}
-          columnWrapperStyle={{ gap: 10 }}
-          renderItem={({ item: date }) => {
-            const iso = format(date, 'yyyy-MM-dd')
-            const selected = selectedDate === iso
-            const isToday = iso === format(new Date(), 'yyyy-MM-dd')
-
-            return (
-              <TouchableOpacity
-                onPress={() => onSelect(iso)}
-                activeOpacity={0.7}
-                className={`flex-1 items-center py-3 rounded-2xl border ${
-                  selected ? 'bg-gold border-gold' : 'bg-premium-white border-[#F0F0F0]'
-                }`}
-              >
-                <Caption
-                  className={`font-manrope-extrabold text-[9px] tracking-[1px] uppercase mb-1 ${
-                    selected ? 'text-premium-black' : 'text-premium-gray'
-                  }`}
-                >
-                  {format(date, 'EEE', { locale: es })}
-                </Caption>
-                <Body className="font-manrope-bold text-[18px] text-premium-black">
-                  {format(date, 'd')}
-                </Body>
-                <Caption
-                  className={`font-manrope-medium text-[9px] mt-0.5 ${
-                    selected ? 'text-premium-black' : 'text-premium-gray'
-                  }`}
-                >
-                  {format(date, 'MMM', { locale: es })}
-                </Caption>
-                {isToday && (
-                  <View
-                    className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                      selected ? 'bg-premium-black' : 'bg-gold'
-                    }`}
-                  />
-                )}
-              </TouchableOpacity>
-            )
+      <View className="flex-1 px-4 pt-4">
+        <Calendar
+          onDayPress={(day) => onSelect(day.dateString)}
+          markedDates={markedDates}
+          minDate={MIN_DATE}
+          maxDate={MAX_DATE}
+          enableSwipeMonths
+          theme={{
+            backgroundColor: 'transparent',
+            calendarBackground: 'transparent',
+            textSectionTitleColor: Colors.premium.gray.DEFAULT,
+            selectedDayBackgroundColor: Colors.gold.DEFAULT,
+            selectedDayTextColor: '#FFFFFF',
+            todayTextColor: Colors.gold.DEFAULT,
+            dayTextColor: Colors.premium.black,
+            textDisabledColor: '#D0D0D0',
+            dotColor: Colors.gold.DEFAULT,
+            arrowColor: Colors.gold.DEFAULT,
+            monthTextColor: Colors.premium.black,
+            textMonthFontFamily: 'Manrope_700Bold',
+            textMonthFontSize: 16,
+            textDayFontFamily: 'Manrope_500Medium',
+            textDayFontSize: 14,
+            textDayHeaderFontFamily: 'Manrope_800ExtraBold',
+            textDayHeaderFontSize: 11,
           }}
         />
       </View>
@@ -697,30 +684,93 @@ function ConfirmStep({
 
 // ─── Paso 6: Éxito ─────────────────────────────────────────────────────────────
 
-function DoneStep({ appointmentId, onGoHome }: { appointmentId: string; onGoHome: () => void }) {
-  return (
-    <View className="flex-1 items-center justify-center px-5 gap-6">
-      <View className="w-20 h-20 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-        <IconCheckCircle size={40} color={Colors.gold.DEFAULT} strokeWidth={1.5} />
-      </View>
+function DoneStep({
+  appointmentId,
+  services,
+  slot,
+  onGoHome,
+}: {
+  appointmentId: string
+  services: Service[]
+  slot: AvailableSlot
+  onGoHome: () => void
+}) {
+  const dateLabel = format(parseISO(slot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
+  const totalPrice = services.reduce((sum, s) => sum + s.price, 0)
+  const serviceNames = services.map((s) => s.name).join(', ')
+  const employeeNames = slot.employees
+    .map((e) => [e.firstName, e.lastName].filter(Boolean).join(' ') || 'Profesional')
+    .join(' + ')
 
-      <View className="items-center gap-2">
-        <H1 className="font-manrope-bold text-[22px] text-premium-black text-center">
-          ¡Reserva confirmada!
-        </H1>
-        <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
-          Recibirás la confirmación por WhatsApp.
-        </Body>
-        <View className="bg-[#F5F5F5] rounded-lg px-4 py-2 mt-2">
-          <Caption className="font-manrope-bold text-[11px] text-premium-gray tracking-[1px]">
-            ID: {appointmentId.slice(0, 8).toUpperCase()}
+  return (
+    <View className="flex-1 px-5">
+      <View className="flex-1 items-center justify-center gap-6">
+        {/* Icono */}
+        <View className="w-24 h-24 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
+          <IconCheckCircle size={48} color={Colors.gold.DEFAULT} strokeWidth={1.5} />
+        </View>
+
+        {/* Título */}
+        <View className="items-center gap-2">
+          <H1 className="font-manrope-bold text-[24px] text-premium-black text-center">
+            ¡Reserva confirmada!
+          </H1>
+          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+            Recibirás la confirmación por WhatsApp.
+          </Body>
+        </View>
+
+        {/* Resumen de la cita */}
+        <View className="w-full bg-[rgba(212,175,55,0.06)] border border-[rgba(212,175,55,0.25)] rounded-2xl p-4 gap-3">
+          <View className="flex-row items-start gap-2.5">
+            <IconCalendar size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
+            <Body className="font-manrope-semibold text-[13px] text-premium-black flex-1 capitalize">
+              {dateLabel}
+            </Body>
+          </View>
+
+          {serviceNames.length > 0 && (
+            <View className="flex-row items-start gap-2.5">
+              <IconCheck size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Body className="font-manrope-medium text-[13px] text-premium-black flex-1">
+                {serviceNames}
+              </Body>
+            </View>
+          )}
+
+          {employeeNames.length > 0 && (
+            <View className="flex-row items-start gap-2.5">
+              <IconUser size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Body className="font-manrope-medium text-[13px] text-premium-black flex-1">
+                {employeeNames}
+              </Body>
+            </View>
+          )}
+
+          {totalPrice > 0 && (
+            <View className="border-t border-[rgba(212,175,55,0.2)] pt-3 flex-row justify-between items-center">
+              <Caption className="font-manrope-medium text-[12px] text-premium-gray">
+                Total estimado
+              </Caption>
+              <Body className="font-manrope-bold text-[15px] text-premium-black">
+                {totalPrice}€
+              </Body>
+            </View>
+          )}
+        </View>
+
+        <View className="bg-[#F5F5F5] rounded-lg px-4 py-2">
+          <Caption className="font-manrope-bold text-[11px] text-premium-gray tracking-[1.5px]">
+            Ref: {appointmentId.slice(0, 8).toUpperCase()}
           </Caption>
         </View>
       </View>
 
-      <Button variant="primary" size="sm" onPress={onGoHome}>
-        Volver al inicio
-      </Button>
+      <View className="pb-6">
+        <Button variant="primary" size="sm" onPress={onGoHome}>
+          Volver al inicio
+        </Button>
+      </View>
     </View>
   )
 }
@@ -812,8 +862,13 @@ export default function BookingScreen() {
         />
       )}
 
-      {flow.step === 'done' && flow.booking && (
-        <DoneStep appointmentId={flow.booking.id} onGoHome={handleGoHome} />
+      {flow.step === 'done' && flow.booking && flow.selectedSlot && (
+        <DoneStep
+          appointmentId={flow.booking.id}
+          services={selectedServices}
+          slot={flow.selectedSlot}
+          onGoHome={handleGoHome}
+        />
       )}
     </SafeAreaView>
   )

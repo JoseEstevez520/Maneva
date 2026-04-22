@@ -212,6 +212,8 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="salon/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="bookings" options={{ headerShown: false }} />
+        <Stack.Screen name="booking" options={{ headerShown: false }} />
         <Stack.Screen
           name="onboarding/index"
           options={{ headerShown: false }}

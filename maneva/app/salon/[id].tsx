@@ -11,7 +11,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import {
   IconStar,
   IconBack,
-  IconAdd,
   IconHeart,
   IconLocation,
   IconPhone,
@@ -34,7 +33,6 @@ export default function SalonDetailScreen() {
   const router = useRouter()
   const { data: salon, loading, error } = useSalon(id || '')
   const { isFavorite, loading: favoriteLoading, toggle: toggleFavorite } = useSalonFavorite(id || '')
-  const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<SalonTab>('services')
 
   if (loading)
@@ -72,8 +70,8 @@ export default function SalonDetailScreen() {
 
   const tabs: { key: SalonTab; label: string }[] = [
     { key: 'services', label: 'SERVICIOS' },
-    { key: 'reviews', label: 'RESEÑAS' },
     { key: 'team', label: 'NUESTROS ESTILISTAS' },
+    { key: 'reviews', label: 'RESEÑAS' },
     { key: 'details', label: 'DETALLES' },
   ]
 
@@ -167,32 +165,23 @@ export default function SalonDetailScreen() {
             {activeTab === 'services' ? (
               <View className="mt-3">
                 <View className="mt-2">
-                  {services.map((service) => {
-                    const expanded = expandedServiceId === service.id
-                    return (
-                      <View key={service.id} className="border-b border-[#F0F0F0] py-3">
-                        <View className="flex-row items-center justify-between gap-3">
-                          <View className="flex-1 pr-2">
-                            <H2 className="font-manrope-bold text-[18px] leading-[22px] text-premium-black">{service.name}</H2>
-                            <Caption className="mt-1 font-manrope-medium text-[12px] text-[#9AA0A6]" numberOfLines={expanded ? 0 : 1}>
-                              {service.description || 'Servicio de alto nivel adaptado a tu estilo.'}
+                  {services.map((service) => (
+                    <View key={service.id} className="border-b border-[#F0F0F0] py-3">
+                      <View className="flex-row items-center justify-between gap-3">
+                        <View className="flex-1 pr-2">
+                          <H2 className="font-manrope-bold text-[18px] leading-[22px] text-premium-black">{service.name}</H2>
+                          {service.description ? (
+                            <Caption className="mt-1 font-manrope-medium text-[12px] text-[#9AA0A6]">
+                              {service.description}
                             </Caption>
-                            <Body className="mt-1 font-manrope-bold text-[18px] text-premium-black">
-                              {service.price ? `${service.price}€` : '-'}
-                            </Body>
-                          </View>
-
-                          <TouchableOpacity
-                            className="w-9 h-9 rounded-full border border-[#E6E6E6] items-center justify-center"
-                            activeOpacity={0.85}
-                            onPress={() => setExpandedServiceId(expanded ? null : service.id)}
-                          >
-                            <IconAdd size={16} color={Colors.premium.black} strokeWidth={2.3} />
-                          </TouchableOpacity>
+                          ) : null}
                         </View>
+                        <Body className="font-manrope-bold text-[18px] text-premium-black">
+                          {service.price ? `${service.price}€` : '—'}
+                        </Body>
                       </View>
-                    )
-                  })}
+                    </View>
+                  ))}
                 </View>
               </View>
             ) : null}

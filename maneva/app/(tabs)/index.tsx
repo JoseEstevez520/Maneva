@@ -116,10 +116,11 @@ function setNodeRef(
 
 function NextAppointmentSection() {
   const { data: appt, loading } = useNextAppointment();
+  const router = useRouter();
 
   return (
     <View className="px-5 mt-7">
-      <SectionHeader title="PRÓXIMA CITA" actionLabel="VER TODO" />
+      <SectionHeader title="PRÓXIMA CITA" actionLabel="VER TODO" onAction={() => router.push('/bookings')} />
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : appt ? (
@@ -150,12 +151,12 @@ function NextAppointmentSection() {
               className="w-20 h-20 rounded-2xl shrink-0"
             />
           </View>
-          {/* TODO: navegar a /booking/[id] cuando exista la pantalla de detalle de cita */}
           <TouchableOpacity
-            className="border border-premium-black rounded-xl py-3 items-center"
-            activeOpacity={0.7}
+            className="bg-gold rounded-xl py-3 items-center shadow-[0_4px_12px_rgba(212,175,55,0.35)]"
+            activeOpacity={0.85}
+            onPress={() => router.push('/bookings')}
           >
-            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-black">
+            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
               VER DETALLES
             </Caption>
           </TouchableOpacity>
@@ -165,10 +166,10 @@ function NextAppointmentSection() {
           <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
             No tienes citas próximas
           </Body>
-          {/* TODO: abrir flujo de reserva cuando esté implementado */}
           <TouchableOpacity
             className="bg-gold rounded-lg py-2 px-10 items-center shadow-[0_6px_14px_rgba(212,175,55,0.4)]"
             activeOpacity={0.85}
+            onPress={() => router.push('/search')}
           >
             <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
               RESERVAR AHORA
