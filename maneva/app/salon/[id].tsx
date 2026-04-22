@@ -18,7 +18,7 @@ import {
   IconClock,
 } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
-import { useSalon } from '@/hooks/useSalons'
+import { useSalon, useSalonFavorite } from '@/hooks/useSalons'
 import { H1, Body, Caption, H2 } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
@@ -33,8 +33,8 @@ export default function SalonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const { data: salon, loading, error } = useSalon(id || '')
+  const { isFavorite, loading: favoriteLoading, toggle: toggleFavorite } = useSalonFavorite(id || '')
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null)
-  const [isFavorite, setIsFavorite] = useState(false)
   const [activeTab, setActiveTab] = useState<SalonTab>('services')
 
   if (loading)
@@ -125,7 +125,10 @@ export default function SalonDetailScreen() {
                 <TouchableOpacity
                   className="w-10 h-10 rounded-full border border-[#E6E6E6] bg-premium-white items-center justify-center"
                   activeOpacity={0.85}
-                  onPress={() => setIsFavorite((prev) => !prev)}
+                  disabled={favoriteLoading}
+                  onPress={() => {
+                    void toggleFavorite()
+                  }}
                 >
                   <IconHeart
                     size={19}
