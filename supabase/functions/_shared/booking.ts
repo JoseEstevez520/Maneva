@@ -110,6 +110,7 @@ export async function getAvailableSlots(
   locationId: string,
   serviceIds: string[],
   date: string,
+  preferredTime?: string | null,
 ): Promise<SlotOption[]> {
   const dayOfWeek = new Date(`${date}T12:00:00`).getDay()
 
@@ -219,6 +220,17 @@ export async function getAvailableSlots(
   }
 
   slots.sort((a, b) => a.start.localeCompare(b.start))
+
+  // Si hay hora preferida, mostrar los 8 slots más cercanos a esa hora (primero los que son >= preferredTime)
+  if (preferredTime) {
+    const prefMin = timeToMin(preferredTime)
+    const fromPref = slots.filter((s) => timeToMin(s.start.slice(11, 16)) >= prefMin)
+    if (fromPref.length >= 4) return fromPref.slice(0, 8)
+    // Si hay pocos en ese tramo, completar con slots anteriores
+    const before = slots.filter((s) => timeToMin(s.start.slice(11, 16)) < prefMin).slice(-4)
+    return [...before, ...fromPref].slice(0, 8)
+  }
+
   return slots.slice(0, 8)
 }
 

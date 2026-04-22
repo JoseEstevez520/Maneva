@@ -64,7 +64,7 @@ Deno.serve(async (req: Request) => {
       .eq('location_id', locationId)
       .eq('active', true)
 
-    // 3. Cargar historial de las últimas 24h (máx 80 mensajes, orden cronológico)
+    // 3. Cargar historial de las últimas 24h (máx 20 mensajes — menos contexto basura, más foco)
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { data: history } = await supabase
       .from('whatsapp_messages')
@@ -73,7 +73,7 @@ Deno.serve(async (req: Request) => {
       .eq('location_id', locationId)
       .gte('created_at', since24h)
       .order('created_at', { ascending: true })
-      .limit(80)
+      .limit(20)
 
     const conversationHistory: ChatMessage[] = (history ?? []).map((msg) => ({
       role: msg.direction === 'inbound' ? 'user' : 'assistant',
@@ -84,32 +84,49 @@ Deno.serve(async (req: Request) => {
     const lastOutbound = [...(history ?? [])].reverse().find((m) => m.direction === 'outbound')
     const progress = parseProgress(lastOutbound?.ai_response ?? null)
 
-    // 5. Construir prompt con estado completo
+    const todayStr = new Date().toISOString().slice(0, 10)
+
+    // 5. Construir system prompt (sin estado — el estado va en el mensaje del usuario)
     const systemPrompt = buildSystemPrompt({
       locationName: location?.name ?? 'la peluquería',
       services: services ?? [],
       userName: userRow?.first_name ?? null,
       isGuest: userId === null,
-      progress,
     })
 
-    // 6. Llamar a la IA
+    // 6. Inyectar el estado de la reserva DENTRO del mensaje del usuario.
+    //    Los modelos siempre leen el mensaje actual con máxima atención.
+    //    Esto evita que olviden el servicio o los slots entre mensajes.
+    const contextPrefix = buildContextPrefix(progress, services ?? [], todayStr)
+    const messageForAI = contextPrefix
+      ? `${contextPrefix}\n\nCliente dice: "${userMessage}"`
+      : userMessage
+
+    // 7. Llamar a la IA
     const aiResponse = await callAIWithFallback(
-      [{ role: 'system', content: systemPrompt }, ...conversationHistory, { role: 'user', content: userMessage }],
+      [{ role: 'system', content: systemPrompt }, ...conversationHistory, { role: 'user', content: messageForAI }],
       GROQ_API_KEY,
       OPENAI_API_KEY,
     )
 
-    // 7. Ejecutar acción o actualizar estado a partir de lo que la IA extrajo
+    // 8. Ejecutar acción o actualizar estado
     let replyText = aiResponse.reply
     let nextProgress: BookingProgress = { ...progress }
 
-    // Si la IA identificó servicios aunque no haya acción, persistirlos
     if (aiResponse.bookingState?.serviceIds?.length) {
       nextProgress = {
         ...nextProgress,
         serviceIds: aiResponse.bookingState.serviceIds,
         serviceNames: aiResponse.bookingState.serviceNames ?? nextProgress.serviceNames,
+      }
+    }
+
+    // Safety net: si la IA olvidó devolver bookingState, detectar el servicio del texto
+    // Busca en el mensaje del usuario Y en la última respuesta del bot (el bot suele repetir el nombre del servicio)
+    if (nextProgress.serviceIds.length === 0) {
+      const detected = detectServiceFromRecent(userMessage, lastOutbound?.message ?? '', services ?? [])
+      if (detected) {
+        nextProgress = { ...nextProgress, serviceIds: [detected.id], serviceNames: [detected.name] }
       }
     }
 
@@ -126,7 +143,7 @@ Deno.serve(async (req: Request) => {
       nextProgress = result.progress
     }
 
-    // 8. Guardar mensajes (entrante + respuesta con estado persistido)
+    // 9. Guardar mensajes con estado persistido
     await supabase.from('whatsapp_messages').insert({
       phone_number: phone,
       location_id: locationId,
@@ -142,7 +159,7 @@ Deno.serve(async (req: Request) => {
       direction: 'outbound',
       message: replyText,
       user_id: userId,
-      ai_response: JSON.stringify(nextProgress),  // SIEMPRE guardamos el estado
+      ai_response: JSON.stringify(nextProgress),
       processed_by_ai: true,
     })
 
@@ -181,13 +198,11 @@ function buildSystemPrompt(params: {
   services: ServiceRow[]
   userName: string | null
   isGuest: boolean
-  progress: BookingProgress
 }): string {
-  const { locationName, services, userName, isGuest, progress } = params
+  const { locationName, services, userName, isGuest } = params
   const today = new Date()
   const todayStr = today.toISOString().slice(0, 10)
 
-  // Lista de servicios con nombres coloquiales de ayuda al mapeo
   const servicesList = services
     .map((s) => {
       const aliases = buildAliases(s.name)
@@ -195,99 +210,83 @@ function buildSystemPrompt(params: {
     })
     .join('\n')
 
-  // Sección de estado actual de la reserva
-  const stateSection = buildStateSection(progress, services)
-
-  // Instrucción específica de invitado
   const guestNote = isGuest
     ? `\n⚠️  CLIENTE SIN CUENTA: Puede reservar sin problema. No pidas email ni contraseña. Cuando elija un slot, el sistema le pedirá automáticamente el nombre — tú no lo hagas antes.`
     : ''
 
-  return `Eres el asistente de reservas de "${locationName}"${userName ? ` (hablando con ${userName})` : ''}. Tu único objetivo es ayudar a concretar citas por WhatsApp de forma rápida y natural.
+  return `Eres el asistente de reservas de "${locationName}"${userName ? ` (hablando con ${userName})` : ''}. Ayudas a reservar citas por WhatsApp de forma rápida y natural.
 
 ════════════════════════════════════════
-SERVICIOS DISPONIBLES
+TU RESPUESTA SIEMPRE DEBE SER ESTE JSON (sin texto fuera del JSON):
+{
+  "reply": "<mensaje corto y amable para el cliente>",
+  "action": <acción o null>,
+  "bookingState": { "serviceIds": ["<id>"], "serviceNames": ["<nombre>"] }
+}
+REGLAS CRÍTICAS:
+• "bookingState" es SIEMPRE obligatorio. Si aún no sabes el servicio → arrays vacíos. Si ya lo sabes → rellénalo SIEMPRE aunque no haya acción.
+• NUNCA pongas IDs UUID, timestamps ISO ni datos del [RECUERDO] en el campo "reply". Solo texto natural en español.
+• NUNCA inventes disponibilidad sin ejecutar check_availability.
+════════════════════════════════════════
+
+════════════════════════════════════════
+SERVICIOS DISPONIBLES (usa exactamente estos IDs)
 ════════════════════════════════════════
 ${servicesList}
 
 ════════════════════════════════════════
-FECHA Y HORA ACTUAL
+FECHAS DE REFERENCIA (hoy es ${todayStr})
 ════════════════════════════════════════
-Hoy: ${todayStr} (${format(today, "EEEE d 'de' MMMM", { locale: es })})
-Mañana: ${nextDay(todayStr)}
-Próximo lunes: ${nextWeekday(today, 1)}
-Próximo martes: ${nextWeekday(today, 2)}
+Hoy:               ${todayStr} (${format(today, "EEEE d 'de' MMMM", { locale: es })})
+Mañana:            ${nextDay(todayStr)}
+Pasado mañana:     ${nextDay(nextDay(todayStr))}
+Próximo lunes:     ${nextWeekday(today, 1)}
+Próximo martes:    ${nextWeekday(today, 2)}
 Próximo miércoles: ${nextWeekday(today, 3)}
-Próximo jueves: ${nextWeekday(today, 4)}
-Próximo viernes: ${nextWeekday(today, 5)}
+Próximo jueves:    ${nextWeekday(today, 4)}
+Próximo viernes:   ${nextWeekday(today, 5)}
 
 ════════════════════════════════════════
-FLUJO DE RESERVA — SIGUE ESTE ORDEN
+FLUJO DE RESERVA
 ════════════════════════════════════════
-PASO 1 — ENTENDER QUÉ QUIERE
-  La gente habla de forma natural. Ejemplos de mapeo:
-  "cortarme el pelo" → Corte de Caballero o Corte de Dama según contexto
-  "la barba" / "afeitarme" / "arreglarme la barba" → Barba y Afeitado
-  "teñirme" / "el tinte" / "cambiar de color" → Tinte Completo
-  "mechas" / "balayage" / "rayitos" → Mechas Balayage
-  "peinarme para una boda/evento/fiesta" → Peinado Evento
-  "la manicura" / "las uñas" → Manicura
-  Si NO puedes identificar el servicio exacto con certeza → pregunta UNA VEZ de forma directa.
-  Si sí puedes identificarlo → guárdalo en bookingState y continúa.
 
-PASO 2 — OBTENER LA FECHA
-  Interpreta siempre fechas relativas:
-  "mañana" → ${nextDay(todayStr)}
-  "pasado mañana" → ${nextDay(nextDay(todayStr))}
-  "el viernes" → primer viernes futuro (${nextWeekday(today, 5)})
-  "la semana que viene" → lunes ${nextWeekday(today, 1)}
-  "en dos semanas" → ${nextWeekday(today, 1)} + 7 días
-  En cuanto tengas servicio + fecha → ejecuta check_availability INMEDIATAMENTE sin preguntar más.
+PASO 1 — IDENTIFICAR EL SERVICIO:
+  "cortarme el pelo"/"un corte" → pregunta si es caballero o dama si no hay contexto
+  "la barba"/"afeitarme" → Barba y Afeitado
+  "teñirme"/"el tinte" → Tinte Completo
+  "mechas"/"balayage"/"rayitos" → Mechas Balayage
+  "peinarme para boda/evento" → Peinado Evento
+  "la manicura"/"las uñas" → Manicura
+  → En cuanto lo identifiques: ponlo en bookingState. Solo una pregunta si no queda claro.
 
-PASO 3 — MOSTRAR DISPONIBILIDAD
-  Si hay huecos → muéstralos numerados, incluye hora y nombre del profesional.
-  Si no hay huecos → di cuándo no hay y ofrece buscar el día siguiente tú mismo.
-  Cuando el cliente elija un número o mencione una hora → action "book" con ese slotIndex.
+PASO 2 — OBTENER LA FECHA:
+  → Servicio + fecha → check_availability INMEDIATAMENTE.
+  → Si menciona hora además de fecha (ej: "viernes a las 11:45") → inclúyela en "preferredTime": "11:45".
 
-PASO 4 — CONFIRMAR
-  Usuario registrado → cita confirmada directamente.
-  Invitado → pedir nombre → action "create_guest_and_book".
+PASO 3 — MOSTRAR Y ELEGIR SLOT:
+  → Muéstralos numerados: "1. viernes 25 a las 10:00 – Ana García"
+  → Cliente elige número N → action "book" con slotIndex: N-1 (0-based).
 
-════════════════════════════════════════
-REGLAS ESTRICTAS
-════════════════════════════════════════
-1. NUNCA digas "tenemos disponibilidad el X" sin haber ejecutado check_availability antes.
-2. NUNCA preguntes más de una cosa en el mismo mensaje.
-3. Si el cliente ya dio el servicio en esta conversación → NO lo vuelvas a preguntar.
-4. Si ya diste fecha y servicio → ejecuta check_availability, no preguntes nada más.
-5. Respuestas máximo 3 frases, tono amable e informal.
-6. Si el cliente saluda o pregunta qué hacéis → responde brevemente y pregunta en qué puedes ayudar.
-7. Si el cliente da servicio Y fecha en el mismo mensaje → ejecuta check_availability directamente.
-8. "busca otro" / "prueba otro día" / "¿y mañana?" → usa los serviceIds del estado actual y busca la nueva fecha.${guestNote}
+PASO 4 — CONFIRMAR:
+  → Usuario registrado: confirmar directamente con action "book".
+  → Cliente sin cuenta: pedir solo el nombre → action "create_guest_and_book" con firstName.
+
+REGLAS GENERALES:
+  • Máximo 3 frases por mensaje. Tono amable e informal.
+  • NUNCA preguntes más de una cosa a la vez.
+  • Si el [RECUERDO] indica que ya hay un servicio elegido: NO lo preguntes de nuevo.
+  • Si dice "busca otro día" → check_availability con los mismos serviceIds del [RECUERDO].${guestNote}
 
 ════════════════════════════════════════
-FORMATO DE RESPUESTA — SIEMPRE JSON
+ACCIONES DISPONIBLES
 ════════════════════════════════════════
-{
-  "reply": "<mensaje para el cliente>",
-  "action": null,
-  "bookingState": { "serviceIds": ["<id>"], "serviceNames": ["<nombre>"] }
+check_availability: {"type":"check_availability","serviceIds":["<id>"],"date":"<YYYY-MM-DD>","preferredTime":"<HH:MM opcional>"}
+book:               {"type":"book","slotIndex":<número 0-based>,"serviceIds":["<id>"]}
+invitado:           {"type":"create_guest_and_book","firstName":"<nombre>"}
+cancelar:           {"type":"cancel","appointmentId":"<id>"}
+ver citas:          {"type":"list_appointments"}`
 }
 
-El campo "bookingState" es OBLIGATORIO en cuanto identifiques uno o más servicios.
-Si no hay servicios identificados todavía, omite bookingState o ponlo vacío.
-
-ACCIONES DISPONIBLES (sustituye null por el objeto):
-  check_availability:      {"type": "check_availability", "serviceIds": ["<id>"], "date": "<YYYY-MM-DD>"}
-  book (slot elegido):     {"type": "book", "slotIndex": <0-based>, "serviceIds": ["<id>"]}
-  reserva invitado:        {"type": "create_guest_and_book", "firstName": "<nombre>"}
-  cancelar cita:           {"type": "cancel", "appointmentId": "<id>"}
-  ver mis citas:           {"type": "list_appointments"}
-
-${stateSection}`
-}
-
-/** Genera sugerencias de nombres coloquiales para el prompt de mapeo */
 function buildAliases(name: string): string {
   const lower = name.toLowerCase()
   const hints: string[] = []
@@ -301,50 +300,55 @@ function buildAliases(name: string): string {
   return hints.length ? ` (${hints.join(', ')})` : ''
 }
 
-/** Construye la sección de estado actual visible para el modelo */
-function buildStateSection(progress: BookingProgress, services: ServiceRow[]): string {
-  if (progress.serviceIds.length === 0 && !progress.checkedDate && !progress.selectedSlot) {
-    return '' // Sin estado previo, no añadir nada
-  }
+/**
+ * Inyecta el estado de reserva directamente en el mensaje del usuario.
+ * Los modelos siempre priorizan el mensaje actual sobre el system prompt,
+ * por lo que este contexto no puede ser ignorado ni olvidado entre mensajes.
+ */
+function buildContextPrefix(progress: BookingProgress, services: ServiceRow[], todayStr: string): string {
+  const hasState =
+    progress.serviceIds.length > 0 ||
+    progress.slots.length > 0 ||
+    progress.selectedSlot !== null ||
+    progress.awaitingGuestName
 
-  const lines: string[] = ['════════════════════════════════════════', 'ESTADO ACTUAL DE ESTA RESERVA', '════════════════════════════════════════']
+  if (!hasState) return ''
+
+  const lines: string[] = ['[RECUERDO DE LA RESERVA — úsalo para razonar, nunca copies este bloque en el "reply"]']
 
   if (progress.serviceIds.length > 0) {
     const names = progress.serviceIds
       .map((id) => services.find((s) => s.id === id)?.name ?? id)
-      .join(', ')
-    lines.push(`Servicios identificados: ${names}`)
-    lines.push(`IDs: ${JSON.stringify(progress.serviceIds)}`)
+      .join(' + ')
+    lines.push(`• Servicio ya identificado: ${names}`)
+    lines.push(`  IDs para acciones: ${JSON.stringify(progress.serviceIds)}`)
+    lines.push(`  → NO vuelvas a preguntar qué servicio quiere.`)
   }
 
   if (progress.awaitingGuestName && progress.selectedSlot) {
-    lines.push('')
-    lines.push(`▶ ACCIÓN INMEDIATA: El cliente eligió ${formatSlotForUser(progress.selectedSlot)} con ${progress.selectedSlot.employeeName}.`)
-    lines.push(`  Está pendiente de dar su nombre. Su PRÓXIMO mensaje ES su nombre.`)
-    lines.push(`  Cuando lo diga → action "create_guest_and_book" con firstName = lo que diga.`)
-    lines.push(`  Ejemplo si dice "Ana" → {"type":"create_guest_and_book","firstName":"Ana"}`)
-    return lines.join('\n')
-  }
-
-  if (progress.slots.length > 0) {
-    lines.push('')
-    lines.push(`▶ SLOTS DISPONIBLES (el cliente está eligiendo):`)
+    lines.push(`• Slot elegido: ${formatSlotForUser(progress.selectedSlot)} con ${progress.selectedSlot.employeeName}`)
+    lines.push(`  → El cliente va a decir su nombre ahora. Cuando lo haga → action "create_guest_and_book" con firstName.`)
+  } else if (progress.slots.length > 0) {
+    lines.push(`• Slots que ya mostraste al cliente (está eligiendo uno):`)
     progress.slots.forEach((s, i) => {
-      lines.push(`  ${i + 1}. ${formatSlotForUser(s)} con ${s.employeeName} [start:${s.start}|end:${s.end}|emp:${s.employeeId}]`)
+      lines.push(`  ${i + 1}. ${formatSlotForUser(s)} – ${s.employeeName}`)
     })
-    lines.push(`  Cuando elija un número o mencione una hora → action "book" con slotIndex (0-based) y serviceIds: ${JSON.stringify(progress.serviceIds)}.`)
-    return lines.join('\n')
-  }
-
-  if (progress.checkedDate) {
-    if (progress.checkedDateHadSlots) {
-      lines.push(`Última fecha consultada: ${progress.checkedDate} (había huecos pero el cliente no eligió ninguno)`)
-    } else {
-      lines.push(`Última fecha consultada: ${progress.checkedDate} → SIN DISPONIBILIDAD`)
-      lines.push(`▶ Si dice "busca otro"/"prueba otro día" → check_availability con serviceIds: ${JSON.stringify(progress.serviceIds)} y fecha: ${nextDay(progress.checkedDate)}`)
+    lines.push(`  → Cuando elija el número N → action "book", slotIndex: N-1, serviceIds: ${JSON.stringify(progress.serviceIds)}`)
+  } else if (progress.checkedDate) {
+    const status = progress.checkedDateHadSlots
+      ? 'había huecos disponibles pero el cliente no eligió ninguno'
+      : 'sin disponibilidad'
+    lines.push(`• Última fecha consultada: ${progress.checkedDate} (${status})`)
+    if (!progress.checkedDateHadSlots && progress.serviceIds.length > 0) {
+      lines.push(`  → Si pide otro día → check_availability con serviceIds: ${JSON.stringify(progress.serviceIds)}`)
     }
+  } else if (progress.serviceIds.length > 0) {
+    // Tenemos servicio pero aún no hemos consultado disponibilidad
+    lines.push(`• Siguiente paso: preguntar fecha o, si el cliente lo pide, llamar check_availability`)
+    lines.push(`  → Si pregunta "qué días hay" o "cuándo tenéis" → check_availability con serviceIds arriba + date: "${todayStr}" (hoy) o "${nextDay(todayStr)}" (mañana)`)
   }
 
+  lines.push('[/RECUERDO]')
   return lines.join('\n')
 }
 
@@ -361,7 +365,7 @@ async function handleAction(params: {
 
   // ── check_availability ────────────────────────────────────────────────────────
   if (action.type === 'check_availability') {
-    const slots = await getAvailableSlots(supabase, locationId, action.serviceIds, action.date)
+    const slots = await getAvailableSlots(supabase, locationId, action.serviceIds, action.date, action.preferredTime ?? null)
     const serviceNames = action.serviceIds.map((id) => services.find((s) => s.id === id)?.name ?? id)
 
     const base: BookingProgress = {
@@ -409,7 +413,6 @@ async function handleAction(params: {
       }
     }
 
-    // Invitado → pedir nombre
     if (!userId) {
       return {
         reply: `¡Perfecto! Para confirmar el ${formatSlotForUser(slot)} con ${slot.employeeName} solo necesito tu nombre. ¿Cómo te llamas?`,
@@ -417,7 +420,6 @@ async function handleAction(params: {
       }
     }
 
-    // Usuario registrado → confirmar directamente
     const booking = await createBooking(supabase, {
       clientId: userId,
       locationId,
@@ -427,7 +429,7 @@ async function handleAction(params: {
     })
 
     return {
-      reply: `✅ ¡Cita confirmada! El ${formatSlotForUser(slot)} con ${slot.employeeName}.\nID: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos 😊`,
+      reply: `✅ ¡Cita confirmada! El ${formatSlotForUser(slot)} con ${slot.employeeName}.\nReferencia: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos 😊`,
       progress: emptyProgress(),
     }
   }
@@ -450,7 +452,6 @@ async function handleAction(params: {
       }
     }
 
-    // Crear cuenta Auth mínima con teléfono
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       phone,
       phone_confirm: true,
@@ -466,8 +467,6 @@ async function handleAction(params: {
     }
 
     const guestId = authData.user.id
-
-    // Upsert en tabla users (por si no existe trigger automático)
     await supabase.from('users').upsert({ id: guestId, phone, first_name: firstName })
 
     const booking = await createBooking(supabase, {
@@ -479,7 +478,7 @@ async function handleAction(params: {
     })
 
     return {
-      reply: `✅ ¡Listo, ${firstName}! Cita confirmada para el ${formatSlotForUser(slot)} con ${slot.employeeName}.\nID: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos 😊 Si quieres gestionar tus citas desde el móvil, descarga Maneva y regístrate con este número.`,
+      reply: `✅ ¡Listo, ${firstName}! Cita confirmada para el ${formatSlotForUser(slot)} con ${slot.employeeName}.\nReferencia: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos 😊`,
       progress: emptyProgress(),
     }
   }
@@ -492,7 +491,7 @@ async function handleAction(params: {
       .eq('id', action.appointmentId)
       .eq('client_id', userId ?? '')
 
-    if (error) return { reply: 'No pude cancelar esa cita. ¿El ID es correcto?', progress }
+    if (error) return { reply: 'No pude cancelar esa cita. ¿La referencia es correcta?', progress }
     return { reply: '❌ Cita cancelada correctamente.', progress: emptyProgress() }
   }
 
@@ -533,6 +532,64 @@ async function handleAction(params: {
   return { reply: 'No entendí esa acción.', progress }
 }
 
+// ─── Detección determinista de servicios ──────────────────────────────────────
+/**
+ * Safety net: si la IA no devuelve bookingState, detectamos el servicio
+ * del texto del cliente y/o de la última respuesta del bot.
+ * El bot suele repetir el nombre del servicio ("Genial, un tinte completo..."),
+ * lo que hace que la detección desde su respuesta sea muy fiable.
+ * Solo devuelve resultado cuando hay coincidencia ÚNICA (evita falsos positivos).
+ */
+function detectServiceFromRecent(
+  userMessage: string,
+  lastBotReply: string,
+  services: ServiceRow[],
+): ServiceRow | null {
+  const normalize = (s: string) =>
+    s.toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .trim()
+
+  const searchText = normalize(userMessage + ' ' + lastBotReply)
+  const matched: ServiceRow[] = []
+
+  for (const svc of services) {
+    const candidates = [svc.name, ...getServiceKeywords(svc.name)]
+    const hits = candidates.some((c) => searchText.includes(normalize(c)))
+    if (hits && !matched.find((m) => m.id === svc.id)) {
+      matched.push(svc)
+    }
+  }
+
+  return matched.length === 1 ? matched[0] : null
+}
+
+function getServiceKeywords(name: string): string[] {
+  const lower = name.toLowerCase()
+  const kw: string[] = []
+
+  if (lower.includes('tinte') || lower.includes('color')) {
+    kw.push('tinte', 'tintado', 'tintura', 'teñir', 'coloracion', 'coloración', 'teñirme')
+  }
+  if (lower.includes('barba')) {
+    kw.push('barba', 'afeitar', 'afeitado', 'afeitarme')
+  }
+  if (lower.includes('mecha') || lower.includes('balayage')) {
+    kw.push('mechas', 'mecha', 'balayage', 'rayitos', 'mechones')
+  }
+  if (lower.includes('peinado') || lower.includes('evento')) {
+    kw.push('peinado', 'peinar', 'evento', 'boda', 'fiesta', 'ceremonia')
+  }
+  if (lower.includes('manicura')) {
+    kw.push('manicura', 'unas', 'uñas', 'manos')
+  }
+  // 'corte' no se incluye — es ambiguo (caballero vs dama)
+
+  return kw
+}
+
 // ─── Utilidades de fecha ───────────────────────────────────────────────────────
 function nextDay(dateStr: string): string {
   try {
@@ -544,13 +601,11 @@ function nextDay(dateStr: string): string {
   }
 }
 
-/** Devuelve la fecha del próximo día de la semana (1=lunes, 5=viernes) */
 function nextWeekday(from: Date, targetDay: number): string {
   const d = new Date(from)
   d.setHours(12, 0, 0, 0)
-  const current = d.getDay() // 0=domingo
-  // Normalizar: JavaScript usa 0=domingo, nosotros 1=lunes..7=domingo
-  const jsTarget = targetDay % 7  // lunes=1→1, domingo=7→0
+  const current = d.getDay()
+  const jsTarget = targetDay % 7
   let daysAhead = jsTarget - current
   if (daysAhead <= 0) daysAhead += 7
   d.setDate(d.getDate() + daysAhead)
