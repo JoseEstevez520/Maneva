@@ -7,11 +7,86 @@ export type SlotOption = {
   employeeName: string
 }
 
-export type PendingSlotContext = {
-  type: 'slot_selection'
-  locationId: string
+/**
+ * Estado unificado de la reserva en curso.
+ * Se persiste en ai_response de CADA mensaje saliente del bot,
+ * garantizando que el contexto nunca se pierde entre mensajes.
+ */
+export type BookingProgress = {
+  type: 'booking_progress'
+  // Servicios identificados en la conversación
   serviceIds: string[]
+  serviceNames: string[]
+  // Última fecha consultada y resultado
+  checkedDate: string | null
+  checkedDateHadSlots: boolean
+  // Slots disponibles mostrados al cliente (vacío si no se han mostrado)
   slots: SlotOption[]
+  // Slot que el cliente eligió (antes de confirmar)
+  selectedSlot: SlotOption | null
+  // Flujo de invitado: esperando nombre para confirmar
+  awaitingGuestName: boolean
+}
+
+export function emptyProgress(): BookingProgress {
+  return {
+    type: 'booking_progress',
+    serviceIds: [],
+    serviceNames: [],
+    checkedDate: null,
+    checkedDateHadSlots: false,
+    slots: [],
+    selectedSlot: null,
+    awaitingGuestName: false,
+  }
+}
+
+/**
+ * Parsea el ai_response del último mensaje del bot.
+ * Migra formatos antiguos (slot_selection, no_slots, pending_booking) al nuevo.
+ */
+export function parseProgress(aiResponse: string | null): BookingProgress {
+  if (!aiResponse) return emptyProgress()
+  try {
+    const ctx = JSON.parse(aiResponse)
+
+    if (ctx.type === 'booking_progress') return ctx as BookingProgress
+
+    // ── Migración de formatos anteriores ────────────────────────────────────────
+    if (ctx.type === 'slot_selection') {
+      const firstSlot: SlotOption | undefined = ctx.slots?.[0]
+      return {
+        ...emptyProgress(),
+        serviceIds: ctx.serviceIds ?? [],
+        serviceNames: [],
+        checkedDate: firstSlot?.start?.slice(0, 10) ?? null,
+        checkedDateHadSlots: true,
+        slots: ctx.slots ?? [],
+      }
+    }
+
+    if (ctx.type === 'no_slots') {
+      return {
+        ...emptyProgress(),
+        serviceIds: ctx.serviceIds ?? [],
+        serviceNames: ctx.serviceNames ?? [],
+        checkedDate: ctx.checkedDate ?? null,
+        checkedDateHadSlots: false,
+      }
+    }
+
+    if (ctx.type === 'pending_booking') {
+      return {
+        ...emptyProgress(),
+        serviceIds: ctx.serviceIds ?? [],
+        serviceNames: [],
+        selectedSlot: ctx.slot ?? null,
+        awaitingGuestName: true,
+      }
+    }
+  } catch { /* formato no reconocido */ }
+
+  return emptyProgress()
 }
 
 const SLOT_STEP = 15
@@ -60,7 +135,6 @@ export async function getAvailableSlots(
   const totalDuration = (services ?? []).reduce((s, svc) => s + (svc.duration_minutes ?? 0), 0)
   if (totalDuration === 0) return []
 
-  // Empleados que pueden hacer TODOS los servicios pedidos
   const { data: empRaw } = await supabase
     .from('employees')
     .select(`
@@ -80,7 +154,7 @@ export async function getAvailableSlots(
     employee_services: { service_id: string }[]
   }
 
-  const candidates = (empRaw as unknown as EmpRaw[] ?? []).filter((e) => {
+  const candidates = ((empRaw ?? []) as unknown as EmpRaw[]).filter((e) => {
     const ids = e.employee_services.map((es) => es.service_id)
     return serviceIds.every((sid) => ids.includes(sid))
   })
@@ -118,7 +192,7 @@ export async function getAvailableSlots(
       .not('appointments.status', 'eq', 'cancelled')
 
     type BusyRaw = { appointments: { scheduled_at: string; scheduled_end: string } | null }
-    const busy = (busyRaw as unknown as BusyRaw[] ?? [])
+    const busy = ((busyRaw ?? []) as unknown as BusyRaw[])
       .filter((r) => r.appointments)
       .map((r) => ({
         startMin: timeToMin(r.appointments!.scheduled_at.slice(11, 16)),
@@ -139,13 +213,12 @@ export async function getAvailableSlots(
         start: dateTime(date, minToTime(t)).toISOString(),
         end: dateTime(date, minToTime(slotEnd)).toISOString(),
         employeeId: emp.id,
-        employeeName: fullName || (emp.position ?? 'Empleado'),
+        employeeName: fullName || (emp.position ?? 'Profesional'),
       })
     }
   }
 
   slots.sort((a, b) => a.start.localeCompare(b.start))
-  // Max 8 opciones para no saturar el mensaje de WhatsApp
   return slots.slice(0, 8)
 }
 

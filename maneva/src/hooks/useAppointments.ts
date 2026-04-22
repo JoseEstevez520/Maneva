@@ -6,10 +6,12 @@ import {
   getNextAppointment,
   getLocationServices,
   getEligibleEmployees,
+  getServiceEmployees,
   getAvailableSlots,
   bookAppointment,
   NextAppointment,
   AvailableSlot,
+  EmployeeInfo,
   Service,
 } from '@/services/appointments.service'
 import { useAuthStore } from '@/store/authStore'
@@ -127,9 +129,10 @@ export function useAvailableSlots(params: {
   locationId: string | null
   serviceIds: string[]
   date: string | null
-  employeeId?: string
+  preferredEmployeeId?: string
+  serviceEmployeeMap?: Record<string, string>
 }) {
-  const { locationId, serviceIds, date, employeeId } = params
+  const { locationId, serviceIds, date, preferredEmployeeId, serviceEmployeeMap } = params
   const [data, setData] = useState<AvailableSlot[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -142,14 +145,20 @@ export function useAvailableSlots(params: {
     setLoading(true)
     setError(null)
     try {
-      const slots = await getAvailableSlots({ locationId, serviceIds, date, employeeId })
+      const slots = await getAvailableSlots({
+        locationId,
+        serviceIds,
+        date,
+        preferredEmployeeId,
+        serviceEmployeeMap,
+      })
       setData(slots)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar disponibilidad')
     } finally {
       setLoading(false)
     }
-  }, [locationId, date, serviceIds.join(','), employeeId])
+  }, [locationId, date, serviceIds.join(','), preferredEmployeeId, JSON.stringify(serviceEmployeeMap)])
 
   useEffect(() => {
     fetch()
@@ -158,22 +167,65 @@ export function useAvailableSlots(params: {
   return { data, loading, error, refresh: fetch }
 }
 
-export type BookingStep = 'services' | 'date' | 'slot' | 'confirm' | 'done'
+export function useEligibleEmployees(locationId: string | null, serviceIds: string[]) {
+  const [data, setData] = useState<EmployeeInfo[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-export type BookingState = {
-  step: BookingStep
-  locationId: string
-  selectedServiceIds: string[]
-  selectedDate: string | null
-  selectedSlot: AvailableSlot | null
-  clientNotes: string
+  useEffect(() => {
+    if (!locationId || serviceIds.length === 0) {
+      setData([])
+      return
+    }
+    setLoading(true)
+    setError(null)
+    getEligibleEmployees(locationId, serviceIds)
+      .then(setData)
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : 'Error al cargar empleados'),
+      )
+      .finally(() => setLoading(false))
+  }, [locationId, serviceIds.join(',')])
+
+  return { data, loading, error }
 }
+
+export function useServiceEmployees(
+  locationId: string | null,
+  serviceIds: string[],
+  enabled: boolean,
+) {
+  const [data, setData] = useState<Record<string, EmployeeInfo[]>>({})
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!enabled || !locationId || serviceIds.length === 0) {
+      setData({})
+      return
+    }
+    setLoading(true)
+    getServiceEmployees(locationId, serviceIds)
+      .then(setData)
+      .catch(() => setData({}))
+      .finally(() => setLoading(false))
+  }, [locationId, serviceIds.join(','), enabled])
+
+  return { data, loading }
+}
+
+// ─── Flujo de reserva ──────────────────────────────────────────────────────────
+
+export type BookingStep = 'services' | 'employee' | 'date' | 'slot' | 'confirm' | 'done'
 
 export function useBookingFlow(locationId: string) {
   const { user } = useAuthStore()
 
   const [step, setStep] = useState<BookingStep>('services')
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([])
+  // Modo un empleado
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
+  // Modo multi-empleado: serviceId → employeeId
+  const [serviceEmployeeMap, setServiceEmployeeMap] = useState<Record<string, string>>({})
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null)
   const [clientNotes, setClientNotes] = useState('')
@@ -182,30 +234,64 @@ export function useBookingFlow(locationId: string) {
   const [error, setError] = useState<string | null>(null)
 
   const { data: services, loading: servicesLoading } = useLocationServices(locationId)
+  const { data: employees, loading: employeesLoading } = useEligibleEmployees(locationId, selectedServiceIds)
+
+  // Modo multi-empleado: ningún empleado puede hacer todos los servicios
+  const isMultiEmployee = selectedServiceIds.length > 0 && !employeesLoading && employees.length === 0
+
+  const { data: serviceEmployees, loading: serviceEmployeesLoading } = useServiceEmployees(
+    locationId,
+    selectedServiceIds,
+    isMultiEmployee,
+  )
+
   const { data: slots, loading: slotsLoading } = useAvailableSlots({
     locationId,
     serviceIds: selectedServiceIds,
     date: selectedDate,
+    preferredEmployeeId: isMultiEmployee ? undefined : (selectedEmployeeId ?? undefined),
+    serviceEmployeeMap: isMultiEmployee ? serviceEmployeeMap : undefined,
   })
 
-  const { data: employees } = useEligibleEmployees(locationId, selectedServiceIds)
+  // ── Acciones (sin auto-avance de paso) ────────────────────────────────────────
 
   const toggleService = (serviceId: string) => {
     setSelectedServiceIds((prev) =>
       prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId],
     )
+    setSelectedEmployeeId(null)
+    setServiceEmployeeMap({})
     setSelectedSlot(null)
   }
 
-  const selectDate = (date: string) => {
+  /** Modo un empleado: elige profesional (null = sin preferencia). No avanza el paso. */
+  const pickEmployee = (employeeId: string | null) => {
+    setSelectedEmployeeId(employeeId)
+    setSelectedDate(null)
+    setSelectedSlot(null)
+  }
+
+  /** Modo multi-empleado: asigna un empleado a un servicio concreto. */
+  const assignServiceEmployee = (serviceId: string, employeeId: string) => {
+    setServiceEmployeeMap((prev) => ({ ...prev, [serviceId]: employeeId }))
+    setSelectedDate(null)
+    setSelectedSlot(null)
+  }
+
+  /** ¿Están todos los servicios asignados? (para el botón Continuar del paso employee multi) */
+  const allServicesAssigned = isMultiEmployee
+    ? selectedServiceIds.every((sid) => Boolean(serviceEmployeeMap[sid]))
+    : true  // en modo un empleado, siempre se puede continuar (puede ir con sin preferencia)
+
+  /** Selecciona fecha. No avanza el paso. */
+  const pickDate = (date: string) => {
     setSelectedDate(date)
     setSelectedSlot(null)
-    setStep('slot')
   }
 
-  const selectSlot = (slot: AvailableSlot) => {
+  /** Selecciona slot. No avanza el paso. */
+  const pickSlot = (slot: AvailableSlot) => {
     setSelectedSlot(slot)
-    setStep('confirm')
   }
 
   const confirm = async () => {
@@ -217,7 +303,7 @@ export function useBookingFlow(locationId: string) {
         .filter((s) => selectedServiceIds.includes(s.id))
         .map((s) => ({
           serviceId: s.id,
-          employeeId: selectedSlot.employee.id,
+          employeeId: selectedSlot.serviceAssignments[s.id],
           durationMinutes: s.duration_minutes,
           price: s.price,
         }))
@@ -243,6 +329,8 @@ export function useBookingFlow(locationId: string) {
   const reset = () => {
     setStep('services')
     setSelectedServiceIds([])
+    setSelectedEmployeeId(null)
+    setServiceEmployeeMap({})
     setSelectedDate(null)
     setSelectedSlot(null)
     setClientNotes('')
@@ -256,43 +344,29 @@ export function useBookingFlow(locationId: string) {
     services,
     servicesLoading,
     employees,
+    employeesLoading,
+    isMultiEmployee,
+    serviceEmployees,
+    serviceEmployeesLoading,
+    serviceEmployeeMap,
     slots,
     slotsLoading,
     selectedServiceIds,
+    selectedEmployeeId,
     selectedDate,
     selectedSlot,
+    allServicesAssigned,
     clientNotes,
     setClientNotes,
     booking,
     loading,
     error,
     toggleService,
-    selectDate,
-    selectSlot,
+    pickEmployee,
+    assignServiceEmployee,
+    pickDate,
+    pickSlot,
     confirm,
     reset,
   }
-}
-
-export function useEligibleEmployees(locationId: string | null, serviceIds: string[]) {
-  const [data, setData] = useState<Awaited<ReturnType<typeof getEligibleEmployees>>>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!locationId || serviceIds.length === 0) {
-      setData([])
-      return
-    }
-    setLoading(true)
-    setError(null)
-    getEligibleEmployees(locationId, serviceIds)
-      .then(setData)
-      .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : 'Error al cargar empleados'),
-      )
-      .finally(() => setLoading(false))
-  }, [locationId, serviceIds.join(',')])
-
-  return { data, loading, error }
 }
