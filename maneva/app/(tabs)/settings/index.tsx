@@ -120,24 +120,24 @@ export default function SettingsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="items-center pt-10 pb-6 px-6 bg-premium-white">
-          <View className="w-[140px] h-[140px] rounded-full border border-[#E8DCC0] items-center justify-center bg-[#F6F6F6] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-            <IconUser size={50} color="#9CA3AF" strokeWidth={2.2} />
+          <View className="w-[120px] h-[120px] rounded-full border border-[#E8DCC0] items-center justify-center bg-[#F6F6F6] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+            <IconUser size={42} color="#9CA3AF" strokeWidth={2.2} />
           </View>
-          <H2 className="mt-8 px-3 font-manrope-bold text-[34px] leading-[40px] text-premium-black text-center">{fullName}</H2>
+          <H2 className="mt-8 px-3 font-manrope-bold text-[28px] leading-[34px] text-premium-black text-center">{fullName}</H2>
           <Caption className="mt-2 font-manrope-medium text-premium-gray">{user?.email ?? ''}</Caption>
         </View>
 
         <MenuSection title="Mi Cuenta">
-          <MenuRow label="Citas por terceros" onPress={() => router.push('./bookings-delegation')} />
-          <MenuRow label="Preferencias de cita" onPress={() => router.push('./booking-preferences')} />
-          <MenuRow label="Cortes de referencia" onPress={() => router.push('./reference-cuts')} />
+          <MenuRow label="Citas por terceros" onPress={() => router.push('/(tabs)/settings/bookings-delegation')} />
+          <MenuRow label="Preferencias de cita" onPress={() => router.push('/(tabs)/settings/booking-preferences')} />
+          <MenuRow label="Cortes de referencia" onPress={() => router.push('/(tabs)/settings/reference-cuts')} />
         </MenuSection>
 
         <MenuSection title="Configuración de la app">
-          <MenuRow label="Notificaciones" onPress={() => router.push('./notifications')} />
+          <MenuRow label="Notificaciones" onPress={() => router.push('/(tabs)/settings/notifications')} />
           <SwitchRow label="Modo oscuro" value={darkModeEnabled} onValueChange={handleDarkModeChange} />
           <SwitchRow label="Modo sencillo" value={simpleModeEnabled} onValueChange={handleSimpleModeChange} />
-          <MenuRow label="Ajustes generales" onPress={() => router.push('./general-settings')} />
+          <MenuRow label="Ajustes generales" onPress={() => router.push('/(tabs)/settings/general-settings')} />
         </MenuSection>
 
         <TouchableOpacity className="items-center py-12" onPress={handleLogout} activeOpacity={0.75}>

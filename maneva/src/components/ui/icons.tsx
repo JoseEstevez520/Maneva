@@ -26,6 +26,8 @@ import {
   ArrowLeft,
   Sparkles,
   Send,
+  Trash2,
+  Heart,
 } from 'lucide-react-native'
 
 export {
@@ -54,4 +56,6 @@ export {
   ArrowLeft     as IconBack,
   Sparkles      as IconSparkles,
   Send          as IconSend,
+  Trash2        as IconTrash,
+  Heart         as IconHeart,
 }

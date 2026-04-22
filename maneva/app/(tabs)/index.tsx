@@ -200,7 +200,7 @@ function MySalonSection() {
                   className="font-manrope-bold text-[14px] text-premium-black flex-1 mr-1.5"
                   numberOfLines={1}
                 >
-                  {salon.salons?.name ?? salon.name}
+                  {salon.name}
                 </Body>
                 {salon.avgRating !== null && (
                   <View className="flex-row items-center gap-[3px]">
@@ -317,7 +317,7 @@ function AvailableTodaySection() {
               <TodayCard
                 key={salon.id}
                 id={salon.id}
-                name={salon.salons?.name ?? salon.name}
+                name={salon.name}
                 city={salon.city}
               />
             ))
@@ -335,7 +335,7 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   const scale = useSharedValue(1)
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
-  const salonName = offer.salon_locations?.salons?.name ?? offer.salon_locations?.name ?? 'Salón'
+  const salonName = offer.salon_locations?.name ?? 'Salón'
   const salonCity = offer.salon_locations?.city ?? 'Madrid'
   const typeLabel = offer.type ? offer.type.toUpperCase() : 'OFERTA'
   const endFormatted = format(parseISO(offer.end_date), "d MMM", { locale: es })

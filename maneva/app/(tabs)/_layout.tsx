@@ -114,42 +114,6 @@ export default function TabLayout() {
             ),
           }}
         />
-        <Tabs.Screen
-          name="bookings-delegation"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="booking-preferences"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="reference-cuts"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="notifications"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="general-settings"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="privacy-policy"
-          options={{
-            href: null,
-          }}
-        />
       </Tabs>
 
       {/* FAB del asistente IA — flota sobre todas las tabs */}

@@ -17,9 +17,18 @@ const REFERENCE_IMAGES = [
 function BrandHeader() {
   const router = useRouter()
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back()
+      return
+    }
+
+    router.replace('/(tabs)/settings')
+  }
+
   return (
     <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
-      <TouchableOpacity onPress={() => router.replace('./settings')} className="absolute left-5">
+      <TouchableOpacity onPress={handleBack} className="absolute left-5">
         <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
       </TouchableOpacity>
       <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
@@ -34,7 +43,7 @@ export default function ReferenceCutsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[36px] leading-[42px] text-premium-black">Cortes de Referencia</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Cortes de Referencia</H2>
           <Body className="mt-2 text-[15px] text-[#6B7280]">Gestiona tus estilos favoritos y añade nuevos</Body>
         </View>
 
@@ -55,7 +64,7 @@ export default function ReferenceCutsScreen() {
           <View className="w-12 h-12 rounded-full bg-gold items-center justify-center">
             <IconAdd size={22} color={Colors.premium.white} strokeWidth={2.8} />
           </View>
-          <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-gold">Añadir imagen</Caption>
+          <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-[#D0A52B]">Añadir imagen</Caption>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

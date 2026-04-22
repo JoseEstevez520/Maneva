@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Redirect, Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
@@ -53,11 +53,11 @@ async function configureNavigationBar() {
 }
 
 export default function RootLayout() {
-  const router = useRouter();
   const segments = useSegments();
   const { setUser, clearAuth } = useAuthStore();
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const [redirectHref, setRedirectHref] = useState<string | null>(null);
 
   const [loaded, error] = useFonts({
     Manrope_400Regular,
@@ -122,7 +122,7 @@ export default function RootLayout() {
 
           if (hasSeen !== "true") {
             if (segments[0] !== "onboarding" || segments[1] === "location") {
-              router.replace("/onboarding");
+              setRedirectHref("/onboarding");
             }
             return;
           }
@@ -142,7 +142,7 @@ export default function RootLayout() {
 
           if (!hasCityPreference) {
             if (!isLocationSetup) {
-              router.replace("/onboarding/location");
+              setRedirectHref("/onboarding/location");
             }
             return;
           }
@@ -162,14 +162,14 @@ export default function RootLayout() {
 
           if (!hasServicePreference) {
             if (!isPreferencesSetup) {
-              router.replace("/onboarding/preferences");
+              setRedirectHref("/onboarding/preferences");
             }
             return;
           }
 
           // Onboarding completo — redirigir al home desde pantallas de auth o raíz
           if (isAuthGroup || segments.length === 0) {
-            router.replace("/(tabs)");
+            setRedirectHref("/(tabs)");
           }
         } catch (e) {
           console.error("Error reading Onboarding flag:", e);
@@ -178,7 +178,7 @@ export default function RootLayout() {
         clearAuth();
 
         if (!isAuthGroup) {
-          router.replace("/welcome");
+          setRedirectHref("/welcome");
         }
       }
     };
@@ -197,16 +197,21 @@ export default function RootLayout() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [segments, loaded, clearAuth, router, setUser]);
+  }, [segments, loaded, clearAuth, setUser]);
 
   if (!loaded && !error) {
     return null;
+  }
+
+  if (redirectHref) {
+    return <Redirect href={redirectHref} />;
   }
 
   return (
     <>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="salon/[id]" options={{ headerShown: false }} />
         <Stack.Screen
           name="onboarding/index"
           options={{ headerShown: false }}

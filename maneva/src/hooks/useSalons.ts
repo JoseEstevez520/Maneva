@@ -7,7 +7,17 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { useState, useEffect, useCallback } from 'react'
-import { getSalons, getSalonById, getFavoriteSalon, getSalonsWithRating, UnifiedSalon, FavoriteSalonInfo } from '@/services/salons.service'
+import {
+  getSalons,
+  getSalonById,
+  getFavoriteSalon,
+  getSalonsWithRating,
+  isFavoriteSalon,
+  addFavoriteSalon,
+  removeFavoriteSalon,
+  UnifiedSalon,
+  FavoriteSalonInfo,
+} from '@/services/salons.service'
 import { useAuthStore } from '@/store/authStore'
 
 /** Hook principal — devuelve todas las sedes activas con refresh */
@@ -118,4 +128,58 @@ export function useFavoriteSalon() {
   }, [fetch])
 
   return { data, loading, error, refresh: fetch }
+}
+
+/**
+ * Estado de favorito para una sede concreta y acción de toggle.
+ */
+export function useSalonFavorite(locationId: string) {
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuthStore()
+
+  const refresh = useCallback(async () => {
+    if (!user || !locationId) {
+      setIsFavorite(false)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await isFavoriteSalon(user.id, locationId)
+      setIsFavorite(result)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al cargar favorito')
+    } finally {
+      setLoading(false)
+    }
+  }, [locationId, user])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  const toggle = useCallback(async () => {
+    if (!user || !locationId) return
+
+    setLoading(true)
+    setError(null)
+    try {
+      if (isFavorite) {
+        await removeFavoriteSalon(user.id, locationId)
+        setIsFavorite(false)
+      } else {
+        await addFavoriteSalon(user.id, locationId)
+        setIsFavorite(true)
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al actualizar favorito')
+    } finally {
+      setLoading(false)
+    }
+  }, [isFavorite, locationId, user])
+
+  return { isFavorite, loading, error, refresh, toggle }
 }

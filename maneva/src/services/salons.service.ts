@@ -221,6 +221,53 @@ export async function getFavoriteSalon(userId: string): Promise<FavoriteSalonInf
 }
 
 /**
+ * Indica si una sede está marcada como favorita por el usuario.
+ */
+export async function isFavoriteSalon(userId: string, locationId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('favorite_locations')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('location_id', locationId)
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    if (error.code === 'PGRST116') return false
+    throw error
+  }
+
+  return Boolean(data)
+}
+
+/**
+ * Marca una sede como favorita para el usuario actual.
+ */
+export async function addFavoriteSalon(userId: string, locationId: string): Promise<void> {
+  const alreadyFavorite = await isFavoriteSalon(userId, locationId)
+  if (alreadyFavorite) return
+
+  const { error } = await supabase
+    .from('favorite_locations')
+    .insert({ user_id: userId, location_id: locationId })
+
+  if (error) throw error
+}
+
+/**
+ * Quita una sede de favoritos para el usuario actual.
+ */
+export async function removeFavoriteSalon(userId: string, locationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('favorite_locations')
+    .delete()
+    .eq('user_id', userId)
+    .eq('location_id', locationId)
+
+  if (error) throw error
+}
+
+/**
  * Devuelve sedes cercanas a unas coordenadas (placeholder).
  */
 export async function getSalonsByLocation(

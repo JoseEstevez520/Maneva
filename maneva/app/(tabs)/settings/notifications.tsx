@@ -74,7 +74,7 @@ export default function NotificationsScreen() {
       return
     }
 
-    router.replace('./settings')
+    router.replace('/(tabs)/settings')
   }
 
   return (
@@ -83,7 +83,7 @@ export default function NotificationsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[36px] leading-[42px] text-premium-black">Notificaciones</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Notificaciones</H2>
         </View>
 
         {error ? <ErrorMessage message={error} className="mx-6 mb-4 rounded-xl border border-red-200 bg-red-50 p-3" /> : null}
