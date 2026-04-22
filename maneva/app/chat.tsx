@@ -48,6 +48,24 @@ type Message = {
   salons?: SalonSuggestion[]
 }
 
+// TODO: Agente conversacional rico — mensajes tipados
+//
+// El objetivo es que el agente no solo responda texto sino que pueda
+// enviar componentes interactivos renderizados dentro del chat.
+// n8n devolvería un array de mensajes tipados por respuesta:
+//
+//   { type: 'text',            content: 'Encontré 3 opciones cerca de ti:' }
+//   { type: 'salon_card',      data: { id, name, rating, price, city, photo } }
+//   { type: 'style_gallery',   data: { title, images: string[] } }
+//   { type: 'slots_picker',    data: { salon_id, slots: [{ date, time }] } }
+//   { type: 'booking_summary', data: { salon, service, datetime, price } }
+//
+// El componente MessageBubble se convertiría en un switch por tipo,
+// renderizando el componente correspondiente en lugar de solo texto.
+// El agente podría mezclar tipos en la misma respuesta (texto + tarjeta).
+// Los slots_picker y booking_summary serían interactivos — el usuario
+// reserva sin salir del chat.
+
 // ─── Chips de acceso rápido ────────────────────────────────────────────────────
 
 const QUICK_CHIPS = [

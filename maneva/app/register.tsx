@@ -93,7 +93,7 @@ export default function RegisterScreen() {
       </Animated.View>
 
       <ScrollView
-        contentContainerClassName="flex-grow px-8 pt-32 pb-0"
+        contentContainerClassName="flex-grow px-8 pt-32 pb-16"
         showsVerticalScrollIndicator={false}
       >
         {/* Título de la pantalla */}
@@ -236,8 +236,9 @@ export default function RegisterScreen() {
               Crear cuenta
             </Button>
 
-            <View className="flex-row justify-center items-center">
+            <View className="flex-row justify-center items-center gap-1">
               <Body
+                numberOfLines={1}
                 className="font-manrope text-premium-gray"
                 style={{
                   textShadowColor: "#FFFFFF",
@@ -245,7 +246,7 @@ export default function RegisterScreen() {
                   textShadowRadius: 2,
                 }}
               >
-                ¿Ya tienes cuenta?{" "}
+                ¿Ya tienes cuenta?
               </Body>
               <Link href="/login" asChild>
                 <TouchableOpacity
@@ -253,6 +254,7 @@ export default function RegisterScreen() {
                   className="pb-1 border-b border-premium-black"
                 >
                   <Caption
+                    numberOfLines={1}
                     className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]"
                     style={{
                       textShadowColor: "#FFFFFF",
