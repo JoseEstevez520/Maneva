@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Alert, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { format, parseISO } from 'date-fns'
@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconAdd, IconChevron } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Colors } from '@/constants/theme'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -161,7 +162,6 @@ export default function BookingsDelegationScreen() {
     managedUsers,
     loading,
     error,
-    refresh,
     addManager,
     toggleDelegatePermissions,
     removeDelegate,
@@ -174,6 +174,11 @@ export default function BookingsDelegationScreen() {
   const [relationLabel, setRelationLabel] = useState('')
   const [canModify, setCanModify] = useState(true)
   const [savingAdd, setSavingAdd] = useState(false)
+  const [dialog, setDialog] = useState<{
+    title: string; message?: string; confirmLabel?: string
+    cancelLabel?: string; destructive?: boolean; onConfirm: () => void
+  } | null>(null)
+  const closeDialog = () => setDialog(null)
 
   const hasDelegates = delegates.length > 0
   const hasManagedUsers = managedUsers.length > 0
@@ -182,26 +187,21 @@ export default function BookingsDelegationScreen() {
 
   const handleAddManager = async () => {
     if (!phone.trim()) {
-      Alert.alert('Teléfono requerido', 'Introduce el teléfono de la persona que ya está registrada.')
+      setDialog({ title: 'Teléfono requerido', message: 'Introduce el teléfono de la persona que ya está registrada.', onConfirm: closeDialog })
       return
     }
 
     setSavingAdd(true)
     try {
-      await addManager({
-        phone,
-        relationLabel,
-        canModify,
-      })
-
+      await addManager({ phone, relationLabel, canModify })
       setPhone('')
       setRelationLabel('')
       setCanModify(true)
       setIsAddOpen(false)
-      Alert.alert('Listo', 'La persona ya puede gestionar tus citas según el permiso otorgado.')
+      setDialog({ title: 'Listo', message: 'La persona ya puede gestionar tus citas según el permiso otorgado.', onConfirm: closeDialog })
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'No se pudo añadir la persona'
-      Alert.alert('Error', message)
+      setDialog({ title: 'Error', message, onConfirm: closeDialog })
     } finally {
       setSavingAdd(false)
     }
@@ -210,66 +210,46 @@ export default function BookingsDelegationScreen() {
   const handleEditPermissions = async (linkedProfileId: string) => {
     const target = delegates.find((item) => item.link.id === linkedProfileId)
     if (!target) return
-
-    const currentLabel = target.permissions.canModify ? 'Crear y modificar' : 'Solo crear'
-
-    Alert.alert(
-      'Editar permiso',
-      `Permiso actual: ${currentLabel}`,
-      [
-        {
-          text: 'Solo crear',
-          onPress: async () => {
-            if (!target.permissions.canModify) return
-            await toggleDelegatePermissions(target)
-          },
-        },
-        {
-          text: 'Crear y modificar',
-          onPress: async () => {
-            if (target.permissions.canModify) return
-            await toggleDelegatePermissions(target)
-          },
-        },
-        { text: 'Cancelar', style: 'cancel' },
-      ],
-    )
+    // TODO: reemplazar por un ActionSheet o selector personalizado (requiere >2 opciones)
+    await toggleDelegatePermissions(target)
   }
 
   const handleRemoveDelegate = (linkedProfileId: string) => {
-    Alert.alert('Eliminar permiso', 'Esta persona dejará de gestionar tus citas.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await removeDelegate(linkedProfileId)
-          } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : 'No se pudo eliminar el permiso'
-            Alert.alert('Error', message)
-          }
-        },
+    setDialog({
+      title: 'Eliminar permiso',
+      message: 'Esta persona dejará de gestionar tus citas.',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+      onConfirm: async () => {
+        closeDialog()
+        try {
+          await removeDelegate(linkedProfileId)
+        } catch (e: unknown) {
+          const message = e instanceof Error ? e.message : 'No se pudo eliminar el permiso'
+          setDialog({ title: 'Error', message, onConfirm: closeDialog })
+        }
       },
-    ])
+    })
   }
 
   const handleStopManaging = (linkedProfileId: string) => {
-    Alert.alert('Dejar de gestionar', 'Dejarás de gestionar las citas de esta persona.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Confirmar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await stopManaging(linkedProfileId)
-          } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : 'No se pudo dejar de gestionar'
-            Alert.alert('Error', message)
-          }
-        },
+    setDialog({
+      title: 'Dejar de gestionar',
+      message: 'Dejarás de gestionar las citas de esta persona.',
+      confirmLabel: 'Confirmar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+      onConfirm: async () => {
+        closeDialog()
+        try {
+          await stopManaging(linkedProfileId)
+        } catch (e: unknown) {
+          const message = e instanceof Error ? e.message : 'No se pudo dejar de gestionar'
+          setDialog({ title: 'Error', message, onConfirm: closeDialog })
+        }
       },
-    ])
+    })
   }
 
   if (loading && !hasDelegates && !hasManagedUsers) {
@@ -409,6 +389,19 @@ export default function BookingsDelegationScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {dialog && (
+        <ConfirmDialog
+          visible
+          title={dialog.title}
+          message={dialog.message}
+          confirmLabel={dialog.confirmLabel ?? 'Entendido'}
+          cancelLabel={dialog.cancelLabel}
+          destructive={dialog.destructive}
+          onConfirm={dialog.onConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </SafeAreaView>
   )
 }

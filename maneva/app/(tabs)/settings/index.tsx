@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { Alert, ScrollView, Switch, TouchableOpacity, View } from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { ScrollView, Switch, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 
@@ -11,6 +11,7 @@ import { useUserProfile } from '@/hooks/useUserProfile'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
 import { useAuthStore } from '@/store/authStore'
 import { useUiStore } from '@/store/uiStore'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 type MenuRowProps = {
   label: string
@@ -93,11 +94,17 @@ export default function SettingsScreen() {
   const simpleModeEnabled = styleProfile?.simple_mode ?? false
   const darkModeEnabled = colorScheme === 'dark'
 
+  const [dialog, setDialog] = useState<{
+    title: string; message?: string; confirmLabel?: string
+    cancelLabel?: string; destructive?: boolean; onConfirm: () => void
+  } | null>(null)
+  const closeDialog = () => setDialog(null)
+
   const handleSimpleModeChange = async (nextValue: boolean) => {
     try {
       await saveStyleProfile({ simple_mode: nextValue })
     } catch {
-      Alert.alert('Error', 'No se pudo actualizar el modo sencillo.')
+      setDialog({ title: 'Error', message: 'No se pudo actualizar el modo sencillo.', onConfirm: closeDialog })
     }
   }
 
@@ -106,10 +113,14 @@ export default function SettingsScreen() {
   }
 
   const handleLogout = () => {
-    Alert.alert('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Cerrar sesión', style: 'destructive', onPress: () => logout() },
-    ])
+    setDialog({
+      title: 'Cerrar sesión',
+      message: '¿Seguro que quieres cerrar sesión?',
+      confirmLabel: 'Cerrar sesión',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+      onConfirm: () => { closeDialog(); logout() },
+    })
   }
 
   return (
@@ -140,12 +151,27 @@ export default function SettingsScreen() {
           <MenuRow label="Ajustes generales" onPress={() => router.push('/(tabs)/settings/general-settings')} />
         </MenuSection>
 
-        <TouchableOpacity className="items-center py-12" onPress={handleLogout} activeOpacity={0.75}>
-          <Caption className="font-manrope-extrabold uppercase tracking-[2.5px] text-[15px] text-red-600">
-            Cerrar sesión
-          </Caption>
-        </TouchableOpacity>
+        <View className="items-center py-10">
+          <TouchableOpacity onPress={handleLogout} activeOpacity={0.75}>
+            <Caption className="font-manrope-extrabold uppercase tracking-[2.5px] text-[15px] text-red-600">
+              Cerrar sesión
+            </Caption>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+
+      {dialog && (
+        <ConfirmDialog
+          visible
+          title={dialog.title}
+          message={dialog.message}
+          confirmLabel={dialog.confirmLabel ?? 'Entendido'}
+          cancelLabel={dialog.cancelLabel}
+          destructive={dialog.destructive}
+          onConfirm={dialog.onConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </SafeAreaView>
   )
 }

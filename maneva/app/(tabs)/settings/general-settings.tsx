@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native'
+import { Image, ScrollView, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import Constants from 'expo-constants'
@@ -8,6 +8,7 @@ import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { Input } from '@/components/ui/Input'
 import { IconChevron } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Colors } from '@/constants/theme'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
@@ -71,6 +72,9 @@ export default function GeneralSettingsScreen() {
     return initials || 'U'
   }, [firstName, lastName])
 
+  const [dialog, setDialog] = useState<{ title: string; message?: string; onConfirm: () => void } | null>(null)
+  const closeDialog = () => setDialog(null)
+
   const handleSaveUserProfile = async () => {
     try {
       await updateProfile({
@@ -80,9 +84,9 @@ export default function GeneralSettingsScreen() {
       await saveStyleProfile({
         avatar_url: avatarUrl.trim() || null,
       })
-      Alert.alert('Guardado', 'Los datos del usuario se han actualizado.')
+      setDialog({ title: 'Guardado', message: 'Los datos del usuario se han actualizado.', onConfirm: closeDialog })
     } catch {
-      Alert.alert('Error', 'No se pudieron guardar los datos del usuario.')
+      setDialog({ title: 'Error', message: 'No se pudieron guardar los datos del usuario.', onConfirm: closeDialog })
     }
   }
 
@@ -166,9 +170,18 @@ export default function GeneralSettingsScreen() {
         <Row title="Términos de Servicio" />
         <Row title="Política de Privacidad" onPress={() => router.push('/(tabs)/settings/privacy-policy')} />
         <Row title="Versión de la app" subtitle={`v${version}`} showChevron={false} />
-
-    
       </ScrollView>
+
+      {dialog && (
+        <ConfirmDialog
+          visible
+          title={dialog.title}
+          message={dialog.message}
+          confirmLabel="Entendido"
+          onConfirm={dialog.onConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </SafeAreaView>
   )
 }

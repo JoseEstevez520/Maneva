@@ -176,9 +176,9 @@ export default function SalonDetailScreen() {
                             </Caption>
                           ) : null}
                         </View>
-                        <Body className="font-manrope-bold text-[18px] text-premium-black">
+                        <Caption className="font-manrope-bold text-[15px] text-gold">
                           {service.price ? `${service.price}€` : '—'}
-                        </Body>
+                        </Caption>
                       </View>
                     </View>
                   ))}
@@ -201,7 +201,11 @@ export default function SalonDetailScreen() {
                 ))}
 
                 {reviews.length === 0 ? (
-                  <Caption className="font-manrope-medium text-[13px] text-[#9AA0A6]">Este salón todavía no tiene reseñas.</Caption>
+                  <View className="bg-premium-white rounded-[20px] border border-[#F0F0F0] p-5 items-center">
+                    <Caption className="font-manrope-medium text-[13px] text-[#9AA0A6] text-center">
+                      Este salón todavía no tiene reseñas.
+                    </Caption>
+                  </View>
                 ) : null}
               </View>
             ) : null}
@@ -221,16 +225,20 @@ export default function SalonDetailScreen() {
                   ))}
                 </ScrollView>
                 {employees.length === 0 ? (
-                  <Caption className="font-manrope-medium text-[13px] text-[#9AA0A6]">No hay estilistas publicados todavía.</Caption>
+                  <View className="bg-premium-white rounded-[20px] border border-[#F0F0F0] p-5 items-center">
+                    <Caption className="font-manrope-medium text-[13px] text-[#9AA0A6] text-center">
+                      No hay estilistas publicados todavía.
+                    </Caption>
+                  </View>
                 ) : null}
               </View>
             ) : null}
 
             {activeTab === 'details' ? (
               <View className="mt-3 gap-3">
-                <View className="flex-row items-center gap-2">
+                <View className="flex-row items-start gap-2">
                   <IconLocation size={14} color={Colors.gold.DEFAULT} />
-                  <Caption className="font-manrope-medium text-[13px] text-[#6B7280]">
+                  <Caption className="font-manrope-medium text-[13px] text-[#6B7280] flex-1">
                     {salon.street_address || 'Dirección no disponible'}{salon.city ? `, ${salon.city}` : ''}{salon.postal_code ? `, ${salon.postal_code}` : ''}
                   </Caption>
                 </View>

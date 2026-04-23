@@ -166,7 +166,7 @@ function ServicesStep({
                         selected ? 'bg-gold border-gold' : 'border-[#D0D0D0]'
                       }`}
                     >
-                      {selected && <IconCheck size={13} color="#000" strokeWidth={2.5} />}
+                      {selected && <IconCheck size={13} color="#FFFFFF" strokeWidth={2.5} />}
                     </View>
                   </TouchableOpacity>
                 )
@@ -661,7 +661,7 @@ function ConfirmStep({
             multiline
             numberOfLines={3}
             style={{
-              fontFamily: 'Manrope-Medium',
+              fontFamily: 'Manrope_500Medium',
               fontSize: 13,
               color: Colors.premium.black,
               textAlignVertical: 'top',

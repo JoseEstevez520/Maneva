@@ -1,18 +1,22 @@
-import React, { useMemo } from 'react'
-import { Alert, ScrollView, Switch, TouchableOpacity, View } from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { ScrollView, Switch, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
 
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconChevron } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
 import { Colors } from '@/constants/theme'
-import { useNotificationSettings } from '@/hooks/useNotificationSettings'
+import { useNotificationSettings, type OffersScope } from '@/hooks/useNotificationSettings'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
+import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet'
 
+const OFFERS_OPTIONS: SelectOption<OffersScope>[] = [
+  { value: 'all', label: 'Todas', description: 'Recibir ofertas de cualquier peluquería' },
+  { value: 'favorites', label: 'Solo favoritas', description: 'Solo de peluquerías que has guardado' },
+  { value: 'none', label: 'Ninguna', description: 'No recibir notificaciones de ofertas' },
+]
 
 export default function NotificationsScreen() {
-  const router = useRouter()
   const {
     offersScope,
     homeServiceEnabled,
@@ -21,38 +25,17 @@ export default function NotificationsScreen() {
     saveHomeServiceEnabled,
   } = useNotificationSettings()
 
+  const [offersSelectorVisible, setOffersSelectorVisible] = useState(false)
+
   const offersLabel = useMemo(() => {
     if (offersScope === 'all') return 'Todas'
     if (offersScope === 'none') return 'Ninguna'
     return 'Solo de peluquerías favoritas'
   }, [offersScope])
 
-  const handleSelectOffersScope = async (scope: 'all' | 'favorites' | 'none') => {
+  const handleSelectOffersScope = async (scope: OffersScope) => {
+    setOffersSelectorVisible(false)
     await saveOffersScope(scope)
-  }
-
-  const openOffersScopeSelector = () => {
-    Alert.alert('Notificaciones de ofertas', 'Elige qué ofertas quieres recibir', [
-      {
-        text: 'Todas',
-        onPress: () => {
-          void handleSelectOffersScope('all')
-        },
-      },
-      {
-        text: 'Solo favoritas',
-        onPress: () => {
-          void handleSelectOffersScope('favorites')
-        },
-      },
-      {
-        text: 'Ninguna',
-        onPress: () => {
-          void handleSelectOffersScope('none')
-        },
-      },
-      { text: 'Cancelar', style: 'cancel' },
-    ])
   }
 
   const handleHomeServiceToggle = (nextValue: boolean) => {
@@ -74,7 +57,7 @@ export default function NotificationsScreen() {
           Ofertas
         </Caption>
 
-        <TouchableOpacity onPress={openOffersScopeSelector} activeOpacity={0.8} className="px-6 py-5 bg-premium-white border-y border-[#ECECEC]">
+        <TouchableOpacity onPress={() => setOffersSelectorVisible(true)} activeOpacity={0.8} className="px-6 py-5 bg-premium-white border-y border-[#ECECEC]">
           <View className="flex-row items-center justify-between">
             <View className="flex-1 pr-3">
               <Body className="font-manrope-medium text-[17px] text-premium-black">Notificaciones de ofertas</Body>
@@ -106,6 +89,15 @@ export default function NotificationsScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <SelectSheet
+        visible={offersSelectorVisible}
+        title="Notificaciones de ofertas"
+        options={OFFERS_OPTIONS}
+        selectedValue={offersScope}
+        onSelect={handleSelectOffersScope}
+        onCancel={() => setOffersSelectorVisible(false)}
+      />
     </SafeAreaView>
   )
 }

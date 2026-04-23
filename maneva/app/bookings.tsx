@@ -1,15 +1,16 @@
-import React from 'react'
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native'
+import React, { useState } from 'react'
+import { View, ScrollView, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
-import { IconBack, IconCalendar, IconClock, IconUser } from '@/components/ui/icons'
+import { IconBack, IconCalendar, IconTag, IconUser } from '@/components/ui/icons'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { Colors } from '@/constants/theme'
 import { useMyAppointments } from '@/hooks/useAppointments'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Database } from '@/types/database.types'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
@@ -35,10 +36,10 @@ const STATUS_COLOR: Record<string, string> = {
 
 function AppointmentRow({
   appointment,
-  onCancel,
+  onRequestCancel,
 }: {
   appointment: AppointmentWithJoins
-  onCancel: (id: string) => void
+  onRequestCancel: (id: string) => void
 }) {
   const dateLabel = format(
     parseISO(appointment.scheduled_at),
@@ -82,12 +83,12 @@ function AppointmentRow({
         </Caption>
       </View>
 
-      {/* Duración */}
-      {appointment.appointment_services && appointment.appointment_services.length > 0 && (
+      {/* Precio */}
+      {appointment.final_price != null && (
         <View className="flex-row items-center gap-2">
-          <IconClock size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+          <IconTag size={13} color={Colors.gold.DEFAULT} strokeWidth={2} />
           <Caption className="font-manrope-medium text-[12px] text-premium-gray">
-            {appointment.final_price != null ? `${appointment.final_price}€` : '—'}
+            {appointment.final_price}€
           </Caption>
         </View>
       )}
@@ -95,11 +96,11 @@ function AppointmentRow({
       {/* Cancelar */}
       {canCancel && (
         <TouchableOpacity
-          onPress={() => onCancel(appointment.id)}
+          onPress={() => onRequestCancel(appointment.id)}
           activeOpacity={0.7}
-          className="border border-[#ECECEC] rounded-xl py-2.5 items-center mt-1"
+          className="border border-[#ECECEC] rounded-[20px] py-2.5 items-center mt-1"
         >
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[1.5px] uppercase text-[#DC2626]">
+          <Caption numberOfLines={1} className="font-manrope-extrabold text-[10px] tracking-[1.5px] uppercase text-[#DC2626]">
             Cancelar cita
           </Caption>
         </TouchableOpacity>
@@ -111,6 +112,8 @@ function AppointmentRow({
 export default function BookingsScreen() {
   const router = useRouter()
   const { data, loading, error, cancel } = useMyAppointments()
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null)
+  const [cancelError, setCancelError] = useState(false)
 
   const upcoming = (data as AppointmentWithJoins[]).filter(
     (a) => a.status === 'pending' || a.status === 'confirmed',
@@ -119,21 +122,15 @@ export default function BookingsScreen() {
     (a) => a.status === 'done' || a.status === 'cancelled',
   )
 
-  const handleCancel = (id: string) => {
-    Alert.alert('Cancelar cita', '¿Seguro que quieres cancelar esta cita?', [
-      { text: 'No', style: 'cancel' },
-      {
-        text: 'Sí, cancelar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await cancel(id)
-          } catch {
-            Alert.alert('Error', 'No se pudo cancelar la cita. Inténtalo de nuevo.')
-          }
-        },
-      },
-    ])
+  const handleCancelConfirm = async () => {
+    if (!cancelTargetId) return
+    try {
+      await cancel(cancelTargetId)
+      setCancelTargetId(null)
+    } catch {
+      setCancelTargetId(null)
+      setCancelError(true)
+    }
   }
 
   return (
@@ -172,7 +169,7 @@ export default function BookingsScreen() {
               </View>
             ) : (
               upcoming.map((a) => (
-                <AppointmentRow key={a.id} appointment={a} onCancel={handleCancel} />
+                <AppointmentRow key={a.id} appointment={a} onRequestCancel={setCancelTargetId} />
               ))
             )}
           </View>
@@ -184,12 +181,33 @@ export default function BookingsScreen() {
                 Historial
               </Caption>
               {past.map((a) => (
-                <AppointmentRow key={a.id} appointment={a} onCancel={handleCancel} />
+                <AppointmentRow key={a.id} appointment={a} onRequestCancel={setCancelTargetId} />
               ))}
             </View>
           )}
         </ScrollView>
       )}
+
+      <ConfirmDialog
+        visible={cancelTargetId !== null}
+        title="Cancelar cita"
+        message="¿Seguro que quieres cancelar esta cita? Esta acción no se puede deshacer."
+        confirmLabel="Sí, cancelar"
+        cancelLabel="Volver"
+        destructive
+        onConfirm={handleCancelConfirm}
+        onCancel={() => setCancelTargetId(null)}
+      />
+
+      <ConfirmDialog
+        visible={cancelError}
+        title="Error al cancelar"
+        message="No se pudo cancelar la cita. Inténtalo de nuevo."
+        confirmLabel="Entendido"
+        cancelLabel=""
+        onConfirm={() => setCancelError(false)}
+        onCancel={() => setCancelError(false)}
+      />
     </SafeAreaView>
   )
 }

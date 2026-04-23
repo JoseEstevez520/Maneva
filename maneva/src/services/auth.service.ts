@@ -82,16 +82,6 @@ export async function getCurrentUser() {
   return data.user;
 }
 
-/**
- * Elimina la cuenta del usuario actual via RPC.
- * Nota: 'delete_my_account' existe en la BD pero aún no está en los tipos generados.
- * Regenerar con: npx supabase gen types typescript --project-id <ID> > src/types/database.types.ts
- */
-export async function deleteMyAccount() {
-  const { error } = await supabase.rpc("delete_my_account" as never);
-  if (error) throw error;
-}
-
 export async function getSession() {
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;

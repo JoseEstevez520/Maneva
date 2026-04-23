@@ -1,9 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Body, Caption, H1 } from "@/components/ui/Typography";
 import { IconMail } from "@/components/ui/icons";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
@@ -27,8 +27,12 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+type DialogCfg = { title: string; message?: string; onConfirm: () => void }
+
 export default function LoginScreen() {
   const { login, loading, error } = useAuth();
+  const [dialog, setDialog] = useState<DialogCfg | null>(null)
+  const closeDialog = () => setDialog(null)
 
   const {
     control,
@@ -44,10 +48,11 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = () => {
-    Alert.alert(
-      "Recuperar contraseña",
-      "Funcionalidad de recuperación próximamente.\n\nPor favor, contacta con soporte para restablecer tu acceso.",
-    );
+    setDialog({
+      title: 'Recuperar contraseña',
+      message: 'Funcionalidad de recuperación próximamente. Por favor, contacta con soporte para restablecer tu acceso.',
+      onConfirm: closeDialog,
+    })
   };
 
   return (
@@ -189,6 +194,17 @@ export default function LoginScreen() {
           </View>
         </Animated.View>
       </ScrollView>
+
+      {dialog && (
+        <ConfirmDialog
+          visible
+          title={dialog.title}
+          message={dialog.message}
+          confirmLabel="Entendido"
+          onConfirm={dialog.onConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }

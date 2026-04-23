@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Alert,
   FlatList,
   Modal,
   NativeScrollEvent,
@@ -14,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconAdd, IconBack, IconClose, IconStar, IconTrash } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Colors } from '@/constants/theme'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
 
@@ -292,6 +292,12 @@ export default function BookingPreferencesScreen() {
     return hour >= 16 ? 'afternoon' : 'morning'
   }, [preferredHour, preferredTimeSlot])
 
+  const [dialog, setDialog] = useState<{
+    title: string; message?: string; confirmLabel?: string
+    cancelLabel?: string; destructive?: boolean; onConfirm: () => void
+  } | null>(null)
+  const closeDialog = () => setDialog(null)
+
   const handleSelectSlot = async (slot: 'morning' | 'afternoon') => {
     const preferredHour = slot === 'morning' ? 9 : 16
     try {
@@ -299,7 +305,7 @@ export default function BookingPreferencesScreen() {
       await savePreferredHour(preferredHour)
       await savePreferredTimeSlot(slot)
     } catch {
-      Alert.alert('Error', 'No se pudo guardar el horario preferido.')
+      setDialog({ title: 'Error', message: 'No se pudo guardar el horario preferido.', onConfirm: closeDialog })
     }
   }
 
@@ -308,7 +314,7 @@ export default function BookingPreferencesScreen() {
       setCustomDeleteModeRange('')
       await activateAvailabilityRange(range)
     } catch {
-      Alert.alert('Error', 'No se pudo activar el horario personalizado.')
+      setDialog({ title: 'Error', message: 'No se pudo activar el horario personalizado.', onConfirm: closeDialog })
     }
   }
 
@@ -317,29 +323,23 @@ export default function BookingPreferencesScreen() {
   }
 
   const handleDeleteCustomSlot = (range: string) => {
-    Alert.alert(
-      'Eliminar horario personalizado',
-      `¿Seguro que quieres eliminar ${range}?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => {
-            void deleteAvailabilityRange(range)
-            setCustomDeleteModeRange('')
-          },
-        },
-      ],
-    )
+    setDialog({
+      title: 'Eliminar horario',
+      message: `¿Seguro que quieres eliminar ${range}?`,
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+      onConfirm: () => {
+        closeDialog()
+        void deleteAvailabilityRange(range)
+        setCustomDeleteModeRange('')
+      },
+    })
   }
 
   const handleFavoriteStylist = () => {
     // TODO: conectar selección real de estilistas favoritos desde Supabase
-    Alert.alert('Próximamente', 'La selección de estilistas favoritos estará disponible en una próxima iteración.')
+    setDialog({ title: 'Próximamente', message: 'La selección de estilistas favoritos estará disponible en una próxima iteración.', onConfirm: closeDialog })
   }
 
   const handleOpenAvailabilityPopup = () => {
@@ -356,7 +356,7 @@ export default function BookingPreferencesScreen() {
       const endMinutes = nearestAvailabilityMinutes(availabilityEndMinutes)
 
       if (endMinutes <= startMinutes) {
-        Alert.alert('Rango inválido', 'La hora de fin debe ser posterior a la hora de comienzo.')
+        setDialog({ title: 'Rango inválido', message: 'La hora de fin debe ser posterior a la hora de comienzo.', onConfirm: closeDialog })
         return
       }
 
@@ -365,7 +365,7 @@ export default function BookingPreferencesScreen() {
       setCustomDeleteModeRange('')
       setIsAvailabilityModalOpen(false)
     } catch {
-      Alert.alert('Error', 'No se pudo guardar la disponibilidad.')
+      setDialog({ title: 'Error', message: 'No se pudo guardar la disponibilidad.', onConfirm: closeDialog })
     }
   }
 
@@ -410,9 +410,9 @@ export default function BookingPreferencesScreen() {
     try {
       await saveServices(servicesDraft)
       setIsAddServiceOpen(false)
-      Alert.alert('Guardado', 'Tus servicios favoritos se han actualizado.')
+      setDialog({ title: 'Guardado', message: 'Tus servicios favoritos se han actualizado.', onConfirm: closeDialog })
     } catch {
-      Alert.alert('Error', 'No se pudieron guardar los servicios favoritos.')
+      setDialog({ title: 'Error', message: 'No se pudieron guardar los servicios favoritos.', onConfirm: closeDialog })
     } finally {
       setSavingServices(false)
     }
@@ -647,6 +647,19 @@ export default function BookingPreferencesScreen() {
           </ItemRow>
         </TouchableOpacity>
       </ScrollView>
+
+      {dialog && (
+        <ConfirmDialog
+          visible
+          title={dialog.title}
+          message={dialog.message}
+          confirmLabel={dialog.confirmLabel ?? 'Entendido'}
+          cancelLabel={dialog.cancelLabel}
+          destructive={dialog.destructive}
+          onConfirm={dialog.onConfirm}
+          onCancel={closeDialog}
+        />
+      )}
     </SafeAreaView>
   )
 }
