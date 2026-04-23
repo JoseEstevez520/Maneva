@@ -96,7 +96,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
           <TouchableWithoutFeedback>
             <View className="bg-premium-white rounded-t-[28px]" style={{ maxHeight: '80%' }}>
               {/* Handle */}
-              <View className="w-10 h-1 rounded-full bg-[#E0E0E0] self-center mt-4" />
+              <View className="w-10 h-1 rounded-full bg-premium-divider-medium self-center mt-4" />
 
               {/* Header */}
               <View className="flex-row items-center px-5 pt-4 pb-3 gap-3">
@@ -104,7 +104,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                   <TouchableOpacity
                     onPress={() => setStep('salons')}
                     activeOpacity={0.7}
-                    className="w-9 h-9 rounded-full bg-[#F5F5F5] items-center justify-center"
+                    className="w-9 h-9 rounded-full bg-premium-surface items-center justify-center"
                   >
                     <IconBack size={18} color={Colors.premium.black} strokeWidth={2} />
                   </TouchableOpacity>
@@ -117,7 +117,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                 <TouchableOpacity
                   onPress={onClose}
                   activeOpacity={0.7}
-                  className="w-9 h-9 rounded-full bg-[#F5F5F5] items-center justify-center"
+                  className="w-9 h-9 rounded-full bg-premium-surface items-center justify-center"
                 >
                   <IconClose size={16} color={Colors.premium.black} strokeWidth={2} />
                 </TouchableOpacity>
@@ -125,13 +125,13 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
 
               {/* Buscador — solo en paso salones */}
               {step === 'salons' ? (
-                <View className="mx-5 mb-3 flex-row items-center gap-2 bg-[#F5F5F5] rounded-[14px] px-4 py-3">
-                  <IconSearch size={16} color="#9CA3AF" strokeWidth={2} />
+                <View className="mx-5 mb-3 flex-row items-center gap-2 bg-premium-surface rounded-[14px] px-4 py-3">
+                  <IconSearch size={16} color={Colors.premium.gray.secondary} strokeWidth={2} />
                   <TextInput
                     value={search}
                     onChangeText={setSearch}
                     placeholder="Buscar peluquería..."
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={Colors.premium.gray.secondary}
                     className="flex-1 font-manrope text-[15px] text-premium-black"
                     style={{ fontFamily: 'Manrope_500Medium' }}
                     autoCorrect={false}
@@ -153,7 +153,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                     contentContainerStyle={{ paddingBottom: 32 }}
                     ListEmptyComponent={
                       <View className="px-6 py-8 items-center">
-                        <Body className="text-[15px] text-[#6B7280] text-center">No se encontraron peluquerías.</Body>
+                        <Body className="text-[15px] text-premium-gray text-center">No se encontraron peluquerías.</Body>
                       </View>
                     }
                     renderItem={({ item }) => {
@@ -163,12 +163,12 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                         <TouchableOpacity
                           onPress={() => { void handleSelectSalon(item) }}
                           activeOpacity={0.75}
-                          className="flex-row items-center px-5 py-4 border-b border-[#F0F0F0]"
+                          className="flex-row items-center px-5 py-4 border-b border-premium-divider-subtle"
                         >
                           <View className="flex-1 pr-3">
                             <Body className="font-manrope-medium text-[16px] text-premium-black">{name}</Body>
                             {item.city ? (
-                              <Caption className="mt-0.5 text-[13px] text-[#9CA3AF]">{item.city}</Caption>
+                              <Caption className="mt-0.5 text-[13px] text-premium-gray-secondary">{item.city}</Caption>
                             ) : null}
                           </View>
                           {isFav ? (
@@ -186,7 +186,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                   </View>
                 ) : employees.length === 0 ? (
                   <View className="px-6 py-8 items-center">
-                    <Body className="text-[15px] text-[#6B7280] text-center">No hay estilistas en esta peluquería.</Body>
+                    <Body className="text-[15px] text-premium-gray text-center">No hay estilistas en esta peluquería.</Body>
                   </View>
                 ) : (
                   <FlatList
@@ -202,9 +202,9 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                         <TouchableOpacity
                           onPress={() => onToggle(item.id)}
                           activeOpacity={0.75}
-                          className="flex-row items-center px-5 py-4 border-b border-[#F0F0F0]"
+                          className="flex-row items-center px-5 py-4 border-b border-premium-divider-subtle"
                         >
-                          <View className="w-10 h-10 rounded-full bg-[#F5F5F5] overflow-hidden mr-4">
+                          <View className="w-10 h-10 rounded-full bg-premium-surface overflow-hidden mr-4">
                             <Image
                               source={{ uri: item.photo_url || PLACEHOLDER_AVATAR }}
                               className="w-full h-full"
@@ -214,7 +214,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                           <View className="flex-1 pr-3">
                             <Body className="font-manrope-medium text-[16px] text-premium-black">{name}</Body>
                             {item.position ? (
-                              <Caption className="mt-0.5 text-[13px] text-[#9CA3AF]">{item.position}</Caption>
+                              <Caption className="mt-0.5 text-[13px] text-premium-gray-secondary">{item.position}</Caption>
                             ) : null}
                           </View>
                           <IconStar

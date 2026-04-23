@@ -21,7 +21,7 @@ export function BrandHeader({ onBack }: BrandHeaderProps) {
   })
 
   return (
-    <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center justify-center">
+    <View className="bg-premium-white border-b border-premium-divider px-5 py-5 flex-row items-center justify-center">
       <TouchableOpacity onPress={handleBack} className="absolute left-5">
         <IconBack size={28} color={Colors.premium.black} strokeWidth={2.2} />
       </TouchableOpacity>

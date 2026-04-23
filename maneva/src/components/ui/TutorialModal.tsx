@@ -257,7 +257,7 @@ export function TutorialModal({
                       borderLeftWidth: ARROW_SIZE,
                       borderRightWidth: ARROW_SIZE,
                       borderBottomWidth: ARROW_SIZE,
-                      borderBottomColor: "#FFFFFF",
+                      borderBottomColor: Colors.premium.white,
                     }
                   : {
                       bottom: -ARROW_SIZE,
@@ -265,7 +265,7 @@ export function TutorialModal({
                       borderLeftWidth: ARROW_SIZE,
                       borderRightWidth: ARROW_SIZE,
                       borderTopWidth: ARROW_SIZE,
-                      borderTopColor: "#FFFFFF",
+                      borderTopColor: Colors.premium.white,
                     },
               ]}
             />

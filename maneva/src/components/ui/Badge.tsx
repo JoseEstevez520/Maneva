@@ -22,9 +22,9 @@ type BadgeProps = {
 const variantStyles: Record<BadgeVariant, { bg: string; text: string }> = {
   gold:    { bg: 'bg-gold',           text: 'text-premium-white' },
   black:   { bg: 'bg-premium-black',  text: 'text-premium-white' },
-  success: { bg: 'bg-[#10B981]',      text: 'text-premium-white' },
-  warning: { bg: 'bg-[#F59E0B]',      text: 'text-premium-black' },
-  error:   { bg: 'bg-[#EF4444]',      text: 'text-premium-white' },
+  success: { bg: 'bg-success',         text: 'text-premium-white' },
+  warning: { bg: 'bg-warning',         text: 'text-premium-black' },
+  error:   { bg: 'bg-error',           text: 'text-premium-white' },
 }
 
 export function Badge({ text, variant = 'black', size = 'md' }: BadgeProps) {

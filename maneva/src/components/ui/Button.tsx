@@ -1,5 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Colors } from "@/constants/theme";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -93,7 +94,7 @@ export function Button({
       className={`w-full flex-row items-center justify-center gap-3 ${variantStyles[variant]} ${sizeStyles[size]} ${isDisabled ? "opacity-50" : ""}`}
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#000000" />
+        <ActivityIndicator size="small" color={Colors.premium.black} />
       ) : icon ? (
         <View className="mb-1">{icon}</View>
       ) : null}

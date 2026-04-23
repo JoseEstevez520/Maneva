@@ -1,6 +1,7 @@
 import React from 'react'
 import { View } from 'react-native'
 import { IconStar } from '@/components/ui/icons'
+import { Colors } from '@/constants/theme'
 
 type RatingStarsProps = {
   rating: number
@@ -17,16 +18,16 @@ export function RatingStars({ rating, size = 16, className = '' }: RatingStarsPr
   return (
     <View className={`flex-row items-center ${className}`}>
       {[...Array(fullStars)].map((_, i) => (
-        <IconStar key={`full-${i}`} size={size} color="#D4AF37" fill="#D4AF37" />
+        <IconStar key={`full-${i}`} size={size} color="Colors.gold.DEFAULT" fill="Colors.gold.DEFAULT" />
       ))}
       {hasHalf && (
         <View style={{ width: size, height: size, overflow: 'hidden' }}>
-          <IconStar size={size} color="#D4AF37" fill="#D4AF37" style={{ position: 'absolute', left: 0 }} />
+          <IconStar size={size} color="Colors.gold.DEFAULT" fill="Colors.gold.DEFAULT" style={{ position: 'absolute', left: 0 }} />
           <View style={{ position: 'absolute', left: size / 2, width: size / 2, height: size, backgroundColor: 'white' }} />
         </View>
       )}
       {[...Array(emptyStars)].map((_, i) => (
-        <IconStar key={`empty-${i}`} size={size} color="#E5E5E5" />
+        <IconStar key={`empty-${i}`} size={size} color={Colors.premium.gray.light} />
       ))}
     </View>
   )

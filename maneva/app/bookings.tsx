@@ -28,9 +28,9 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: 'text-[#D97706]',
-  confirmed: 'text-[#16A34A]',
-  cancelled: 'text-[#DC2626]',
+  pending: 'text-warning-text',
+  confirmed: 'text-success-text',
+  cancelled: 'text-error-dark',
   done: 'text-premium-gray',
 }
 
@@ -56,7 +56,7 @@ function AppointmentRow({
   const canCancel = appointment.status === 'pending' || appointment.status === 'confirmed'
 
   return (
-    <View className="bg-premium-white rounded-[20px] border border-[#F0F0F0] p-5 gap-3">
+    <View className="bg-premium-white rounded-[20px] border border-premium-divider-subtle p-5 gap-3">
       {/* Header: salón + estado */}
       <View className="flex-row items-center justify-between">
         <Body className="font-manrope-bold text-[15px] text-premium-black flex-1 mr-2" numberOfLines={1}>
@@ -98,9 +98,9 @@ function AppointmentRow({
         <TouchableOpacity
           onPress={() => onRequestCancel(appointment.id)}
           activeOpacity={0.7}
-          className="border border-[#ECECEC] rounded-[20px] py-2.5 items-center mt-1"
+          className="border border-premium-divider rounded-[20px] py-2.5 items-center mt-1"
         >
-          <Caption numberOfLines={1} className="font-manrope-extrabold text-[10px] tracking-[1.5px] uppercase text-[#DC2626]">
+          <Caption numberOfLines={1} className="font-manrope-extrabold text-[10px] tracking-[1.5px] uppercase text-error-dark">
             Cancelar cita
           </Caption>
         </TouchableOpacity>
@@ -136,10 +136,10 @@ export default function BookingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
       {/* Header */}
-      <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 flex-row items-center gap-4">
+      <View className="bg-premium-white border-b border-premium-divider px-5 py-5 flex-row items-center gap-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-9 h-9 rounded-full bg-[#F5F5F5] items-center justify-center"
+          className="w-9 h-9 rounded-full bg-premium-surface items-center justify-center"
           activeOpacity={0.7}
         >
           <IconBack size={18} color={Colors.premium.black} strokeWidth={2} />
@@ -162,7 +162,7 @@ export default function BookingsScreen() {
               Próximas
             </Caption>
             {upcoming.length === 0 ? (
-              <View className="bg-premium-white rounded-[20px] border border-[#F0F0F0] p-5 items-center">
+              <View className="bg-premium-white rounded-[20px] border border-premium-divider-subtle p-5 items-center">
                 <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
                   No tienes citas próximas
                 </Body>

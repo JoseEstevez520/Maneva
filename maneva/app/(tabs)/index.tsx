@@ -124,7 +124,7 @@ function NextAppointmentSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : appt ? (
-        <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 gap-4">
+        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 gap-4">
           <View className="flex-row items-start gap-3">
             <View className="flex-1 gap-1">
               <View className="flex-row items-center gap-1.5 mb-1">
@@ -162,7 +162,7 @@ function NextAppointmentSection() {
           </TouchableOpacity>
         </View>
       ) : (
-        <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
+        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
           <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
             No tienes citas próximas
           </Body>
@@ -193,7 +193,7 @@ function MySalonSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : salon ? (
-        <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row h-[120px] overflow-hidden">
+        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row h-[120px] overflow-hidden">
           <Image source={{ uri: PLACEHOLDER_IMAGE }} className="w-1/3 h-full" />
           <View className="flex-1 p-[14px] justify-between">
             <View>
@@ -236,7 +236,7 @@ function MySalonSection() {
           </View>
         </View>
       ) : (
-        <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
+        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
           <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
             Aún no tienes un salón favorito
           </Body>
@@ -261,7 +261,7 @@ function TodayCard({ id, name, city }: { id: string; name: string; city: string 
       onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
       onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
       style={animatedStyle}
-      className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
+      className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
     >
       <View>
         <Image
@@ -351,10 +351,10 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
       onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
       onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
       style={animatedStyle}
-      className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
+      className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
     >
       {/* Encabezado con tipo de oferta */}
-      <View className="bg-[rgba(212,175,55,0.08)] border-b border-[#F5F5F5] px-5 py-3 flex-row items-center gap-2">
+      <View className="bg-[rgba(212,175,55,0.08)] border-b border-premium-surface px-5 py-3 flex-row items-center gap-2">
         <View className="bg-[rgba(212,175,55,0.15)] rounded-lg p-1.5">
           <IconTag size={12} color={Colors.gold.DEFAULT} strokeWidth={2} />
         </View>
@@ -418,7 +418,7 @@ function SpecialOffersSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : campaigns.length === 0 ? (
-        <View className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
+        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
           <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">Sin ofertas activas ahora mismo</Body>
         </View>
       ) : (

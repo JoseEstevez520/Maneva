@@ -111,7 +111,7 @@ function TypingIndicator() {
   return (
     <Animated.View
       entering={FadeInDown.duration(200)}
-      className="flex-row items-center gap-1 bg-[#F5F5F5] px-4 py-3 rounded-2xl rounded-tl-sm self-start ml-5 mb-3"
+      className="flex-row items-center gap-1 bg-premium-surface px-4 py-3 rounded-2xl rounded-tl-sm self-start ml-5 mb-3"
     >
       <Animated.View style={style1} className="w-2 h-2 rounded-full bg-premium-gray" />
       <Animated.View style={style2} className="w-2 h-2 rounded-full bg-premium-gray" />
@@ -134,7 +134,7 @@ function MessageBubble({ message }: { message: Message }) {
         className={`px-4 py-3 ${
           isUser
             ? 'bg-premium-black rounded-2xl rounded-tr-sm'
-            : 'bg-[#F5F5F5] rounded-2xl rounded-tl-sm'
+            : 'bg-premium-surface rounded-2xl rounded-tl-sm'
         }`}
       >
         <Body
@@ -154,7 +154,7 @@ function MessageBubble({ message }: { message: Message }) {
               key={salon.id}
               onPress={() => router.push(`/salon/${salon.id}`)}
               activeOpacity={0.8}
-              className="bg-premium-white border border-[#E5E7EB] rounded-xl px-4 py-3 flex-row items-center gap-3"
+              className="bg-premium-white border border-premium-divider-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
             >
               <View className="w-8 h-8 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
                 <IconSparkles size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
@@ -194,7 +194,7 @@ function QuickChips({ onSelect }: { onSelect: (text: string) => void }) {
             key={chip}
             onPress={() => onSelect(chip)}
             activeOpacity={0.7}
-            className="bg-premium-white border border-[#E5E7EB] rounded-full px-4 py-2"
+            className="bg-premium-white border border-premium-divider-strong rounded-full px-4 py-2"
           >
             <Caption className="font-manrope-medium text-[12px] text-premium-black">
               {chip}
@@ -290,7 +290,7 @@ export default function ChatScreen() {
       {/* ── Header ── */}
       <Animated.View
         entering={FadeInDown.duration(300)}
-        className="flex-row items-center justify-between px-5 py-4 border-b border-[#F3F4F6]"
+        className="flex-row items-center justify-between px-5 py-4 border-b border-premium-surface-soft"
       >
         <View className="flex-row items-center gap-3">
           <View className="w-9 h-9 rounded-full bg-premium-white border border-gold items-center justify-center">
@@ -309,7 +309,7 @@ export default function ChatScreen() {
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
-          className="w-8 h-8 rounded-full bg-[#F5F5F5] items-center justify-center"
+          className="w-8 h-8 rounded-full bg-premium-surface items-center justify-center"
         >
           <IconClose size={16} color={Colors.premium.black} strokeWidth={2.5} />
         </TouchableOpacity>
@@ -332,7 +332,7 @@ export default function ChatScreen() {
           {messages.length === 0 && (
             <Animated.View entering={FadeInDown.duration(400).springify()}>
               <View className="self-start ml-5 mb-3 max-w-[82%]">
-                <View className="bg-[#F5F5F5] px-4 py-3 rounded-2xl rounded-tl-sm">
+                <View className="bg-premium-surface px-4 py-3 rounded-2xl rounded-tl-sm">
                   <Body className="font-manrope-medium text-[14px] leading-[20px] text-premium-black">
                     ¡Hola! Soy el asistente de Maneva. Puedo ayudarte a encontrar salones,
                     consultar servicios o resolver cualquier duda. ¿En qué te ayudo?
@@ -351,9 +351,9 @@ export default function ChatScreen() {
         </ScrollView>
 
         {/* ── Input ── */}
-        <View className="flex-row items-end gap-3 px-5 py-3 border-t border-[#F3F4F6]">
+        <View className="flex-row items-end gap-3 px-5 py-3 border-t border-premium-surface-soft">
           <TextInput
-            className="flex-1 bg-[#F5F5F5] rounded-2xl px-4 py-3 font-manrope-medium text-[14px] text-premium-black max-h-[100px]"
+            className="flex-1 bg-premium-surface rounded-2xl px-4 py-3 font-manrope-medium text-[14px] text-premium-black max-h-[100px]"
             placeholder="Escribe tu pregunta..."
             placeholderTextColor={Colors.premium.gray.DEFAULT}
             value={input}
@@ -374,7 +374,7 @@ export default function ChatScreen() {
             disabled={!canSend}
             style={sendAnimatedStyle}
             className={`w-11 h-11 rounded-full items-center justify-center ${
-              canSend ? 'bg-premium-black' : 'bg-[#E5E7EB]'
+              canSend ? 'bg-premium-black' : 'bg-premium-divider-strong'
             }`}
           >
             <IconSend

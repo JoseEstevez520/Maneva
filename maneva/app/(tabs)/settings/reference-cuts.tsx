@@ -18,7 +18,7 @@ export default function ReferenceCutsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
           <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Cortes de Referencia</H2>
-          <Body className="mt-2 text-[15px] text-[#6B7280]">Gestiona tus estilos favoritos y añade nuevos</Body>
+          <Body className="mt-2 text-[15px] text-premium-gray">Gestiona tus estilos favoritos y añade nuevos</Body>
         </View>
 
         {error ? (
@@ -34,7 +34,7 @@ export default function ReferenceCutsScreen() {
         ) : (
           <View className="px-6 flex-row flex-wrap justify-between gap-y-4">
             {cuts.map((uri) => (
-              <View key={uri} className="w-[48%] rounded-[18px] overflow-hidden bg-premium-white border border-[#E9E9E9] shadow-[0_6px_16px_rgba(0,0,0,0.07)]">
+              <View key={uri} className="w-[48%] rounded-[18px] overflow-hidden bg-premium-white border border-premium-divider-soft shadow-[0_6px_16px_rgba(0,0,0,0.07)]">
                 <Image source={{ uri }} className="w-full h-[220px]" resizeMode="cover" />
                 <TouchableOpacity
                   onPress={() => { void remove(uri) }}
@@ -52,7 +52,7 @@ export default function ReferenceCutsScreen() {
           onPress={() => { void pickAndUpload() }}
           disabled={uploading || loading}
           activeOpacity={0.8}
-          className="mx-6 mt-8 h-[98px] rounded-[20px] border-2 border-dashed border-[#E4D39C] bg-[#F9F7F0] flex-row items-center justify-center gap-4"
+          className="mx-6 mt-8 h-[98px] rounded-[20px] border-2 border-dashed border-gold-border bg-gold-bg-soft flex-row items-center justify-center gap-4"
           style={{ opacity: uploading || loading ? 0.6 : 1 }}
         >
           {uploading ? (

@@ -27,7 +27,7 @@ function formatDateLabel(isoDate: string): string {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <Caption className="px-6 mb-4 font-manrope-extrabold text-[10px] tracking-[3.8px] uppercase text-[#B2BAC8]">
+    <Caption className="px-6 mb-4 font-manrope-extrabold text-[10px] tracking-[3.8px] uppercase text-premium-gray-secondary">
       {children}
     </Caption>
   )
@@ -75,21 +75,21 @@ function PersonCard({
   onSecondaryPress: () => void
 }) {
   return (
-    <View className="px-6 py-5 border-b border-[#ECECEC] bg-premium-white">
+    <View className="px-6 py-5 border-b border-premium-divider bg-premium-white">
       <View className="flex-row items-start justify-between gap-4">
         <View className="flex-1 pr-2">
-          <Body className="font-manrope-bold text-[18px] leading-[24px] text-[#000000]">
+          <Body className="font-manrope-bold text-[18px] leading-[24px] text-premium-black">
             {name}
           </Body>
           {relation ? (
-            <Body className="mt-1 font-manrope text-[13px] text-[#8A94A6]">
+            <Body className="mt-1 font-manrope text-[13px] text-premium-gray-secondary">
               {relation}
             </Body>
           ) : null}
           <Body className="mt-2 font-manrope-medium text-[13px] text-premium-black">
             Permiso: {permissionLabel}
           </Body>
-          <Body className="mt-1 font-manrope text-[12px] text-[#A9B2C1]">
+          <Body className="mt-1 font-manrope text-[12px] text-premium-gray-secondary">
             Desde: {dateLabel}
           </Body>
         </View>
@@ -132,13 +132,13 @@ function InfoCard({
   children?: React.ReactNode
 }) {
   return (
-    <View className="mx-6 mt-4 rounded-[18px] bg-[#F4F4F4] px-5 py-5">
+    <View className="mx-6 mt-4 rounded-[18px] bg-premium-surface-alt px-5 py-5">
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-row items-center gap-3 flex-1 pr-3">
           <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
             <Text className="text-[11px] font-bold text-premium-white">i</Text>
           </View>
-          <Body className="flex-1 font-manrope-medium text-[13px] leading-5 text-[#6B7280]">
+          <Body className="flex-1 font-manrope-medium text-[13px] leading-5 text-premium-gray">
             {title}
           </Body>
         </View>
@@ -291,7 +291,7 @@ export default function BookingsDelegationScreen() {
             />
           ))}
 
-          <View className="bg-premium-white border-b border-[#ECECEC]">
+          <View className="bg-premium-white border-b border-premium-divider">
             {!hasDelegates ? (
               <View className="px-6 py-5">
                 <Body className="font-manrope text-[15px] text-premium-gray">
@@ -304,7 +304,7 @@ export default function BookingsDelegationScreen() {
           </View>
 
           {isAddOpen ? (
-            <View className="px-6 pt-5 pb-4 gap-4 bg-premium-white border-b border-[#ECECEC]">
+            <View className="px-6 pt-5 pb-4 gap-4 bg-premium-white border-b border-premium-divider">
               <Input
                 label="Teléfono"
                 placeholder="Ej: +34600111222"
@@ -319,16 +319,16 @@ export default function BookingsDelegationScreen() {
                 onChangeText={setRelationLabel}
               />
 
-              <View className="flex-row items-center justify-between border border-[#ECECEC] rounded-[14px] px-4 py-4">
+              <View className="flex-row items-center justify-between border border-premium-divider rounded-[14px] px-4 py-4">
                 <Body className="font-manrope-medium text-[15px] text-premium-black">
                   Permitir modificar citas
                 </Body>
                 <Switch
                   value={canModify}
                   onValueChange={setCanModify}
-                  trackColor={{ false: '#D9DDE2', true: Colors.gold.light }}
-                  thumbColor={canModify ? Colors.gold.DEFAULT : '#FFFFFF'}
-                  ios_backgroundColor="#D9DDE2"
+                  trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
+                  thumbColor={canModify ? Colors.gold.DEFAULT : Colors.premium.white}
+                  ios_backgroundColor={Colors.premium.divider.switch}
                 />
               </View>
 
@@ -336,11 +336,11 @@ export default function BookingsDelegationScreen() {
                 Guardar permiso
               </Button>
 
-              <View className="rounded-[18px] bg-[#F4F4F4] px-5 py-5 flex-row items-center gap-3">
+              <View className="rounded-[18px] bg-premium-surface-alt px-5 py-5 flex-row items-center gap-3">
                 <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
                   <Text className="text-[11px] font-bold text-premium-white">i</Text>
                 </View>
-                <Body className="flex-1 font-manrope text-[13px] leading-6 text-[#6B7280]">
+                <Body className="flex-1 font-manrope text-[13px] leading-6 text-premium-gray">
                   Solo podrás otorgar permisos a usuarios ya registrados en Maneva, buscándolos por su teléfono.
                 </Body>
               </View>
@@ -348,7 +348,7 @@ export default function BookingsDelegationScreen() {
           ) : null}
         </View>
 
-        <View className="h-4 bg-[#F7F7F7]" />
+        <View className="h-4 bg-premium-white-pale" />
 
         <View className="pt-8 pb-6">
           <SectionTitle>A quién gestiono yo las citas</SectionTitle>
@@ -369,7 +369,7 @@ export default function BookingsDelegationScreen() {
           ))}
 
           {!hasManagedUsers ? (
-            <View className="px-6 py-5 border-b border-[#ECECEC] bg-premium-white">
+            <View className="px-6 py-5 border-b border-premium-divider bg-premium-white">
               <Body className="font-manrope text-[15px] text-premium-gray">
                 Aún no gestionas las citas de otros usuarios.
               </Body>
@@ -379,11 +379,11 @@ export default function BookingsDelegationScreen() {
           {/* TODO: enlazar a contenido de ayuda real cuando esté disponible */}
           <InfoCard title="Cómo añadir administradores" actionLabel="Ver más" onPress={() => {}} />
 
-          <View className="mx-6 mt-4 rounded-[18px] bg-[#F4F4F4] px-5 py-5 flex-row items-center gap-3">
+          <View className="mx-6 mt-4 rounded-[18px] bg-premium-surface-alt px-5 py-5 flex-row items-center gap-3">
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
               <Text className="text-[11px] font-bold text-premium-white">!</Text>
             </View>
-            <Body className="flex-1 font-manrope text-[13px] leading-6 text-[#6B7280]">
+            <Body className="flex-1 font-manrope text-[13px] leading-6 text-premium-gray">
               Las personas con permiso podrán gestionar tus citas según el acceso otorgado. Puedes revocarlo en cualquier momento.
             </Body>
           </View>

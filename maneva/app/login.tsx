@@ -19,6 +19,7 @@ import { Body, Caption, H1 } from "@/components/ui/Typography";
 import { IconMail } from "@/components/ui/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { Colors } from "@/constants/theme";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido o incorrecto"),
@@ -135,7 +136,7 @@ export default function LoginScreen() {
                 error={errors.email?.message}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon={<IconMail color="#737373" size={20} />}
+                leftIcon={<IconMail color={Colors.premium.gray.icon} size={20} />}
               />
             )}
           />

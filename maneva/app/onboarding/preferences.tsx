@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Body, Caption, H1 } from "@/components/ui/Typography";
+import { Colors } from "@/constants/theme";
 import { getCurrentUser } from "@/services/auth.service";
 import { replaceUserPreferences } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
@@ -138,7 +139,7 @@ export default function PreferencesOnboardingScreen() {
                   className={`self-start shrink-0 px-3 py-2 rounded-full border ${
                     isActive
                       ? "bg-premium-black border-premium-black"
-                      : "bg-premium-white border-[#DDDDDD]"
+                      : "bg-premium-white border-premium-divider-muted"
                   }`}
                 >
                   <Caption
@@ -169,7 +170,7 @@ export default function PreferencesOnboardingScreen() {
           disabled={!canContinue}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#000000" />
+            <ActivityIndicator size="small" color={Colors.premium.black} />
           ) : (
             <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
               Continuar

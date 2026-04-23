@@ -32,14 +32,14 @@ function Row({
       disabled={!clickable}
       onPress={onPress}
       activeOpacity={0.78}
-      className={`px-6 py-6 bg-premium-white border-b border-[#ECECEC] ${!clickable ? 'opacity-80' : ''}`}
+      className={`px-6 py-6 bg-premium-white border-b border-premium-divider ${!clickable ? 'opacity-80' : ''}`}
     >
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1">
           <Body className="font-manrope-medium text-[17px] text-premium-black">{title}</Body>
-          {subtitle ? <Body className="mt-1 text-[14px] text-[#9CA3AF]">{subtitle}</Body> : null}
+          {subtitle ? <Body className="mt-1 text-[14px] text-premium-gray-secondary">{subtitle}</Body> : null}
         </View>
-        {showChevron ? <IconChevron size={20} color="#C7CBD1" strokeWidth={2.2} /> : null}
+        {showChevron ? <IconChevron size={20} color={Colors.premium.gray.iconMuted} strokeWidth={2.2} /> : null}
       </View>
     </TouchableOpacity>
   )
@@ -101,23 +101,23 @@ export default function GeneralSettingsScreen() {
           <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Ajustes generales</H2>
         </View>
 
-        <View className="bg-premium-white border-y border-[#ECECEC]">
+        <View className="bg-premium-white border-y border-premium-divider">
           <View className="px-6 py-5">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-[#9CA3AF]">
+            <Caption className="font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary">
               Tus datos
             </Caption>
           </View>
 
           <View className="px-6 pb-6 gap-5">
             <View className="items-center gap-4">
-              <View className="w-24 h-24 rounded-full bg-[#F4F4F4] border border-[#ECECEC] items-center justify-center overflow-hidden">
+              <View className="w-24 h-24 rounded-full bg-premium-surface-alt border border-premium-divider items-center justify-center overflow-hidden">
                 {avatarUrl.trim() ? (
                   <Image source={{ uri: avatarUrl.trim() }} className="w-full h-full" />
                 ) : (
                   <Body className="font-manrope-extrabold text-[26px] text-gold">{userInitials}</Body>
                 )}
               </View>
-              <Caption className="font-manrope-semibold text-[12px] tracking-[2px] uppercase text-[#9CA3AF] text-center">
+              <Caption className="font-manrope-semibold text-[12px] tracking-[2px] uppercase text-premium-gray-secondary text-center">
                 Foto de perfil
               </Caption>
             </View>

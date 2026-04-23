@@ -26,12 +26,12 @@ export function CampaignCard({ campaign }: { campaign: CampaignWithSalon }) {
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      className="mx-5 mb-4 rounded-lg overflow-hidden bg-premium-white border border-[#F3F4F6] active:bg-[#F9FAFB]"
+      className="mx-5 mb-4 rounded-lg overflow-hidden bg-premium-white border border-premium-surface-soft active:bg-premium-white-pale"
     >
       {/* Imagen */}
       <Image
         source={{ uri: PLACEHOLDER_IMAGE }}
-        className="w-full h-40 bg-[#F3F4F6]"
+        className="w-full h-40 bg-premium-surface-soft"
       />
 
       {/* Contenido */}

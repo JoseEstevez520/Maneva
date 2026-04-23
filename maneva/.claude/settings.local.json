@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(scripts/start-server.sh:*)",
-      "Bash(awk '/Tables.*employees/,/Tables.*[a-z]/' maneva/src/types/database.types.ts)"
+      "Bash(awk '/Tables.*employees/,/Tables.*[a-z]/' maneva/src/types/database.types.ts)",
+      "Bash(grep -v \"//.*#[0-9A-Fa-f]\\\\{6\\\\}\")"
     ]
   }
 }

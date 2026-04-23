@@ -24,10 +24,10 @@ type MenuRowProps = {
 function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="mt-8">
-      <Caption className="px-6 mb-3 font-manrope-extrabold text-[11px] tracking-[3px] uppercase text-[#9CA3AF]">
+      <Caption className="px-6 mb-3 font-manrope-extrabold text-[11px] tracking-[3px] uppercase text-premium-gray-secondary">
         {title}
       </Caption>
-      <View className="bg-premium-white border-y border-[#ECECEC]">{children}</View>
+      <View className="bg-premium-white border-y border-premium-divider">{children}</View>
     </View>
   )
 }
@@ -37,14 +37,14 @@ function MenuRow({ label, onPress, disabled = false, showChevron = true, danger 
 
   return (
     <TouchableOpacity
-      className={`px-6 py-6 flex-row items-center justify-between border-b border-[#ECECEC] ${disabled ? 'opacity-50' : ''}`}
+      className={`px-6 py-6 flex-row items-center justify-between border-b border-premium-divider ${disabled ? 'opacity-50' : ''}`}
       onPress={onPress}
       disabled={disabled || !onPress}
       activeOpacity={0.75}
     >
       <Body className={`font-manrope-medium text-[16px] flex-1 pr-3 ${textColor}`}>{label}</Body>
       {showChevron ? (
-        <IconChevron size={20} color="#C7CBD1" strokeWidth={2.2} />
+        <IconChevron size={20} color={Colors.premium.gray.iconMuted} strokeWidth={2.2} />
       ) : null}
     </TouchableOpacity>
   )
@@ -62,15 +62,15 @@ function SwitchRow({
   disabled?: boolean
 }) {
   return (
-    <View className={`px-6 py-6 flex-row items-center justify-between border-b border-[#ECECEC] ${disabled ? 'opacity-50' : ''}`}>
+    <View className={`px-6 py-6 flex-row items-center justify-between border-b border-premium-divider ${disabled ? 'opacity-50' : ''}`}>
       <Body className="font-manrope-medium text-[16px] text-premium-black">{label}</Body>
       <Switch
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{ false: '#D9DDE2', true: Colors.gold.light }}
-        thumbColor={value ? Colors.gold.DEFAULT : '#FFFFFF'}
-        ios_backgroundColor="#D9DDE2"
+        trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
+        thumbColor={value ? Colors.gold.DEFAULT : Colors.premium.white}
+        ios_backgroundColor={Colors.premium.divider.switch}
       />
     </View>
   )
@@ -125,14 +125,14 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
-      <View className="items-center border-b border-[#ECECEC] bg-premium-white py-5">
+      <View className="items-center border-b border-premium-divider bg-premium-white py-5">
         <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="items-center pt-10 pb-6 px-6 bg-premium-white">
-          <View className="w-[120px] h-[120px] rounded-full border border-[#E8DCC0] items-center justify-center bg-[#F6F6F6] shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-            <IconUser size={42} color="#9CA3AF" strokeWidth={2.2} />
+          <View className="w-[120px] h-[120px] rounded-full border border-gold-border-alt items-center justify-center bg-premium-surface shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+            <IconUser size={42} color={Colors.premium.gray.secondary} strokeWidth={2.2} />
           </View>
           <H2 className="mt-8 px-3 font-manrope-bold text-[28px] leading-[34px] text-premium-black text-center">{fullName}</H2>
           <Caption className="mt-2 font-manrope-medium text-premium-gray">{user?.email ?? ''}</Caption>

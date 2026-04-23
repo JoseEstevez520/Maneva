@@ -2,6 +2,7 @@ import React from 'react'
 import { Modal, View, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconCheck } from '@/components/ui/icons'
+import { Colors } from '@/constants/theme'
 
 export type SelectOption<T extends string = string> = {
   value: T
@@ -41,7 +42,7 @@ export function SelectSheet<T extends string = string>({
           <TouchableWithoutFeedback>
             <View className="bg-premium-white rounded-t-[28px] px-6 pt-5 pb-10">
               {/* Handle */}
-              <View className="w-10 h-1 rounded-full bg-[#E0E0E0] self-center mb-5" />
+              <View className="w-10 h-1 rounded-full bg-premium-divider-medium self-center mb-5" />
 
               {/* Título */}
               <H2 className="font-manrope-bold text-[17px] text-premium-black mb-5">
@@ -60,7 +61,7 @@ export function SelectSheet<T extends string = string>({
                       onPress={() => onSelect(option.value)}
                       activeOpacity={0.7}
                       className={`flex-row items-center justify-between py-4 ${
-                        !isLast ? 'border-b border-[#F0F0F0]' : ''
+                        !isLast ? 'border-b border-premium-divider-subtle' : ''
                       }`}
                     >
                       <View className="flex-1 pr-4">
@@ -72,13 +73,13 @@ export function SelectSheet<T extends string = string>({
                           {option.label}
                         </Body>
                         {option.description ? (
-                          <Caption className="mt-0.5 text-[13px] text-[#9CA3AF]">
+                          <Caption className="mt-0.5 text-[13px] text-premium-gray-secondary">
                             {option.description}
                           </Caption>
                         ) : null}
                       </View>
                       {isSelected ? (
-                        <IconCheck size={18} color="#C4A35A" strokeWidth={2.5} />
+                        <IconCheck size={18} color={Colors.gold.check} strokeWidth={2.5} />
                       ) : null}
                     </TouchableOpacity>
                   )
@@ -89,7 +90,7 @@ export function SelectSheet<T extends string = string>({
               <TouchableOpacity
                 onPress={onCancel}
                 activeOpacity={0.7}
-                className="mt-5 py-3.5 items-center rounded-2xl border border-[#ECECEC]"
+                className="mt-5 py-3.5 items-center rounded-2xl border border-premium-divider"
               >
                 <Caption numberOfLines={1} className="font-manrope-medium text-[13px] text-premium-gray">
                   {cancelLabel}

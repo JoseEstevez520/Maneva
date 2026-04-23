@@ -53,38 +53,38 @@ export default function NotificationsScreen() {
 
         {error ? <ErrorMessage message={error} className="mx-6 mb-4 rounded-xl border border-red-200 bg-red-50 p-3" /> : null}
 
-        <Caption className="px-6 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-[#9CA3AF]">
+        <Caption className="px-6 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary">
           Ofertas
         </Caption>
 
-        <TouchableOpacity onPress={() => setOffersSelectorVisible(true)} activeOpacity={0.8} className="px-6 py-5 bg-premium-white border-y border-[#ECECEC]">
+        <TouchableOpacity onPress={() => setOffersSelectorVisible(true)} activeOpacity={0.8} className="px-6 py-5 bg-premium-white border-y border-premium-divider">
           <View className="flex-row items-center justify-between">
             <View className="flex-1 pr-3">
               <Body className="font-manrope-medium text-[17px] text-premium-black">Notificaciones de ofertas</Body>
-              <Body className="mt-1 text-[14px] text-[#6B7280]">{offersLabel}</Body>
+              <Body className="mt-1 text-[14px] text-premium-gray">{offersLabel}</Body>
             </View>
-            <IconChevron size={20} color="#C7CBD1" strokeWidth={2.2} />
+            <IconChevron size={20} color={Colors.premium.gray.iconMuted} strokeWidth={2.2} />
           </View>
         </TouchableOpacity>
 
-        <Caption className="px-6 pt-10 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-[#9CA3AF]">
+        <Caption className="px-6 pt-10 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary">
           A domicilio
         </Caption>
 
-        <View className="px-6 py-5 bg-premium-white border-y border-[#ECECEC]">
+        <View className="px-6 py-5 bg-premium-white border-y border-premium-divider">
           <View className="flex-row items-start justify-between gap-3">
             <View className="flex-1">
               <Body className="font-manrope-medium text-[17px] text-premium-black">A domicilio</Body>
-              <Body className="mt-1 leading-7 text-[14px] text-[#6B7280]">
+              <Body className="mt-1 leading-7 text-[14px] text-premium-gray">
                 Recibir notificaciones cuando un peluquero realice cortes a domicilio en mi zona
               </Body>
             </View>
             <Switch
               value={homeServiceEnabled}
               onValueChange={handleHomeServiceToggle}
-              trackColor={{ false: '#D9DDE2', true: Colors.gold.light }}
-              thumbColor={homeServiceEnabled ? Colors.gold.DEFAULT : '#FFFFFF'}
-              ios_backgroundColor="#D9DDE2"
+              trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
+              thumbColor={homeServiceEnabled ? Colors.gold.DEFAULT : Colors.premium.white}
+              ios_backgroundColor={Colors.premium.divider.switch}
             />
           </View>
         </View>

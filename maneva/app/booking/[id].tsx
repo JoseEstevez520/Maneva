@@ -58,7 +58,7 @@ function BookingHeader({ step, onBack }: { step: BookingStep; onBack: () => void
 
   if (step === 'done') {
     return (
-      <View className="bg-premium-white border-b border-[#ECECEC] px-5 py-5 items-center justify-center">
+      <View className="bg-premium-white border-b border-premium-divider px-5 py-5 items-center justify-center">
         <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">
           MANEVA
         </H1>
@@ -67,11 +67,11 @@ function BookingHeader({ step, onBack }: { step: BookingStep; onBack: () => void
   }
 
   return (
-    <View className="px-5 pt-4 pb-3 border-b border-[#F3F4F6]">
+    <View className="px-5 pt-4 pb-3 border-b border-premium-surface-soft">
       <View className="flex-row items-center gap-4 mb-3">
         <TouchableOpacity
           onPress={onBack}
-          className="w-9 h-9 rounded-full bg-[#F5F5F5] items-center justify-center"
+          className="w-9 h-9 rounded-full bg-premium-surface items-center justify-center"
           activeOpacity={0.7}
         >
           <IconBack size={18} color={Colors.premium.black} strokeWidth={2} />
@@ -86,7 +86,7 @@ function BookingHeader({ step, onBack }: { step: BookingStep; onBack: () => void
           <View
             key={s}
             className={`h-1 flex-1 rounded-full ${
-              i <= stepIndex ? 'bg-gold' : 'bg-[#F0F0F0]'
+              i <= stepIndex ? 'bg-gold' : 'bg-premium-divider-subtle'
             }`}
           />
         ))}
@@ -142,7 +142,7 @@ function ServicesStep({
                     className={`flex-row items-center p-4 rounded-2xl border ${
                       selected
                         ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-                        : 'bg-premium-white border-[#F0F0F0]'
+                        : 'bg-premium-white border-premium-divider-subtle'
                     }`}
                   >
                     <View className="flex-1 gap-1">
@@ -163,10 +163,10 @@ function ServicesStep({
                     </View>
                     <View
                       className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                        selected ? 'bg-gold border-gold' : 'border-[#D0D0D0]'
+                        selected ? 'bg-gold border-gold' : 'border-premium-divider-disabled'
                       }`}
                     >
-                      {selected && <IconCheck size={13} color="#FFFFFF" strokeWidth={2.5} />}
+                      {selected && <IconCheck size={13} color={Colors.premium.white} strokeWidth={2.5} />}
                     </View>
                   </TouchableOpacity>
                 )
@@ -176,7 +176,7 @@ function ServicesStep({
         ))}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-[#F3F4F6] px-5 py-4 gap-2">
+      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4 gap-2">
         {selectedIds.length > 0 && (
           <View className="flex-row justify-between items-center mb-1">
             <Caption className="font-manrope-medium text-[12px] text-premium-gray">
@@ -205,7 +205,7 @@ function EmployeeAvatar({ employee, size = 48 }: { employee: EmployeeInfo; size?
   return (
     <View
       style={style}
-      className="bg-[#F0F0F0] items-center justify-center mr-4"
+      className="bg-premium-divider-subtle items-center justify-center mr-4"
     >
       <IconUser size={size * 0.45} color={Colors.premium.gray.DEFAULT} strokeWidth={1.5} />
     </View>
@@ -216,7 +216,7 @@ function SelectionCircle({ selected }: { selected: boolean }) {
   return (
     <View
       className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-        selected ? 'bg-gold border-gold' : 'border-[#D0D0D0]'
+        selected ? 'bg-gold border-gold' : 'border-premium-divider-disabled'
       }`}
     >
       {selected && <IconCheck size={13} color="#000" strokeWidth={2.5} />}
@@ -290,7 +290,7 @@ function EmployeeStep({
                           className={`flex-row items-center p-4 rounded-2xl border ${
                             selected
                               ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-                              : 'bg-premium-white border-[#F0F0F0]'
+                              : 'bg-premium-white border-premium-divider-subtle'
                           }`}
                         >
                           <EmployeeAvatar employee={emp} size={44} />
@@ -310,7 +310,7 @@ function EmployeeStep({
           })}
         </ScrollView>
 
-        <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-[#F3F4F6] px-5 py-4">
+        <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4">
           <Button variant="primary" size="sm" disabled={!allServicesAssigned} onPress={onContinue}>
             Continuar
           </Button>
@@ -339,10 +339,10 @@ function EmployeeStep({
           className={`flex-row items-center p-4 rounded-2xl border mb-2 ${
             anySelected
               ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-              : 'bg-premium-white border-[#F0F0F0]'
+              : 'bg-premium-white border-premium-divider-subtle'
           }`}
         >
-          <View className="w-12 h-12 rounded-full bg-[#F5F5F5] items-center justify-center mr-4">
+          <View className="w-12 h-12 rounded-full bg-premium-surface items-center justify-center mr-4">
             <IconUser size={22} color={Colors.premium.gray.DEFAULT} strokeWidth={1.5} />
           </View>
           <View className="flex-1">
@@ -368,7 +368,7 @@ function EmployeeStep({
               className={`flex-row items-center p-4 rounded-2xl border mb-2 ${
                 selected
                   ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-                  : 'bg-premium-white border-[#F0F0F0]'
+                  : 'bg-premium-white border-premium-divider-subtle'
               }`}
             >
               <EmployeeAvatar employee={emp} />
@@ -388,7 +388,7 @@ function EmployeeStep({
         })}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-[#F3F4F6] px-5 py-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4">
         <Button variant="primary" size="sm" onPress={onContinue}>
           Continuar
         </Button>
@@ -412,7 +412,7 @@ function DateStep({
   onContinue: () => void
 }) {
   const markedDates = selectedDate
-    ? { [selectedDate]: { selected: true, selectedColor: Colors.gold.DEFAULT, selectedTextColor: '#FFFFFF' } }
+    ? { [selectedDate]: { selected: true, selectedColor: Colors.gold.DEFAULT, selectedTextColor: Colors.premium.white } }
     : {}
 
   return (
@@ -429,10 +429,10 @@ function DateStep({
             calendarBackground: 'transparent',
             textSectionTitleColor: Colors.premium.gray.DEFAULT,
             selectedDayBackgroundColor: Colors.gold.DEFAULT,
-            selectedDayTextColor: '#FFFFFF',
+            selectedDayTextColor: Colors.premium.white,
             todayTextColor: Colors.gold.DEFAULT,
             dayTextColor: Colors.premium.black,
-            textDisabledColor: '#D0D0D0',
+            textDisabledColor: Colors.premium.divider.disabled,
             dotColor: Colors.gold.DEFAULT,
             arrowColor: Colors.gold.DEFAULT,
             monthTextColor: Colors.premium.black,
@@ -446,7 +446,7 @@ function DateStep({
         />
       </View>
 
-      <View className="bg-premium-white border-t border-[#F3F4F6] px-5 py-4">
+      <View className="bg-premium-white border-t border-premium-surface-soft px-5 py-4">
         <Button variant="primary" size="sm" disabled={!selectedDate} onPress={onContinue}>
           Continuar
         </Button>
@@ -515,7 +515,7 @@ function SlotStep({
                   onPress={() => onSelect(slot)}
                   activeOpacity={0.7}
                   className={`flex-row items-center p-4 rounded-2xl border ${
-                    isSelected ? 'bg-[rgba(212,175,55,0.08)] border-gold' : 'bg-premium-white border-[#F0F0F0]'
+                    isSelected ? 'bg-[rgba(212,175,55,0.08)] border-gold' : 'bg-premium-white border-premium-divider-subtle'
                   }`}
                 >
                   {/* Hora */}
@@ -558,7 +558,7 @@ function SlotStep({
         )}
       </View>
 
-      <View className="bg-premium-white border-t border-[#F3F4F6] px-5 py-4">
+      <View className="bg-premium-white border-t border-premium-surface-soft px-5 py-4">
         <Button
           variant="primary"
           size="sm"
@@ -602,7 +602,7 @@ function ConfirmStep({
     <View className="flex-1">
       <ScrollView contentContainerClassName="px-5 pt-5 pb-32" showsVerticalScrollIndicator={false}>
         {/* Fecha y empleado(s) */}
-        <View className="bg-premium-white border border-[#F0F0F0] rounded-2xl p-4 mb-4 gap-3">
+        <View className="bg-premium-white border border-premium-divider-subtle rounded-2xl p-4 mb-4 gap-3">
           <View className="flex-row items-center gap-2">
             <IconCalendar size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
             <Body className="font-manrope-bold text-[13px] text-premium-black capitalize flex-1">
@@ -618,7 +618,7 @@ function ConfirmStep({
         </View>
 
         {/* Servicios */}
-        <View className="bg-premium-white border border-[#F0F0F0] rounded-2xl p-4 mb-4 gap-3">
+        <View className="bg-premium-white border border-premium-divider-subtle rounded-2xl p-4 mb-4 gap-3">
           <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-premium-gray uppercase">
             Servicios
           </Caption>
@@ -635,7 +635,7 @@ function ConfirmStep({
               </Body>
             </View>
           ))}
-          <View className="border-t border-[#F3F4F6] pt-3 flex-row justify-between items-center">
+          <View className="border-t border-premium-surface-soft pt-3 flex-row justify-between items-center">
             <View className="flex-row items-center gap-1.5">
               <IconClock size={12} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
               <Caption className="font-manrope-medium text-[11px] text-premium-gray">
@@ -649,7 +649,7 @@ function ConfirmStep({
         </View>
 
         {/* Notas */}
-        <View className="bg-premium-white border border-[#F0F0F0] rounded-2xl p-4 mb-4">
+        <View className="bg-premium-white border border-premium-divider-subtle rounded-2xl p-4 mb-4">
           <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-premium-gray uppercase mb-3">
             Notas para el salón (opcional)
           </Caption>
@@ -673,7 +673,7 @@ function ConfirmStep({
         {error && <ErrorMessage message={error} />}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-[#F3F4F6] px-5 py-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4">
         <Button variant="primary" size="sm" loading={loading} onPress={onConfirm}>
           Confirmar reserva
         </Button>
@@ -759,7 +759,7 @@ function DoneStep({
           )}
         </View>
 
-        <View className="bg-[#F5F5F5] rounded-lg px-4 py-2">
+        <View className="bg-premium-surface rounded-lg px-4 py-2">
           <Caption className="font-manrope-bold text-[11px] text-premium-gray tracking-[1.5px]">
             Ref: {appointmentId.slice(0, 8).toUpperCase()}
           </Caption>

@@ -187,7 +187,7 @@ export default function SearchScreen() {
       {/* ── Header ── */}
       <View className="bg-premium-white pt-[10px]">
         <View className="flex-row items-center px-5 mb-4 gap-4">
-          <View className="flex-1 flex-row items-center bg-[#F5F5F5] rounded-2xl px-3 h-12">
+          <View className="flex-1 flex-row items-center bg-premium-surface rounded-2xl px-3 h-12">
             <IconSearch color={Colors.premium.black} size={20} strokeWidth={2} style={{ marginRight: 8 }} />
             <TextInput
               className="flex-1 font-manrope-medium text-[14px] text-premium-black py-0 h-full"
@@ -251,7 +251,7 @@ export default function SearchScreen() {
             />
           )}
         </ScrollView>
-        <View className="h-[1px] bg-[#F3F4F6] w-full" />
+        <View className="h-[1px] bg-premium-surface-soft w-full" />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-10">
@@ -271,7 +271,7 @@ export default function SearchScreen() {
                 className={`px-5 py-3 rounded-full border ${
                   filters.selectedServices.includes(service.id)
                     ? 'border-gold bg-[rgba(212,175,55,0.1)]'
-                    : 'border-[#F3F4F6] bg-premium-white'
+                    : 'border-premium-surface-soft bg-premium-white'
                 }`}
                 activeOpacity={0.7}
                 onPress={() => toggleService(service.id)}
@@ -323,7 +323,7 @@ export default function SearchScreen() {
               </Caption>
             </View>
           ) : (
-            <View className="border-t border-[#F9FAFB]">
+            <View className="border-t border-premium-white-pale">
               {filteredSalons.map((salon) => (
                 <SalonResultRow key={salon.id} salon={salon} />
               ))}
@@ -396,7 +396,7 @@ function FilterChip({
       ? 'bg-premium-black border-premium-black'
       : active
         ? 'bg-gold border-gold'
-        : 'bg-premium-white border-[#E5E7EB]'
+        : 'bg-premium-white border-premium-divider-strong'
 
   const textColor =
     variant === 'clear'
@@ -446,11 +446,11 @@ function SalonResultRow({ salon }: { salon: SearchSalon }) {
       onPressIn={() => { scale.value = withSpring(0.98, { damping: 15, stiffness: 300 }) }}
       onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
       style={animatedStyle}
-      className="flex-row items-center py-6 px-5 border-b border-[#F9FAFB] gap-5"
+      className="flex-row items-center py-6 px-5 border-b border-premium-white-pale gap-5"
     >
       <Image
         source={{ uri: PLACEHOLDER_IMAGE }}
-        className="w-14 h-14 rounded-full border border-[#F3F4F6]"
+        className="w-14 h-14 rounded-full border border-premium-surface-soft"
       />
       <View className="flex-1">
         <View className="flex-row justify-between items-center mb-1">
@@ -470,7 +470,7 @@ function SalonResultRow({ salon }: { salon: SearchSalon }) {
               </Caption>
             </View>
           )}
-          <Caption className="flex-1 font-manrope-medium text-[12px] text-[#9CA3AF]" numberOfLines={1}>
+          <Caption className="flex-1 font-manrope-medium text-[12px] text-premium-gray-secondary" numberOfLines={1}>
             {salon.address ?? salon.city ?? 'Madrid'}
           </Caption>
         </View>
@@ -525,7 +525,7 @@ function RatingFilterModal({
                 className={`p-4 rounded-lg border flex-row items-center gap-2 ${
                   tempRating === option.value
                     ? 'bg-gold border-gold'
-                    : 'bg-[#F9FAFB] border-[#E5E7EB]'
+                    : 'bg-premium-white-pale border-premium-divider-strong'
                 }`}
                 onPress={() => setTempRating(option.value)}
               >
@@ -537,12 +537,12 @@ function RatingFilterModal({
                       fill={
                         i < Math.floor(option.stars)
                           ? Colors.gold.DEFAULT
-                          : '#D1D5DB'
+                          : Colors.premium.gray.pale
                       }
                       color={
                         i < Math.floor(option.stars)
                           ? Colors.gold.DEFAULT
-                          : '#D1D5DB'
+                          : Colors.premium.gray.pale
                       }
                     />
                   ))}
@@ -614,7 +614,7 @@ function PriceFilterModal({
                 className={`p-4 rounded-lg border ${
                   tempPrice === option.id
                     ? 'bg-gold border-gold'
-                    : 'bg-[#F9FAFB] border-[#E5E7EB]'
+                    : 'bg-premium-white-pale border-premium-divider-strong'
                 }`}
                 onPress={() => setTempPrice(option.id)}
               >
@@ -685,7 +685,7 @@ function GenderFilterModal({
                 className={`p-4 rounded-lg border ${
                   tempGender === option.id
                     ? 'bg-gold border-gold'
-                    : 'bg-[#F9FAFB] border-[#E5E7EB]'
+                    : 'bg-premium-white-pale border-premium-divider-strong'
                 }`}
                 onPress={() => setTempGender(option.id)}
               >

@@ -1,5 +1,6 @@
 import { TextInput, View, Text, TextInputProps } from 'react-native'
 import { useState } from 'react'
+import { Colors } from '@/constants/theme'
 
 type InputProps = {
   label?: string
@@ -33,7 +34,7 @@ export function Input({ label, error, leftIcon, containerClassName = '', ...prop
         
         <TextInput
           className="flex-1 text-premium-black font-display text-base"
-          placeholderTextColor="#9ca3af" // Tailwind gray-400
+          placeholderTextColor={Colors.premium.gray.secondary} // Tailwind gray-400
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}

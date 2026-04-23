@@ -122,7 +122,7 @@ export default function OfferDetailScreen() {
           </View>
 
           {/* Salon info card */}
-          <View className="bg-premium-white rounded-[20px] border border-[#F5F5F5] shadow-[0_4px_12px_rgba(0,0,0,0.08)] p-4 gap-3">
+          <View className="bg-premium-white rounded-[20px] border border-premium-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] p-4 gap-3">
             <View className="flex-row items-start gap-3">
               <View className="flex-1">
                 <H2 className="font-manrope-bold text-[16px] text-premium-black mb-1">
@@ -174,7 +174,7 @@ export default function OfferDetailScreen() {
               <Caption className="font-manrope-bold text-[11px] text-premium-black uppercase tracking-[1px]">
                 Términos y Condiciones
               </Caption>
-              <View className="bg-premium-white rounded-[16px] border border-[#F5F5F5] p-4">
+              <View className="bg-premium-white rounded-[16px] border border-premium-surface p-4">
                 <Body className="font-manrope-medium text-[12px] text-premium-gray leading-[18px]">
                   {conditionText}
                 </Body>

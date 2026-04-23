@@ -97,7 +97,7 @@ export default function OfferCard({ offer, index }: OfferCardProps) {
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.8}
-      className="bg-premium-white rounded-[24px] border border-[#F5F5F5] shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
+      className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
     >
       <View className="flex-row items-center p-[18px] gap-4">
         {/* Icon badge */}
@@ -139,7 +139,7 @@ export default function OfferCard({ offer, index }: OfferCardProps) {
         {/* Arrow indicator */}
         <H2
           className={`font-manrope-bold text-[22px] ${
-            isGold ? 'text-gold' : 'text-[#E5E5E5]'
+            isGold ? 'text-gold' : 'text-premium-gray-light'
           }`}
         >
           ›

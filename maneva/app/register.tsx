@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/Input";
 import { Body, Caption, H1 } from "@/components/ui/Typography";
 import { IconMail, IconPhone, IconUser } from "@/components/ui/icons";
 import { useAuth } from "@/hooks/useAuth";
+import { Colors } from "@/constants/theme";
 
 const registerSchema = z
   .object({
@@ -137,7 +138,7 @@ export default function RegisterScreen() {
                 value={value}
                 onChangeText={onChange}
                 error={errors.fullName?.message}
-                leftIcon={<IconUser color="#737373" size={20} />}
+                leftIcon={<IconUser color={Colors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -155,7 +156,7 @@ export default function RegisterScreen() {
                 error={errors.email?.message}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon={<IconMail color="#737373" size={20} />}
+                leftIcon={<IconMail color={Colors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -172,7 +173,7 @@ export default function RegisterScreen() {
                 onChangeText={onChange}
                 error={errors.phone?.message}
                 keyboardType="phone-pad"
-                leftIcon={<IconPhone color="#737373" size={20} />}
+                leftIcon={<IconPhone color={Colors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -241,7 +242,7 @@ export default function RegisterScreen() {
                 numberOfLines={1}
                 className="font-manrope text-premium-gray"
                 style={{
-                  textShadowColor: "#FFFFFF",
+                  textShadowColor: Colors.premium.white,
                   textShadowOffset: { width: 0, height: 0 },
                   textShadowRadius: 2,
                 }}
@@ -257,7 +258,7 @@ export default function RegisterScreen() {
                     numberOfLines={1}
                     className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]"
                     style={{
-                      textShadowColor: "#FFFFFF",
+                      textShadowColor: Colors.premium.white,
                       textShadowOffset: { width: 0, height: 0 },
                       textShadowRadius: 2,
                     }}

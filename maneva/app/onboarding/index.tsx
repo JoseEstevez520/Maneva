@@ -1,6 +1,7 @@
 import { safeStorage } from "@/lib/storage";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
+import { Colors } from "@/constants/theme";
 import {
   FlatList,
   Image,
@@ -21,7 +22,7 @@ const Dot = ({ isActive }: { isActive: boolean }) => {
   const animatedStyle = useAnimatedStyle(() => {
     return {
       width: withSpring(isActive ? 24 : 8),
-      backgroundColor: isActive ? "#000000" : "#E5E5E5",
+      backgroundColor: isActive ? Colors.premium.black : Colors.premium.gray.light,
     };
   });
 

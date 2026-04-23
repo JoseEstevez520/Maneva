@@ -78,11 +78,11 @@ export default function CampaignDetailScreen() {
         {/* Imagen */}
         <Image
           source={{ uri: PLACEHOLDER_IMAGE }}
-          className="w-full h-56 bg-[#F3F4F6]"
+          className="w-full h-56 bg-premium-surface-soft"
         />
 
         {/* Info Principal */}
-        <View className="px-5 pt-6 pb-6 border-b border-[#F3F4F6]">
+        <View className="px-5 pt-6 pb-6 border-b border-premium-surface-soft">
           <H1 className="font-manrope-extrabold text-[28px] text-premium-black mb-3">
             {campaign.name}
           </H1>
@@ -106,14 +106,14 @@ export default function CampaignDetailScreen() {
 
           {/* Estado */}
           {isActive ? (
-            <View className="inline-flex bg-[rgba(76,175,80,0.1)] border border-[#4CAF50] px-3 py-1 rounded-full w-fit">
-              <Caption className="font-manrope-extrabold text-[11px] text-[#4CAF50]">
+            <View className="inline-flex bg-[rgba(76,175,80,0.1)] border border-success-campaign px-3 py-1 rounded-full w-fit">
+              <Caption className="font-manrope-extrabold text-[11px] text-success-campaign">
                 VÁLIDA AHORA
               </Caption>
             </View>
           ) : (
-            <View className="inline-flex bg-[rgba(244,67,54,0.1)] border border-[#F44336] px-3 py-1 rounded-full w-fit">
-              <Caption className="font-manrope-extrabold text-[11px] text-[#F44336]">
+            <View className="inline-flex bg-[rgba(244,67,54,0.1)] border border-error-campaign px-3 py-1 rounded-full w-fit">
+              <Caption className="font-manrope-extrabold text-[11px] text-error-campaign">
                 EXPIRADA
               </Caption>
             </View>
@@ -121,7 +121,7 @@ export default function CampaignDetailScreen() {
         </View>
 
         {/* Fechas */}
-        <View className="px-5 py-6 border-b border-[#F3F4F6]">
+        <View className="px-5 py-6 border-b border-premium-surface-soft">
           <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
             PERÍODO DE VALIDEZ
           </Caption>
@@ -142,11 +142,11 @@ export default function CampaignDetailScreen() {
         </View>
 
         {/* Ubicación del Salón */}
-        <View className="px-5 py-6 border-b border-[#F3F4F6]">
+        <View className="px-5 py-6 border-b border-premium-surface-soft">
           <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
             UBICACIÓN
           </Caption>
-          <View className="p-4 bg-[#F9FAFB] rounded-lg gap-3">
+          <View className="p-4 bg-premium-white-pale rounded-lg gap-3">
             <View>
               <H2 className="font-manrope-extrabold text-[14px] text-premium-black mb-2">
                 {salonName}
@@ -173,7 +173,7 @@ export default function CampaignDetailScreen() {
 
             <TouchableOpacity
               onPress={() => router.push(`/salon/${campaign.location_id}`)}
-              className="mt-2 py-2 border-t border-[#E5E7EB]"
+              className="mt-2 py-2 border-t border-premium-divider-strong"
             >
               <Body className="font-manrope-bold text-[13px] text-gold">
                 Ver perfil del salón →
@@ -197,7 +197,7 @@ export default function CampaignDetailScreen() {
 
       {/* Botón fijo */}
       {isActive && (
-        <View className="absolute bottom-0 left-0 right-0 bg-premium-white px-5 py-4 border-t border-[#F3F4F6]">
+        <View className="absolute bottom-0 left-0 right-0 bg-premium-white px-5 py-4 border-t border-premium-surface-soft">
           <TouchableOpacity
             className="w-full bg-gold rounded-full py-4 items-center active:opacity-80"
             onPress={() => {

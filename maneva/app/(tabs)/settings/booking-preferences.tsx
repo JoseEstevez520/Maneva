@@ -122,7 +122,7 @@ function TimeWheel({
     <View className="relative w-full">
       <View
         pointerEvents="none"
-        className="absolute left-0 right-0 top-1/2 -mt-6 z-0 h-12 rounded-[18px] border border-[#E4D39C] bg-[#F9F7F0]"
+        className="absolute left-0 right-0 top-1/2 -mt-6 z-0 h-12 rounded-[18px] border border-gold-border bg-gold-bg-soft"
       />
       <FlatList
         ref={listRef}
@@ -155,7 +155,7 @@ function TimeWheel({
           const isSelected = item === value
           return (
             <View
-              className={`items-center justify-center rounded-[12px] ${isSelected ? 'bg-[#F9F7F0]' : 'bg-transparent'}`}
+              className={`items-center justify-center rounded-[12px] ${isSelected ? 'bg-gold-bg-soft' : 'bg-transparent'}`}
               style={{
                 height: AVAILABILITY_WHEEL_ITEM_HEIGHT,
                 position: 'relative',
@@ -164,7 +164,7 @@ function TimeWheel({
               }}
             >
               <Caption
-                className={`font-manrope-extrabold text-[20px] tracking-[2px] ${isSelected ? 'text-gold' : 'text-[#8A94A6]'}`}
+                className={`font-manrope-extrabold text-[20px] tracking-[2px] ${isSelected ? 'text-gold' : 'text-premium-gray-secondary'}`}
                 style={{
                   position: 'relative',
                   zIndex: 30,
@@ -182,7 +182,7 @@ function TimeWheel({
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <Caption className="px-6 py-5 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-[#9CA3AF] border-y border-[#ECECEC] bg-premium-white">
+    <Caption className="px-6 py-5 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary border-y border-premium-divider bg-premium-white">
       {title}
     </Caption>
   )
@@ -190,7 +190,7 @@ function SectionTitle({ title }: { title: string }) {
 
 function ItemRow({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
-    <View className="px-6 py-6 bg-premium-white border-b border-[#ECECEC] flex-row items-center justify-between">
+    <View className="px-6 py-6 bg-premium-white border-b border-premium-divider flex-row items-center justify-between">
       <View className="flex-1 pr-4">{children}</View>
       {right}
     </View>
@@ -222,24 +222,24 @@ function CustomAvailabilityRow({
             <TouchableOpacity
               onPress={onDelete}
               activeOpacity={0.75}
-              className="w-10 h-10 rounded-full items-center justify-center bg-[#FDECEC]"
+              className="w-10 h-10 rounded-full items-center justify-center bg-error-bg"
             >
-              <IconTrash size={20} color="#EF4444" strokeWidth={2.2} />
+              <IconTrash size={20} color={Colors.error.DEFAULT} strokeWidth={2.2} />
             </TouchableOpacity>
           ) : (
             <Switch
               value={isActive}
               onValueChange={onActivate}
-              trackColor={{ false: '#D9DDE2', true: Colors.gold.light }}
-              thumbColor={isActive ? Colors.gold.DEFAULT : '#FFFFFF'}
-              ios_backgroundColor="#D9DDE2"
+              trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
+              thumbColor={isActive ? Colors.gold.DEFAULT : Colors.premium.white}
+              ios_backgroundColor={Colors.premium.divider.switch}
             />
           )
         }
       >
         <View className="flex-row items-center gap-3">
           <Body className="font-manrope-medium text-[16px] text-premium-black">Personalizada {index + 1}</Body>
-          <Caption className="font-manrope text-[16px] text-[#94A3B8]">{range}</Caption>
+          <Caption className="font-manrope text-[16px] text-premium-gray-caption">{range}</Caption>
         </View>
       </ItemRow>
     </TouchableOpacity>
@@ -430,7 +430,7 @@ export default function BookingPreferencesScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8 bg-premium-white">
           <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Preferencias de cita</H2>
-          <Caption className="mt-2 font-manrope-semibold text-[14px] tracking-[2.6px] uppercase text-[#9CA3AF]">
+          <Caption className="mt-2 font-manrope-semibold text-[14px] tracking-[2.6px] uppercase text-premium-gray-secondary">
             Personaliza tu experiencia
           </Caption>
         </View>
@@ -441,7 +441,7 @@ export default function BookingPreferencesScreen() {
             key={service}
             right={(
               <TouchableOpacity onPress={() => handleRemoveService(service)} activeOpacity={0.7}>
-                <IconClose size={20} color="#EF4444" strokeWidth={2.2} />
+                <IconClose size={20} color={Colors.error.DEFAULT} strokeWidth={2.2} />
               </TouchableOpacity>
             )}
           >
@@ -449,12 +449,12 @@ export default function BookingPreferencesScreen() {
           </ItemRow>
         ))}
         {servicesDraft.length === 0 ? (
-          <View className="px-6 py-6 bg-premium-white border-b border-[#ECECEC]">
-            <Body className="text-[15px] text-[#6B7280]">No tienes servicios favoritos todavía.</Body>
+          <View className="px-6 py-6 bg-premium-white border-b border-premium-divider">
+            <Body className="text-[15px] text-premium-gray">No tienes servicios favoritos todavía.</Body>
           </View>
         ) : null}
 
-        <View className="bg-premium-white border-b border-[#ECECEC]">
+        <View className="bg-premium-white border-b border-premium-divider">
           <TouchableOpacity
             onPress={() => setIsAddServiceOpen((prev) => !prev)}
             activeOpacity={0.8}
@@ -476,14 +476,14 @@ export default function BookingPreferencesScreen() {
                     key={option}
                     onPress={() => handleAddServiceOption(option)}
                     activeOpacity={0.78}
-                    className="px-3 py-2 rounded-full border border-[#E4D39C] bg-[#F9F7F0]"
+                    className="px-3 py-2 rounded-full border border-gold-border bg-gold-bg-soft"
                   >
                     <Caption className="font-manrope-extrabold text-[11px] text-gold">{option}</Caption>
                   </TouchableOpacity>
                 ))}
               </View>
               {availableServiceOptions.length === 0 ? (
-                <Body className="text-[14px] text-[#6B7280]">Ya has seleccionado todas las opciones disponibles.</Body>
+                <Body className="text-[14px] text-premium-gray">Ya has seleccionado todas las opciones disponibles.</Body>
               ) : null}
             </View>
           ) : null}
@@ -506,7 +506,7 @@ export default function BookingPreferencesScreen() {
           ) : null}
         </View>
 
-        <View className="h-5 bg-[#F1F1F1]" />
+        <View className="h-5 bg-premium-surface-section" />
 
         <SectionTitle title="Horarios preferidos" />
         {TIME_OPTIONS.map((option) => {
@@ -518,15 +518,15 @@ export default function BookingPreferencesScreen() {
                 <Switch
                   value={active}
                   onValueChange={() => handleSelectSlot(option.key)}
-                  trackColor={{ false: '#D9DDE2', true: Colors.gold.light }}
-                  thumbColor={active ? Colors.gold.DEFAULT : '#FFFFFF'}
-                  ios_backgroundColor="#D9DDE2"
+                  trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
+                  thumbColor={active ? Colors.gold.DEFAULT : Colors.premium.white}
+                  ios_backgroundColor={Colors.premium.divider.switch}
                 />
               }
             >
               <View className="flex-row items-center gap-3">
                 <Body className="font-manrope-medium text-[16px] text-premium-black">{option.label}</Body>
-                <Caption className="font-manrope text-[16px] text-[#94A3B8]">{option.slot}</Caption>
+                <Caption className="font-manrope text-[16px] text-premium-gray-caption">{option.slot}</Caption>
               </View>
             </ItemRow>
           )
@@ -551,7 +551,7 @@ export default function BookingPreferencesScreen() {
           )
         })}
 
-        <View className="bg-premium-white border-b border-[#ECECEC]">
+        <View className="bg-premium-white border-b border-premium-divider">
           <TouchableOpacity
             onPress={handleOpenAvailabilityPopup}
             activeOpacity={0.8}
@@ -568,12 +568,12 @@ export default function BookingPreferencesScreen() {
 
         <Modal visible={isAvailabilityModalOpen} transparent animationType="fade" onRequestClose={() => setIsAvailabilityModalOpen(false)}>
           <View className="flex-1 bg-black/40 items-center justify-center px-5 py-10">
-            <View className="w-full rounded-[28px] bg-premium-white border border-[#ECECEC] overflow-hidden">
+            <View className="w-full rounded-[28px] bg-premium-white border border-premium-divider overflow-hidden">
               <View className="px-5 pt-5 pb-4 flex-row items-center">
                 <TouchableOpacity
                   onPress={() => setIsAvailabilityModalOpen(false)}
                   activeOpacity={0.75}
-                  className="w-11 h-11 rounded-full border border-[#ECECEC] items-center justify-center bg-premium-white"
+                  className="w-11 h-11 rounded-full border border-premium-divider items-center justify-center bg-premium-white"
                 >
                   <IconBack size={24} color={Colors.premium.black} strokeWidth={2.2} />
                 </TouchableOpacity>
@@ -586,7 +586,7 @@ export default function BookingPreferencesScreen() {
               </View>
 
               <View className="px-5 pb-4">
-                <View className="rounded-[26px] bg-[#FBFBFB] border border-[#ECECEC] overflow-hidden px-2 py-3">
+                <View className="rounded-[26px] bg-premium-surface-pale border border-premium-divider overflow-hidden px-2 py-3">
                   <TimeWheel
                     value={availabilityPickerStep === 'start' ? availabilityStartMinutes : availabilityEndMinutes}
                     onChange={handleAvailabilityWheelChange(availabilityPickerStep)}
@@ -595,8 +595,8 @@ export default function BookingPreferencesScreen() {
               </View>
 
               <View className="px-5 pb-4">
-                <View className="rounded-[18px] bg-[#F4F4F4] px-4 py-4">
-                  <Body className="font-manrope-medium text-[13px] text-[#6B7280]">
+                <View className="rounded-[18px] bg-premium-surface-alt px-4 py-4">
+                  <Body className="font-manrope-medium text-[13px] text-premium-gray">
                     Hora seleccionada:
                   </Body>
                   <Body className="mt-2 font-manrope-extrabold text-[16px] text-gold">
@@ -638,7 +638,7 @@ export default function BookingPreferencesScreen() {
           </View>
         </Modal>
 
-        <View className="h-5 bg-[#F1F1F1]" />
+        <View className="h-5 bg-premium-surface-section" />
 
         <SectionTitle title="Estilistas de preferencia" />
         {stylistsError ? (
@@ -660,13 +660,13 @@ export default function BookingPreferencesScreen() {
               >
                 <ItemRow
                   right={
-                    <IconClose size={18} color="#EF4444" strokeWidth={2.2} />
+                    <IconClose size={18} color={Colors.error.DEFAULT} strokeWidth={2.2} />
                   }
                 >
                   <View>
                     <Body className="font-manrope-medium text-[16px] text-premium-black">{name}</Body>
                     {employee!.position ? (
-                      <Caption className="mt-0.5 text-[13px] text-[#9CA3AF]">{employee!.position}</Caption>
+                      <Caption className="mt-0.5 text-[13px] text-premium-gray-secondary">{employee!.position}</Caption>
                     ) : null}
                   </View>
                 </ItemRow>
@@ -675,17 +675,17 @@ export default function BookingPreferencesScreen() {
           })}
 
         {/* Botón añadir */}
-        <View className="bg-premium-white border-b border-[#ECECEC]">
+        <View className="bg-premium-white border-b border-premium-divider">
           <TouchableOpacity
             onPress={() => setIsStylistSheetOpen(true)}
             disabled={stylistsLoading}
             activeOpacity={0.8}
             className="flex-row items-center gap-3 px-6 py-4"
           >
-            <View className={`w-5 h-5 rounded-full items-center justify-center ${stylistsLoading ? 'bg-[#D0D0D0]' : 'bg-gold'}`}>
+            <View className={`w-5 h-5 rounded-full items-center justify-center ${stylistsLoading ? 'bg-premium-divider-disabled' : 'bg-gold'}`}>
               <IconAdd size={11} color={Colors.premium.white} strokeWidth={3} />
             </View>
-            <Caption className={`font-manrope-extrabold text-[14px] tracking-[0.8px] ${stylistsLoading ? 'text-[#D0D0D0]' : 'text-gold'}`}>
+            <Caption className={`font-manrope-extrabold text-[14px] tracking-[0.8px] ${stylistsLoading ? 'text-premium-divider-disabled' : 'text-gold'}`}>
               {stylistsLoading ? 'Cargando...' : 'Añadir estilista'}
             </Caption>
           </TouchableOpacity>

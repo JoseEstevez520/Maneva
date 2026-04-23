@@ -54,7 +54,7 @@ export function ConfirmDialog({
                   onPress={onConfirm}
                   activeOpacity={0.85}
                   className={`w-full rounded-2xl py-3.5 items-center ${
-                    destructive ? 'bg-[#DC2626]' : 'bg-gold'
+                    destructive ? 'bg-error-dark' : 'bg-gold'
                   }`}
                 >
                   <Caption numberOfLines={1} className="font-manrope-extrabold text-[11px] tracking-[1.5px] uppercase text-premium-white">
