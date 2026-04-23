@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { useSalon, useSalonFavorite } from '@/hooks/useSalons'
+import { useFavoriteStylists } from '@/hooks/useFavoriteStylists'
 import { H1, Body, Caption, H2 } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
@@ -33,6 +34,7 @@ export default function SalonDetailScreen() {
   const router = useRouter()
   const { data: salon, loading, error } = useSalon(id || '')
   const { isFavorite, loading: favoriteLoading, toggle: toggleFavorite } = useSalonFavorite(id || '')
+  const { favoriteIds: favStylistIds, toggle: toggleFavStylist } = useFavoriteStylists()
   const [activeTab, setActiveTab] = useState<SalonTab>('services')
 
   if (loading)
@@ -211,19 +213,37 @@ export default function SalonDetailScreen() {
             ) : null}
 
             {activeTab === 'team' ? (
-              <View className="mt-3">
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingTop: 10, paddingRight: 10 }}>
-                  {employees.map((employee) => (
-                    <View key={employee.id} className="mr-4 items-center w-[60px]">
-                      <View className="w-[52px] h-[52px] rounded-full border border-[#ECECEC] overflow-hidden bg-[#F5F5F5]">
+              <View className="mt-3 gap-2">
+                {employees.map((employee) => {
+                  const name = [employee.users?.first_name, employee.users?.last_name]
+                    .filter(Boolean).join(' ') || 'Estilista'
+                  const isFavStylist = favStylistIds.includes(employee.id)
+                  return (
+                    <View key={employee.id} className="flex-row items-center bg-premium-white rounded-[18px] border border-[#F0F0F0] px-4 py-3 gap-3">
+                      <View className="w-11 h-11 rounded-full overflow-hidden bg-[#F5F5F5]">
                         <Image source={{ uri: employee.photo_url || PLACEHOLDER_IMAGE }} className="w-full h-full" resizeMode="cover" />
                       </View>
-                      <Caption className="mt-1.5 font-manrope-semibold text-[10px] text-[#7A7A7A]" numberOfLines={1}>
-                        {[employee.users?.first_name, employee.users?.last_name].filter(Boolean).join(' ') || 'Estilista'}
-                      </Caption>
+                      <View className="flex-1">
+                        <Body className="font-manrope-medium text-[15px] text-premium-black">{name}</Body>
+                        {employee.position ? (
+                          <Caption className="mt-0.5 text-[12px] text-[#9CA3AF]">{employee.position}</Caption>
+                        ) : null}
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => { void toggleFavStylist(employee.id) }}
+                        activeOpacity={0.7}
+                        className="p-1"
+                      >
+                        <IconStar
+                          size={20}
+                          color={Colors.gold.DEFAULT}
+                          fill={isFavStylist ? Colors.gold.DEFAULT : 'transparent'}
+                          strokeWidth={1.8}
+                        />
+                      </TouchableOpacity>
                     </View>
-                  ))}
-                </ScrollView>
+                  )
+                })}
                 {employees.length === 0 ? (
                   <View className="bg-premium-white rounded-[20px] border border-[#F0F0F0] p-5 items-center">
                     <Caption className="font-manrope-medium text-[13px] text-[#9AA0A6] text-center">

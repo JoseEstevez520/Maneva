@@ -14,8 +14,11 @@ import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconAdd, IconBack, IconClose, IconStar, IconTrash } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { Colors } from '@/constants/theme'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
+import { useFavoriteStylists } from '@/hooks/useFavoriteStylists'
+import { StylistPickerSheet } from '@/components/ui/StylistPickerSheet'
 
 const SERVICE_OPTIONS = [
   'Corte y peinado',
@@ -177,8 +180,6 @@ function TimeWheel({
   )
 }
 
-
-
 function SectionTitle({ title }: { title: string }) {
   return (
     <Caption className="px-6 py-5 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-[#9CA3AF] border-y border-[#ECECEC] bg-premium-white">
@@ -259,6 +260,15 @@ export default function BookingPreferencesScreen() {
     deleteAvailabilityRange,
     saveServices,
   } = useUserStyleProfile()
+
+  const {
+    employees,
+    favoriteIds,
+    loading: stylistsLoading,
+    error: stylistsError,
+    toggle: toggleFavorite,
+  } = useFavoriteStylists()
+  const [isStylistSheetOpen, setIsStylistSheetOpen] = useState(false)
   const [servicesDraft, setServicesDraft] = useState<string[]>([])
   const [savingServices, setSavingServices] = useState(false)
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false)
@@ -335,11 +345,6 @@ export default function BookingPreferencesScreen() {
         setCustomDeleteModeRange('')
       },
     })
-  }
-
-  const handleFavoriteStylist = () => {
-    // TODO: conectar selección real de estilistas favoritos desde Supabase
-    setDialog({ title: 'Próximamente', message: 'La selección de estilistas favoritos estará disponible en una próxima iteración.', onConfirm: closeDialog })
   }
 
   const handleOpenAvailabilityPopup = () => {
@@ -636,16 +641,55 @@ export default function BookingPreferencesScreen() {
         <View className="h-5 bg-[#F1F1F1]" />
 
         <SectionTitle title="Estilistas de preferencia" />
-        <TouchableOpacity onPress={handleFavoriteStylist} activeOpacity={0.75}>
-          <ItemRow right={<IconStar size={22} color={Colors.gold.DEFAULT} fill={Colors.gold.DEFAULT} strokeWidth={1.6} />}>
-            <Body className="font-manrope-medium text-[16px] text-premium-black">Marco Polo</Body>
-          </ItemRow>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleFavoriteStylist} activeOpacity={0.75}>
-          <ItemRow right={<IconStar size={22} color={Colors.gold.DEFAULT} fill={Colors.gold.DEFAULT} strokeWidth={1.6} />}>
-            <Body className="font-manrope-medium text-[16px] text-premium-black">Elena Sanz</Body>
-          </ItemRow>
-        </TouchableOpacity>
+        {stylistsError ? (
+          <ErrorMessage message={stylistsError} className="mx-6 mb-2" />
+        ) : null}
+
+        {/* Favoritos actuales */}
+        {favoriteIds
+          .map((id) => employees.find((e) => e.id === id))
+          .filter(Boolean)
+          .map((employee) => {
+            const name = [employee!.users?.first_name, employee!.users?.last_name]
+              .filter(Boolean).join(' ') || 'Estilista'
+            return (
+              <TouchableOpacity
+                key={employee!.id}
+                onPress={() => { void toggleFavorite(employee!.id) }}
+                activeOpacity={0.75}
+              >
+                <ItemRow
+                  right={
+                    <IconClose size={18} color="#EF4444" strokeWidth={2.2} />
+                  }
+                >
+                  <View>
+                    <Body className="font-manrope-medium text-[16px] text-premium-black">{name}</Body>
+                    {employee!.position ? (
+                      <Caption className="mt-0.5 text-[13px] text-[#9CA3AF]">{employee!.position}</Caption>
+                    ) : null}
+                  </View>
+                </ItemRow>
+              </TouchableOpacity>
+            )
+          })}
+
+        {/* Botón añadir */}
+        <View className="bg-premium-white border-b border-[#ECECEC]">
+          <TouchableOpacity
+            onPress={() => setIsStylistSheetOpen(true)}
+            disabled={stylistsLoading}
+            activeOpacity={0.8}
+            className="flex-row items-center gap-3 px-6 py-4"
+          >
+            <View className={`w-5 h-5 rounded-full items-center justify-center ${stylistsLoading ? 'bg-[#D0D0D0]' : 'bg-gold'}`}>
+              <IconAdd size={11} color={Colors.premium.white} strokeWidth={3} />
+            </View>
+            <Caption className={`font-manrope-extrabold text-[14px] tracking-[0.8px] ${stylistsLoading ? 'text-[#D0D0D0]' : 'text-gold'}`}>
+              {stylistsLoading ? 'Cargando...' : 'Añadir estilista'}
+            </Caption>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {dialog && (
@@ -660,6 +704,13 @@ export default function BookingPreferencesScreen() {
           onCancel={closeDialog}
         />
       )}
+
+      <StylistPickerSheet
+        visible={isStylistSheetOpen}
+        favoriteEmployeeIds={favoriteIds}
+        onToggle={(id) => { void toggleFavorite(id) }}
+        onClose={() => setIsStylistSheetOpen(false)}
+      />
     </SafeAreaView>
   )
 }

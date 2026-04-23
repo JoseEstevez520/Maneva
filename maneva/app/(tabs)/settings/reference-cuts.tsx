@@ -1,20 +1,16 @@
 import React from 'react'
-import { Image, ScrollView, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
-import { IconAdd } from '@/components/ui/icons'
+import { IconAdd, IconClose } from '@/components/ui/icons'
 import { Colors } from '@/constants/theme'
 import { BrandHeader } from '@/components/ui/BrandHeader'
-
-const REFERENCE_IMAGES = [
-  'https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?w=800&h=1000&fit=crop',
-  'https://images.unsplash.com/photo-1611048267451-e6ed903d4a38?w=800&h=1000&fit=crop',
-  'https://images.unsplash.com/photo-1521119989659-a83eee488004?w=800&h=1000&fit=crop',
-  'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&h=1000&fit=crop',
-]
-
+import { useReferenceCuts } from '@/hooks/useReferenceCuts'
+import { ErrorMessage } from '@/components/ui/ErrorMessage'
 
 export default function ReferenceCutsScreen() {
+  const { cuts, loading, uploading, error, pickAndUpload, remove } = useReferenceCuts()
+
   return (
     <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
       <BrandHeader />
@@ -25,24 +21,50 @@ export default function ReferenceCutsScreen() {
           <Body className="mt-2 text-[15px] text-[#6B7280]">Gestiona tus estilos favoritos y añade nuevos</Body>
         </View>
 
-        <View className="px-6 flex-row flex-wrap justify-between gap-y-4">
-          {REFERENCE_IMAGES.map((uri) => (
-            <View key={uri} className="w-[48%] rounded-[18px] overflow-hidden bg-premium-white border border-[#E9E9E9] shadow-[0_6px_16px_rgba(0,0,0,0.07)]">
-              <Image source={{ uri }} className="w-full h-[220px]" resizeMode="cover" />
-            </View>
-          ))}
-        </View>
-
-        {/* TODO: conectar picker y subida real de imágenes de referencia a storage */}
-        <TouchableOpacity
-          disabled
-          activeOpacity={0.8}
-          className="mx-6 mt-8 h-[98px] rounded-[20px] border-2 border-dashed border-[#E4D39C] bg-[#F9F7F0] opacity-70 flex-row items-center justify-center gap-4"
-        >
-          <View className="w-12 h-12 rounded-full bg-gold items-center justify-center">
-            <IconAdd size={22} color={Colors.premium.white} strokeWidth={2.8} />
+        {error ? (
+          <View className="px-6">
+            <ErrorMessage message={error} />
           </View>
-          <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-gold">Añadir imagen</Caption>
+        ) : null}
+
+        {loading ? (
+          <View className="px-6 items-center py-8">
+            <ActivityIndicator size="large" color={Colors.gold.DEFAULT} />
+          </View>
+        ) : (
+          <View className="px-6 flex-row flex-wrap justify-between gap-y-4">
+            {cuts.map((uri) => (
+              <View key={uri} className="w-[48%] rounded-[18px] overflow-hidden bg-premium-white border border-[#E9E9E9] shadow-[0_6px_16px_rgba(0,0,0,0.07)]">
+                <Image source={{ uri }} className="w-full h-[220px]" resizeMode="cover" />
+                <TouchableOpacity
+                  onPress={() => { void remove(uri) }}
+                  activeOpacity={0.8}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 items-center justify-center"
+                >
+                  <IconClose size={14} color={Colors.premium.white} strokeWidth={2.5} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <TouchableOpacity
+          onPress={() => { void pickAndUpload() }}
+          disabled={uploading || loading}
+          activeOpacity={0.8}
+          className="mx-6 mt-8 h-[98px] rounded-[20px] border-2 border-dashed border-[#E4D39C] bg-[#F9F7F0] flex-row items-center justify-center gap-4"
+          style={{ opacity: uploading || loading ? 0.6 : 1 }}
+        >
+          {uploading ? (
+            <ActivityIndicator size="small" color={Colors.gold.DEFAULT} />
+          ) : (
+            <View className="w-12 h-12 rounded-full bg-gold items-center justify-center">
+              <IconAdd size={22} color={Colors.premium.white} strokeWidth={2.8} />
+            </View>
+          )}
+          <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-gold">
+            {uploading ? 'Subiendo...' : 'Añadir imagen'}
+          </Caption>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

@@ -277,6 +277,34 @@ export async function removeFavoriteSalon(userId: string, locationId: string): P
 }
 
 /**
+ * Devuelve los IDs de salones marcados como favoritos por el usuario.
+ */
+export async function getFavoriteSalonIds(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('favorite_locations')
+    .select('location_id')
+    .eq('user_id', userId)
+
+  if (error) throw error
+  return (data ?? []).map((r) => r.location_id)
+}
+
+/**
+ * Devuelve los empleados activos de una sede concreta.
+ */
+export async function getEmployeesByLocation(locationId: string): Promise<EmployeeWithUser[]> {
+  const { data, error } = await supabase
+    .from('employees')
+    .select('id, photo_url, bio, position, specialties, location_id, users(first_name, last_name)')
+    .eq('location_id', locationId)
+    .eq('active', true)
+    .order('id')
+
+  if (error) throw error
+  return (data ?? []) as EmployeeWithUser[]
+}
+
+/**
  * Devuelve sedes cercanas a unas coordenadas (placeholder).
  */
 export async function getSalonsByLocation(

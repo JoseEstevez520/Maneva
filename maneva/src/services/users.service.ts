@@ -3,6 +3,8 @@ import { Database } from "@/types/database.types";
 
 // users → identidad básica (nombre, teléfono, idioma)
 type UserBasicInfo = Database["public"]["Tables"]["users"]["Row"];
+type Employee = Database["public"]["Tables"]["employees"]["Row"];
+type User = Database["public"]["Tables"]["users"]["Row"];
 // user_preferences → preferencias del onboarding (ciudad, servicios, etc.)
 type UserPreference = Database["public"]["Tables"]["user_preferences"]["Row"];
 // user_profiles → estilo personal (tipo de pelo, estilos preferidos, modo simple)
@@ -72,28 +74,25 @@ export async function setUserPreference(
   preferenceKey: string,
   preferenceValue: string,
 ): Promise<void> {
-  const payload = {
-    user_id: userId,
-    preference_key: preferenceKey,
-    preference_value: preferenceValue,
-  };
-  // Intento 1: insertar directo (funciona si no existe o no hay restricción única).
-  const { error: insertError } = await supabase
+  // Borra el valor anterior y lo reemplaza. Consistente con replaceUserPreferences
+  // y no depende de que exista o no un UNIQUE constraint en la tabla.
+  const { error: deleteError } = await supabase
     .from("user_preferences")
-    .insert(payload);
-
-  if (!insertError) return;
-
-  // Intento 2: actualizar la preferencia existente.
-  const { error: updateError } = await supabase
-    .from("user_preferences")
-    .update({ preference_value: preferenceValue })
+    .delete()
     .eq("user_id", userId)
     .eq("preference_key", preferenceKey);
 
-  if (updateError) {
-    throw updateError;
-  }
+  if (deleteError) throw deleteError;
+
+  const { error: insertError } = await supabase
+    .from("user_preferences")
+    .insert({
+      user_id: userId,
+      preference_key: preferenceKey,
+      preference_value: preferenceValue,
+    });
+
+  if (insertError) throw insertError;
 }
 
 // Devuelve todos los valores de una preferencia multi-valor (ej: service_interest)
@@ -106,11 +105,9 @@ export async function getAllUserPreferences(
     .select("preference_value")
     .eq("user_id", userId)
     .eq("preference_key", preferenceKey);
-  
-  
 
   if (error) throw error;
-  return (data ?? []).map((r) => r.preference_value ?? "").filter(Boolean);
+  return (data ?? []).map((r) => r.preference_value ?? '').filter(Boolean);
 }
 
 export async function getLanguages(): Promise<Language[]> {
@@ -181,4 +178,59 @@ export async function replaceUserPreferences(
     .insert(rows);
 
   if (insertError) throw insertError;
+}
+
+// ─── Estilistas favoritos ───────────────────────────────────────────────────
+
+export type EmployeeWithUser = Employee & {
+  users: Pick<User, 'first_name' | 'last_name'> | null
+}
+
+/** Devuelve todos los empleados activos con su nombre de usuario. */
+export async function getAllActiveEmployees(): Promise<EmployeeWithUser[]> {
+  const { data, error } = await supabase
+    .from('employees')
+    .select('id, photo_url, bio, position, specialties, location_id, users(first_name, last_name)')
+    .eq('active', true)
+    .order('id')
+
+  if (error) throw error
+  return (data ?? []) as EmployeeWithUser[]
+}
+
+/** Devuelve los IDs de empleados marcados como favoritos por el usuario. */
+export async function getFavoriteEmployeeIds(userId: string): Promise<string[]> {
+  return getAllUserPreferences(userId, 'favorite_stylist')
+}
+
+/** Añade un empleado a favoritos. */
+export async function addFavoriteEmployee(userId: string, employeeId: string): Promise<void> {
+  const current = await getFavoriteEmployeeIds(userId)
+  if (current.includes(employeeId)) return
+  await replaceUserPreferences(userId, 'favorite_stylist', [...current, employeeId])
+}
+
+/** Elimina un empleado de favoritos. */
+export async function removeFavoriteEmployee(userId: string, employeeId: string): Promise<void> {
+  const current = await getFavoriteEmployeeIds(userId)
+  await replaceUserPreferences(userId, 'favorite_stylist', current.filter((id) => id !== employeeId))
+}
+
+// ─── Cortes de referencia ───────────────────────────────────────────────────
+
+/** Devuelve las URLs de los cortes de referencia del usuario. */
+export async function getReferenceCuts(userId: string): Promise<string[]> {
+  return getAllUserPreferences(userId, 'reference_cut')
+}
+
+/** Añade una URL de corte de referencia. */
+export async function addReferenceCut(userId: string, url: string): Promise<void> {
+  const current = await getReferenceCuts(userId)
+  await replaceUserPreferences(userId, 'reference_cut', [...current, url])
+}
+
+/** Elimina una URL de corte de referencia. */
+export async function removeReferenceCut(userId: string, url: string): Promise<void> {
+  const current = await getReferenceCuts(userId)
+  await replaceUserPreferences(userId, 'reference_cut', current.filter((u) => u !== url))
 }
