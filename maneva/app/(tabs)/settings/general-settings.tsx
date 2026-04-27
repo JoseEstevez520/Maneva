@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { IconChevron } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
 
@@ -26,20 +26,21 @@ function Row({
   showChevron?: boolean
 }) {
   const clickable = !!onPress
+  const themeColors = useThemeColors()
 
   return (
     <TouchableOpacity
       disabled={!clickable}
       onPress={onPress}
       activeOpacity={0.78}
-      className={`px-6 py-6 bg-premium-white border-b border-premium-divider ${!clickable ? 'opacity-80' : ''}`}
+      className={`px-6 py-6 bg-surface dark:bg-surface-dark border-b border-border dark:border-border-dark ${!clickable ? 'opacity-80' : ''}`}
     >
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1">
-          <Body className="font-manrope-medium text-[17px] text-premium-black">{title}</Body>
-          {subtitle ? <Body className="mt-1 text-[14px] text-premium-gray-secondary">{subtitle}</Body> : null}
+          <Body className="font-manrope-medium text-[17px] text-foreground dark:text-foreground-dark">{title}</Body>
+          {subtitle ? <Body className="mt-1 text-[14px] text-foreground-subtle dark:text-foreground-subtle-dark">{subtitle}</Body> : null}
         </View>
-        {showChevron ? <IconChevron size={20} color={Colors.premium.gray.iconMuted} strokeWidth={2.2} /> : null}
+        {showChevron ? <IconChevron size={20} color={themeColors.premium.gray.iconMuted} strokeWidth={2.2} /> : null}
       </View>
     </TouchableOpacity>
   )
@@ -93,31 +94,31 @@ export default function GeneralSettingsScreen() {
   const version = Constants.expoConfig?.version ?? '1.0.0'
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
       <BrandHeader />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Ajustes generales</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Ajustes generales</H2>
         </View>
 
-        <View className="bg-premium-white border-y border-premium-divider">
+        <View className="bg-surface dark:bg-surface-dark border-y border-border dark:border-border-dark">
           <View className="px-6 py-5">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary">
+            <Caption className="font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark">
               Tus datos
             </Caption>
           </View>
 
           <View className="px-6 pb-6 gap-5">
             <View className="items-center gap-4">
-              <View className="w-24 h-24 rounded-full bg-premium-surface-alt border border-premium-divider items-center justify-center overflow-hidden">
+              <View className="w-24 h-24 rounded-full bg-surface-overlay dark:bg-surface-overlay-dark border border-border dark:border-border-dark items-center justify-center overflow-hidden">
                 {avatarUrl.trim() ? (
                   <Image source={{ uri: avatarUrl.trim() }} className="w-full h-full" />
                 ) : (
                   <Body className="font-manrope-extrabold text-[26px] text-gold">{userInitials}</Body>
                 )}
               </View>
-              <Caption className="font-manrope-semibold text-[12px] tracking-[2px] uppercase text-premium-gray-secondary text-center">
+              <Caption className="font-manrope-semibold text-[12px] tracking-[2px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark text-center">
                 Foto de perfil
               </Caption>
             </View>
@@ -156,7 +157,7 @@ export default function GeneralSettingsScreen() {
               activeOpacity={0.82}
               className={`h-12 rounded-full bg-gold items-center justify-center ${profileLoading ? 'opacity-60' : ''}`}
             >
-              <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white">
+              <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white dark:text-premium-white">
                 {profileLoading ? 'Guardando...' : 'Guardar cambios'}
               </Caption>
             </TouchableOpacity>

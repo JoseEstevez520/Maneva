@@ -7,7 +7,6 @@ import { es } from 'date-fns/locale'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
 
-// We need an enhanced type here if we fetch joined data
 export type EnhancedAppointment = Appointment & {
   salon_locations?: { name: string; address: string | null } | null
   appointment_services?: {
@@ -19,25 +18,25 @@ export function AppointmentCard({ appointment, onPress }: { appointment: Enhance
   const dateStr = format(parseISO(appointment.scheduled_at), "dd MMM yyyy 'a las' HH:mm", { locale: es })
   const salonName = appointment.salon_locations?.name || 'Salón Desconocido'
   const serviceNames = appointment.appointment_services?.map(s => s.services?.name).filter(Boolean).join(', ') || 'Servicios Varios'
-  
+
   const statusColor = {
-    pending: 'text-yellow-600',
+    pending:   'text-yellow-600',
     confirmed: 'text-green-600',
     cancelled: 'text-red-600',
-    done: 'text-gray-500'
-  }[appointment.status] || 'text-premium-gray'
+    done:      'text-foreground-subtle dark:text-foreground-subtle-dark',
+  }[appointment.status] || 'text-foreground-muted dark:text-foreground-muted-dark'
 
   const content = (
-    <View className="bg-white rounded-2xl p-4 shadow-sm shadow-black/10 border border-gray-100 mb-4">
+    <View className="bg-surface dark:bg-surface-dark rounded-2xl p-4 shadow-sm shadow-black/10 border border-border dark:border-border-dark mb-4">
       <View className="flex-row justify-between items-center mb-2">
         <H3>{salonName}</H3>
         <Caption className={`font-manrope-semibold capitalize ${statusColor}`}>
           {appointment.status}
         </Caption>
       </View>
-      <Body className="text-premium-black">{serviceNames}</Body>
+      <Body>{serviceNames}</Body>
       <View className="flex-row justify-between items-center mt-4">
-        <Caption className="text-premium-gray font-manrope-semibold">
+        <Caption className="font-manrope-semibold">
           {dateStr}
         </Caption>
         <Caption className="text-gold font-manrope-extrabold">💸 ${appointment.final_price}</Caption>

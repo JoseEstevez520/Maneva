@@ -17,7 +17,7 @@ import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { Badge } from '@/components/ui/Badge'
 import { IconLocation, IconCalendar } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
 
@@ -59,6 +59,7 @@ function getOfferTypeInfo(type: string | null): { label: string; variant: 'gold'
 }
 
 export default function OfferDetailScreen() {
+  const themeColors = useThemeColors()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const { data: offer, loading, error } = useCampaignById(id)
@@ -69,7 +70,7 @@ export default function OfferDetailScreen() {
     return (
       <ScreenLayout header="back" onHeaderBack={() => router.back()} edges={['top', 'bottom']}>
         <View className="flex-1 items-center justify-center">
-          <Body className="font-manrope-medium text-[14px] text-premium-gray">
+          <Body className="font-manrope-medium text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
             Oferta no encontrada
           </Body>
         </View>
@@ -111,7 +112,7 @@ export default function OfferDetailScreen() {
         <View className="px-5 pt-6 gap-6">
           {/* Offer title and type */}
           <View className="gap-3">
-            <H1 className="font-manrope-extrabold text-[28px] text-premium-black leading-[36px]">
+            <H1 className="font-manrope-extrabold text-[28px] text-foreground dark:text-foreground-dark leading-[36px]">
               {offer.name}
             </H1>
             <Badge
@@ -122,28 +123,28 @@ export default function OfferDetailScreen() {
           </View>
 
           {/* Salon info card */}
-          <View className="bg-premium-white rounded-[20px] border border-premium-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] p-4 gap-3">
+          <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark shadow-[0_4px_12px_rgba(0,0,0,0.08)] p-4 gap-3">
             <View className="flex-row items-start gap-3">
               <View className="flex-1">
-                <H2 className="font-manrope-bold text-[16px] text-premium-black mb-1">
+                <H2 className="font-manrope-bold text-[16px] text-foreground dark:text-foreground-dark mb-1">
                   {salonName}
                 </H2>
 
                 {salonAddress && (
                   <View className="flex-row gap-2 mb-2">
                     <IconLocation
-                      color={Colors.premium.gray.DEFAULT}
+                      color={themeColors.premium.gray.DEFAULT}
                       size={14}
                       strokeWidth={2}
                     />
-                    <Body className="font-manrope-medium text-[12px] text-premium-gray flex-1">
+                    <Body className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark flex-1">
                       {salonAddress}, {salonCity}
                     </Body>
                   </View>
                 )}
 
                 {salonPhone && (
-                  <Body className="font-manrope-medium text-[12px] text-premium-gray">
+                  <Body className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
                     📞 {salonPhone}
                   </Body>
                 )}
@@ -155,7 +156,7 @@ export default function OfferDetailScreen() {
           <View className="bg-premium-blackSoft/5 rounded-[16px] p-4 gap-2">
             <View className="flex-row items-center gap-2">
               <IconCalendar
-                color={Colors.gold.DEFAULT}
+                color={themeColors.gold.DEFAULT}
                 size={16}
                 strokeWidth={2.5}
               />
@@ -163,7 +164,7 @@ export default function OfferDetailScreen() {
                 Vigencia de la oferta
               </Caption>
             </View>
-            <Body className="font-manrope-medium text-[13px] text-premium-black">
+            <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
               Desde el {dateRange}
             </Body>
           </View>
@@ -171,11 +172,11 @@ export default function OfferDetailScreen() {
           {/* Terms and conditions */}
           {conditionText && (
             <View className="gap-2">
-              <Caption className="font-manrope-bold text-[11px] text-premium-black uppercase tracking-[1px]">
+              <Caption className="font-manrope-bold text-[11px] text-foreground dark:text-foreground-dark uppercase tracking-[1px]">
                 Términos y Condiciones
               </Caption>
-              <View className="bg-premium-white rounded-[16px] border border-premium-surface p-4">
-                <Body className="font-manrope-medium text-[12px] text-premium-gray leading-[18px]">
+              <View className="bg-surface dark:bg-surface-dark rounded-[16px] border border-border dark:border-border-dark p-4">
+                <Body className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark leading-[18px]">
                   {conditionText}
                 </Body>
               </View>
@@ -199,7 +200,7 @@ export default function OfferDetailScreen() {
               className="border border-premium-black rounded-lg py-3.5 items-center"
               activeOpacity={0.7}
             >
-              <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black uppercase">
+              <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark uppercase">
                 Contactar Salón
               </Caption>
             </TouchableOpacity>

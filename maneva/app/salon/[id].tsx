@@ -16,7 +16,7 @@ import {
   IconPhone,
   IconClock,
 } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSalon, useSalonFavorite } from '@/hooks/useSalons'
 import { useFavoriteStylists } from '@/hooks/useFavoriteStylists'
 import { H1, Body, Caption, H2 } from '@/components/ui/Typography'
@@ -30,6 +30,7 @@ const PLACEHOLDER_IMAGE =
 type SalonTab = 'services' | 'reviews' | 'team' | 'details'
 
 export default function SalonDetailScreen() {
+  const themeColors = useThemeColors()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const { data: salon, loading, error } = useSalon(id || '')
@@ -39,14 +40,14 @@ export default function SalonDetailScreen() {
 
   if (loading)
     return (
-      <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center">
         <LoadingSpinner />
       </SafeAreaView>
     )
 
   if (error || !salon)
     return (
-      <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center">
         <ErrorMessage message={error || 'Salón no encontrado'} />
       </SafeAreaView>
     )
@@ -78,9 +79,9 @@ export default function SalonDetailScreen() {
   ]
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-32">
-        <View className="bg-premium-white overflow-hidden">
+        <View className="bg-surface dark:bg-surface-dark overflow-hidden">
           <ImageBackground source={{ uri: galleryImages[0] }} className="h-[236px] w-full" resizeMode="cover">
             <View className="flex-row items-center px-3 pt-3">
               <TouchableOpacity
@@ -94,36 +95,36 @@ export default function SalonDetailScreen() {
                 className="w-10 h-10 rounded-full bg-black/25 items-center justify-center"
                 activeOpacity={0.85}
               >
-                <IconBack size={20} color={Colors.premium.white} strokeWidth={2.4} />
+                <IconBack size={20} color={themeColors.premium.white} strokeWidth={2.4} />
               </TouchableOpacity>
             </View>
           </ImageBackground>
 
           <View className="px-4 pb-5">
-            <View className="-mt-8 w-[68px] h-[68px] rounded-full border-4 border-premium-white overflow-hidden bg-premium-surface-alt">
+            <View className="-mt-8 w-[68px] h-[68px] rounded-full border-4 border-premium-white overflow-hidden bg-surface-overlay dark:bg-surface-overlay-dark">
               <Image source={{ uri: galleryImages[0] }} className="w-full h-full" resizeMode="cover" />
             </View>
 
             <View className="mt-2 flex-row items-start justify-between gap-3">
               <View className="flex-1">
-                <H1 className="font-manrope-bold text-[34px] leading-[42px] pb-[2px] text-premium-black">{salonName}</H1>
+                <H1 className="font-manrope-bold text-[34px] leading-[42px] pb-[2px] text-foreground dark:text-foreground-dark">{salonName}</H1>
                 <View className="mt-2 flex-row items-center gap-2">
                   <View className="flex-row items-center gap-1 rounded-full border border-gold-border-alt bg-gold-bg px-3 py-1.5">
-                    <IconStar size={14} color={Colors.gold.DEFAULT} fill={Colors.gold.DEFAULT} />
+                    <IconStar size={14} color={themeColors.gold.DEFAULT} fill={themeColors.gold.DEFAULT} />
                     <Caption className="font-manrope-extrabold text-[13px] text-gold-text">{avgRating.toFixed(1)}</Caption>
                   </View>
-                  <Caption className="font-manrope-semibold text-[14px] text-premium-gray-soft">
+                  <Caption className="font-manrope-semibold text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
                     {reviewCount > 0 ? `${reviewCount} opiniones` : 'Sin opiniones todavía'}
                   </Caption>
                 </View>
-                <Caption className="mt-2 font-manrope-medium text-[14px] leading-[20px] text-premium-gray">
+                <Caption className="mt-2 font-manrope-medium text-[14px] leading-[20px] text-foreground-muted dark:text-foreground-muted-dark">
                   {shortDescription}
                 </Caption>
               </View>
 
               <View className="items-end">
                 <TouchableOpacity
-                  className="w-10 h-10 rounded-full border border-premium-divider-fav-btn bg-premium-white items-center justify-center"
+                  className="w-10 h-10 rounded-full border border-border dark:border-border-dark-fav-btn bg-surface dark:bg-surface-dark items-center justify-center"
                   activeOpacity={0.85}
                   disabled={favoriteLoading}
                   onPress={() => {
@@ -132,8 +133,8 @@ export default function SalonDetailScreen() {
                 >
                   <IconHeart
                     size={19}
-                    color={isFavorite ? Colors.gold.DEFAULT : Colors.premium.black}
-                    fill={isFavorite ? Colors.gold.DEFAULT : 'transparent'}
+                    color={isFavorite ? themeColors.gold.DEFAULT : themeColors.premium.black}
+                    fill={isFavorite ? themeColors.gold.DEFAULT : 'transparent'}
                     strokeWidth={2.3}
                   />
                 </TouchableOpacity>
@@ -143,7 +144,7 @@ export default function SalonDetailScreen() {
               </View>
             </View>
 
-            <View className="mt-6 border-b border-premium-divider-lighter">
+            <View className="mt-6 border-b border-border dark:border-border-dark-lighter">
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 0 }}>
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.key
@@ -154,7 +155,7 @@ export default function SalonDetailScreen() {
                       onPress={() => setActiveTab(tab.key)}
                       className="mr-6 pb-3"
                     >
-                      <Caption className={`font-manrope-extrabold text-[12px] tracking-[1.4px] uppercase ${isActive ? 'text-premium-black' : 'text-premium-gray-medium'}`}>
+                      <Caption className={`font-manrope-extrabold text-[12px] tracking-[1.4px] uppercase ${isActive ? 'text-foreground dark:text-foreground-dark' : 'text-foreground-muted dark:text-foreground-muted-dark-medium'}`}>
                         {tab.label}
                       </Caption>
                       <View className={`mt-3 h-[3px] rounded-full ${isActive ? 'bg-gold' : 'bg-transparent'}`} />
@@ -168,12 +169,12 @@ export default function SalonDetailScreen() {
               <View className="mt-3">
                 <View className="mt-2">
                   {services.map((service) => (
-                    <View key={service.id} className="border-b border-premium-divider-subtle py-3">
+                    <View key={service.id} className="border-b border-border dark:border-border-dark py-3">
                       <View className="flex-row items-center justify-between gap-3">
                         <View className="flex-1 pr-2">
-                          <H2 className="font-manrope-bold text-[18px] leading-[22px] text-premium-black">{service.name}</H2>
+                          <H2 className="font-manrope-bold text-[18px] leading-[22px] text-foreground dark:text-foreground-dark">{service.name}</H2>
                           {service.description ? (
-                            <Caption className="mt-1 font-manrope-medium text-[12px] text-premium-gray-secondary">
+                            <Caption className="mt-1 font-manrope-medium text-[12px] text-foreground-subtle dark:text-foreground-subtle-dark">
                               {service.description}
                             </Caption>
                           ) : null}
@@ -191,20 +192,20 @@ export default function SalonDetailScreen() {
             {activeTab === 'reviews' ? (
               <View className="mt-3 gap-3">
                 {reviews.map((review) => (
-                  <View key={review.id} className="border border-premium-divider rounded-[12px] px-3 py-3 bg-premium-white">
+                  <View key={review.id} className="border border-border dark:border-border-dark rounded-[12px] px-3 py-3 bg-surface dark:bg-surface-dark">
                     <View className="flex-row items-center gap-2">
-                      <IconStar size={14} color={Colors.gold.DEFAULT} fill={Colors.gold.DEFAULT} />
-                      <Caption className="font-manrope-bold text-[13px] text-premium-black">{review.rating.toFixed(1)}</Caption>
+                      <IconStar size={14} color={themeColors.gold.DEFAULT} fill={themeColors.gold.DEFAULT} />
+                      <Caption className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">{review.rating.toFixed(1)}</Caption>
                     </View>
                     {review.comment ? (
-                      <Caption className="mt-2 font-manrope-medium text-[13px] leading-[19px] text-premium-gray">{review.comment}</Caption>
+                      <Caption className="mt-2 font-manrope-medium text-[13px] leading-[19px] text-foreground-muted dark:text-foreground-muted-dark">{review.comment}</Caption>
                     ) : null}
                   </View>
                 ))}
 
                 {reviews.length === 0 ? (
-                  <View className="bg-premium-white rounded-[20px] border border-premium-divider-subtle p-5 items-center">
-                    <Caption className="font-manrope-medium text-[13px] text-premium-gray-secondary text-center">
+                  <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark p-5 items-center">
+                    <Caption className="font-manrope-medium text-[13px] text-foreground-subtle dark:text-foreground-subtle-dark text-center">
                       Este salón todavía no tiene reseñas.
                     </Caption>
                   </View>
@@ -219,14 +220,14 @@ export default function SalonDetailScreen() {
                     .filter(Boolean).join(' ') || 'Estilista'
                   const isFavStylist = favStylistIds.includes(employee.id)
                   return (
-                    <View key={employee.id} className="flex-row items-center bg-premium-white rounded-[18px] border border-premium-divider-subtle px-4 py-3 gap-3">
-                      <View className="w-11 h-11 rounded-full overflow-hidden bg-premium-surface">
+                    <View key={employee.id} className="flex-row items-center bg-surface dark:bg-surface-dark rounded-[18px] border border-border dark:border-border-dark px-4 py-3 gap-3">
+                      <View className="w-11 h-11 rounded-full overflow-hidden bg-surface-raised dark:bg-surface-raised-dark">
                         <Image source={{ uri: employee.photo_url || PLACEHOLDER_IMAGE }} className="w-full h-full" resizeMode="cover" />
                       </View>
                       <View className="flex-1">
-                        <Body className="font-manrope-medium text-[15px] text-premium-black">{name}</Body>
+                        <Body className="font-manrope-medium text-[15px] text-foreground dark:text-foreground-dark">{name}</Body>
                         {employee.position ? (
-                          <Caption className="mt-0.5 text-[12px] text-premium-gray-secondary">{employee.position}</Caption>
+                          <Caption className="mt-0.5 text-[12px] text-foreground-subtle dark:text-foreground-subtle-dark">{employee.position}</Caption>
                         ) : null}
                       </View>
                       <TouchableOpacity
@@ -236,8 +237,8 @@ export default function SalonDetailScreen() {
                       >
                         <IconStar
                           size={20}
-                          color={Colors.gold.DEFAULT}
-                          fill={isFavStylist ? Colors.gold.DEFAULT : 'transparent'}
+                          color={themeColors.gold.DEFAULT}
+                          fill={isFavStylist ? themeColors.gold.DEFAULT : 'transparent'}
                           strokeWidth={1.8}
                         />
                       </TouchableOpacity>
@@ -245,8 +246,8 @@ export default function SalonDetailScreen() {
                   )
                 })}
                 {employees.length === 0 ? (
-                  <View className="bg-premium-white rounded-[20px] border border-premium-divider-subtle p-5 items-center">
-                    <Caption className="font-manrope-medium text-[13px] text-premium-gray-secondary text-center">
+                  <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark p-5 items-center">
+                    <Caption className="font-manrope-medium text-[13px] text-foreground-subtle dark:text-foreground-subtle-dark text-center">
                       No hay estilistas publicados todavía.
                     </Caption>
                   </View>
@@ -257,23 +258,23 @@ export default function SalonDetailScreen() {
             {activeTab === 'details' ? (
               <View className="mt-3 gap-3">
                 <View className="flex-row items-start gap-2">
-                  <IconLocation size={14} color={Colors.gold.DEFAULT} />
-                  <Caption className="font-manrope-medium text-[13px] text-premium-gray flex-1">
+                  <IconLocation size={14} color={themeColors.gold.DEFAULT} />
+                  <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark flex-1">
                     {salon.street_address || 'Dirección no disponible'}{salon.city ? `, ${salon.city}` : ''}{salon.postal_code ? `, ${salon.postal_code}` : ''}
                   </Caption>
                 </View>
                 <View className="flex-row items-center gap-2">
-                  <IconPhone size={14} color={Colors.gold.DEFAULT} />
-                  <Caption className="font-manrope-medium text-[13px] text-premium-gray">{salon.phone || 'Teléfono no disponible'}</Caption>
+                  <IconPhone size={14} color={themeColors.gold.DEFAULT} />
+                  <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark">{salon.phone || 'Teléfono no disponible'}</Caption>
                 </View>
                 <View className="flex-row items-center gap-2">
-                  <IconClock size={14} color={Colors.gold.DEFAULT} />
-                  <Caption className="font-manrope-medium text-[13px] text-premium-gray">
+                  <IconClock size={14} color={themeColors.gold.DEFAULT} />
+                  <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark">
                     {salon.opening_time && salon.closing_time ? `${salon.opening_time} - ${salon.closing_time}` : 'Horario no disponible'}
                   </Caption>
                 </View>
                 {salon.salons?.description ? (
-                  <Caption className="font-manrope-medium text-[13px] leading-[19px] text-premium-gray">
+                  <Caption className="font-manrope-medium text-[13px] leading-[19px] text-foreground-muted dark:text-foreground-muted-dark">
                     {salon.salons.description}
                   </Caption>
                 ) : null}
@@ -283,7 +284,7 @@ export default function SalonDetailScreen() {
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-divider-lighter px-4 py-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark-lighter px-4 py-4">
         <Button
           variant="primary"
           size="xs"

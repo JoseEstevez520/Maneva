@@ -19,7 +19,7 @@ import { Body, Caption, H1 } from "@/components/ui/Typography";
 import { IconMail } from "@/components/ui/icons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido o incorrecto"),
@@ -31,6 +31,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 type DialogCfg = { title: string; message?: string; onConfirm: () => void }
 
 export default function LoginScreen() {
+  const themeColors = useThemeColors()
   const { login, loading, error } = useAuth();
   const [dialog, setDialog] = useState<DialogCfg | null>(null)
   const closeDialog = () => setDialog(null)
@@ -59,7 +60,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-premium-white-soft"
+      className="flex-1 bg-background dark:bg-background-dark"
     >
       <Image
         source={require("../assets/images/onboarding/flores.png")}
@@ -76,7 +77,7 @@ export default function LoginScreen() {
       {/* Cabecera fija con fondo para que el contenido haga scroll por detrás sin solaparse */}
       <Animated.View
         entering={FadeInDown.duration(600).springify()}
-        className="absolute top-0 left-0 right-0 z-20 bg-premium-white-soft px-6 pt-14 pb-4"
+        className="absolute top-0 left-0 right-0 z-20 bg-background dark:bg-background-dark px-6 pt-14 pb-4"
       >
         <View className="flex-row items-center gap-2">
           <Image
@@ -84,7 +85,7 @@ export default function LoginScreen() {
             className="w-10 h-10"
             resizeMode="contain"
           />
-          <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">
+          <H1 className="font-manrope-extrabold text-xl tracking-tight text-foreground dark:text-foreground-dark">
             MANEVA
           </H1>
         </View>
@@ -99,10 +100,10 @@ export default function LoginScreen() {
           entering={FadeInDown.delay(100).duration(800).springify()}
           className="mb-8"
         >
-          <H1 className="font-manrope-extrabold text-3xl text-premium-black mb-1">
+          <H1 className="font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark mb-1">
             Iniciar sesión
           </H1>
-          <Body className="font-manrope text-premium-gray">
+          <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
             Accede a tu cuenta y sigue disfrutando
           </Body>
         </Animated.View>
@@ -136,7 +137,7 @@ export default function LoginScreen() {
                 error={errors.email?.message}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon={<IconMail color={Colors.premium.gray.icon} size={20} />}
+                leftIcon={<IconMail color={themeColors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -179,7 +180,7 @@ export default function LoginScreen() {
           </Button>
 
           <View className="flex-row justify-center items-center">
-            <Body className="font-manrope text-premium-gray">
+            <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
               ¿Aún no tienes cuenta?{" "}
             </Body>
             <Link href="/register" asChild>
@@ -187,7 +188,7 @@ export default function LoginScreen() {
                 activeOpacity={0.7}
                 className="pb-1 border-b border-premium-black"
               >
-                <Caption className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]">
+                <Caption className="font-manrope-extrabold text-foreground dark:text-foreground-dark uppercase tracking-wider text-[11px]">
                   Regístrate aquí
                 </Caption>
               </TouchableOpacity>

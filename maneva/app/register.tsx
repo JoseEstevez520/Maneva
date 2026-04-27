@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/Input";
 import { Body, Caption, H1 } from "@/components/ui/Typography";
 import { IconMail, IconPhone, IconUser } from "@/components/ui/icons";
 import { useAuth } from "@/hooks/useAuth";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 const registerSchema = z
   .object({
@@ -41,6 +41,7 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterScreen() {
+  const themeColors = useThemeColors()
   const router = useRouter();
   const { register, loading, error } = useAuth();
 
@@ -74,12 +75,12 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-premium-white-soft"
+      className="flex-1 bg-background dark:bg-background-dark"
     >
       {/* Cabecera fija con fondo para que el contenido haga scroll por detrás sin solaparse */}
       <Animated.View
         entering={FadeInDown.duration(600).springify()}
-        className="absolute top-0 left-0 right-0 z-20 bg-premium-white-soft px-6 pt-14 pb-4"
+        className="absolute top-0 left-0 right-0 z-20 bg-background dark:bg-background-dark px-6 pt-14 pb-4"
       >
         <View className="flex-row items-center gap-2">
           <Image
@@ -87,7 +88,7 @@ export default function RegisterScreen() {
             className="w-10 h-10"
             resizeMode="contain"
           />
-          <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">
+          <H1 className="font-manrope-extrabold text-xl tracking-tight text-foreground dark:text-foreground-dark">
             MANEVA
           </H1>
         </View>
@@ -102,10 +103,10 @@ export default function RegisterScreen() {
           entering={FadeInDown.delay(100).duration(800).springify()}
           className="mb-8"
         >
-          <H1 className="font-manrope-extrabold text-3xl text-premium-black mb-1">
+          <H1 className="font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark mb-1">
             Crear cuenta
           </H1>
-          <Body className="font-manrope text-premium-gray">
+          <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
             Únete a Maneva y descubre tu estilo
           </Body>
         </Animated.View>
@@ -138,7 +139,7 @@ export default function RegisterScreen() {
                 value={value}
                 onChangeText={onChange}
                 error={errors.fullName?.message}
-                leftIcon={<IconUser color={Colors.premium.gray.icon} size={20} />}
+                leftIcon={<IconUser color={themeColors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -156,7 +157,7 @@ export default function RegisterScreen() {
                 error={errors.email?.message}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon={<IconMail color={Colors.premium.gray.icon} size={20} />}
+                leftIcon={<IconMail color={themeColors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -173,7 +174,7 @@ export default function RegisterScreen() {
                 onChangeText={onChange}
                 error={errors.phone?.message}
                 keyboardType="phone-pad"
-                leftIcon={<IconPhone color={Colors.premium.gray.icon} size={20} />}
+                leftIcon={<IconPhone color={themeColors.premium.gray.icon} size={20} />}
               />
             )}
           />
@@ -240,9 +241,9 @@ export default function RegisterScreen() {
             <View className="flex-row justify-center items-center gap-1">
               <Body
                 numberOfLines={1}
-                className="font-manrope text-premium-gray"
+                className="font-manrope text-foreground-muted dark:text-foreground-muted-dark"
                 style={{
-                  textShadowColor: Colors.premium.white,
+                  textShadowColor: themeColors.premium.white,
                   textShadowOffset: { width: 0, height: 0 },
                   textShadowRadius: 2,
                 }}
@@ -256,9 +257,9 @@ export default function RegisterScreen() {
                 >
                   <Caption
                     numberOfLines={1}
-                    className="font-manrope-extrabold text-premium-black uppercase tracking-wider text-[11px]"
+                    className="font-manrope-extrabold text-foreground dark:text-foreground-dark uppercase tracking-wider text-[11px]"
                     style={{
-                      textShadowColor: Colors.premium.white,
+                      textShadowColor: themeColors.premium.white,
                       textShadowOffset: { width: 0, height: 0 },
                       textShadowRadius: 2,
                     }}

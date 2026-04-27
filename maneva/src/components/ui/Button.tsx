@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -22,28 +22,26 @@ type ButtonProps = {
 
 /**
  * Diseño Maneva Premium:
- * primary:   Fondo dorado, texto negro, sombra dorada, uppercase
- * secondary: Fondo blanco, borde grueso negro, uppercase
- *
- * Animación: scale-down suave al pulsar via Reanimated withSpring.
- * El spring (damping 15, stiffness 300) da una respuesta rápida y orgánica
- * sin rebotar — más premium que una transición lineal.
+ * primary:   Fondo dorado, texto blanco, uppercase — invariante en dark mode
+ * secondary: Fondo superficie, borde foreground, uppercase
+ * ghost:     Transparente, texto muted
+ * danger:    Rojo, texto blanco — invariante
  */
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const variantStyles: Record<Variant, string> = {
-  primary: "bg-gold border-0",
-  secondary: "bg-premium-white border-4 border-premium-black shadow-xl",
-  ghost: "bg-transparent border-0",
-  danger: "bg-red-600 border-0",
+  primary:   "bg-gold border-0",
+  secondary: "bg-surface dark:bg-surface-dark border-4 border-foreground dark:border-foreground-dark shadow-xl",
+  ghost:     "bg-transparent border-0",
+  danger:    "bg-red-600 border-0",
 };
 
 const textStyles: Record<Variant, string> = {
-  primary: "text-premium-white",
-  secondary: "text-premium-black",
-  ghost: "text-premium-gray",
-  danger: "text-white",
+  primary:   "text-premium-white",
+  secondary: "text-foreground dark:text-foreground-dark",
+  ghost:     "text-foreground-muted dark:text-foreground-muted-dark",
+  danger:    "text-white",
 };
 
 const sizeStyles: Record<Size, string> = {
@@ -71,6 +69,7 @@ export function Button({
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const scale = useSharedValue(1);
+  const themeColors = useThemeColors();
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -94,7 +93,7 @@ export function Button({
       className={`w-full flex-row items-center justify-center gap-3 ${variantStyles[variant]} ${sizeStyles[size]} ${isDisabled ? "opacity-50" : ""}`}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={Colors.premium.black} />
+        <ActivityIndicator size="small" color={themeColors.premium.black} />
       ) : icon ? (
         <View className="mb-1">{icon}</View>
       ) : null}

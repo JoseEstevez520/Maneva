@@ -8,7 +8,7 @@ interface TypographyProps extends TextProps {
 
 export function H1({ className = '', children, ...props }: TypographyProps) {
   return (
-    <Text className={`font-manrope-extrabold text-3xl text-premium-black ${className}`} {...props}>
+    <Text className={`font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark ${className}`} {...props}>
       {children}
     </Text>
   )
@@ -16,7 +16,7 @@ export function H1({ className = '', children, ...props }: TypographyProps) {
 
 export function H2({ className = '', children, ...props }: TypographyProps) {
   return (
-    <Text className={`font-manrope-semibold text-2xl text-premium-black ${className}`} {...props}>
+    <Text className={`font-manrope-semibold text-2xl text-foreground dark:text-foreground-dark ${className}`} {...props}>
       {children}
     </Text>
   )
@@ -24,7 +24,7 @@ export function H2({ className = '', children, ...props }: TypographyProps) {
 
 export function H3({ className = '', children, ...props }: TypographyProps) {
   return (
-    <Text className={`font-manrope-semibold text-xl text-premium-black ${className}`} {...props}>
+    <Text className={`font-manrope-semibold text-xl text-foreground dark:text-foreground-dark ${className}`} {...props}>
       {children}
     </Text>
   )
@@ -32,7 +32,7 @@ export function H3({ className = '', children, ...props }: TypographyProps) {
 
 export function Body({ className = '', children, ...props }: TypographyProps) {
   return (
-    <Text className={`font-manrope text-base text-premium-gray ${className}`} {...props}>
+    <Text className={`font-manrope text-base text-foreground-muted dark:text-foreground-muted-dark ${className}`} {...props}>
       {children}
     </Text>
   )
@@ -40,7 +40,7 @@ export function Body({ className = '', children, ...props }: TypographyProps) {
 
 export function Caption({ className = '', children, ...props }: TypographyProps) {
   return (
-    <Text className={`font-manrope text-sm text-premium-gray ${className}`} {...props}>
+    <Text className={`font-manrope text-sm text-foreground-muted dark:text-foreground-muted-dark ${className}`} {...props}>
       {children}
     </Text>
   )

@@ -38,7 +38,7 @@ export function ScreenLayout({
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={edges}>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={edges}>
       {renderHeader()}
       {scrollable ? (
         <ScrollView

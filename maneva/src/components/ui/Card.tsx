@@ -8,15 +8,16 @@ type CardProps = {
 } & Omit<ViewProps, 'className'>
 
 /**
- * Diseño Maneva Premium (Stitch):
- * dark: bg-premium-black text-premium-white rounded-3xl p-8 shadow-2xl
- * light: bg-premium-white border border-soft-gray rounded-3xl p-8 shadow-premium
+ * Diseño Maneva Premium:
+ * dark:  bg-premium-black — invariante, ya es oscura en ambos temas
+ * light: bg-surface — blanco en light, #1A1A1A en dark
  */
 export function Card({ onPress, className = '', variant = 'dark', children }: CardProps) {
   const isDark = variant === 'dark'
-  const bg = isDark ? 'bg-premium-black shadow-2xl' : 'bg-premium-white shadow-premium border border-soft-gray'
-  const textContext = isDark ? 'text-premium-white' : 'text-premium-black'
-  
+  const bg = isDark
+    ? 'bg-premium-black shadow-2xl'
+    : 'bg-surface dark:bg-surface-dark shadow-premium border border-border dark:border-border-dark'
+
   const base = `${bg} rounded-[24px] p-8 ${className}`
 
   if (onPress) {

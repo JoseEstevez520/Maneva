@@ -23,7 +23,7 @@ import {
   IconUser,
   IconCalendar,
 } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useBookingFlow, BookingStep } from '@/hooks/useAppointments'
 import { AvailableSlot, EmployeeInfo, Service } from '@/services/appointments.service'
 
@@ -53,13 +53,14 @@ const STEP_ORDER: BookingStep[] = ['services', 'employee', 'date', 'slot', 'conf
 // ─── Header ────────────────────────────────────────────────────────────────────
 
 function BookingHeader({ step, onBack }: { step: BookingStep; onBack: () => void }) {
+  const themeColors = useThemeColors()
   const stepIndex = STEP_ORDER.indexOf(step)
   const totalSteps = STEP_ORDER.length - 1
 
   if (step === 'done') {
     return (
-      <View className="bg-premium-white border-b border-premium-divider px-5 py-5 items-center justify-center">
-        <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">
+      <View className="bg-surface dark:bg-surface-dark border-b border-border dark:border-border-dark px-5 py-5 items-center justify-center">
+        <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-foreground dark:text-foreground-dark">
           MANEVA
         </H1>
       </View>
@@ -67,16 +68,16 @@ function BookingHeader({ step, onBack }: { step: BookingStep; onBack: () => void
   }
 
   return (
-    <View className="px-5 pt-4 pb-3 border-b border-premium-surface-soft">
+    <View className="px-5 pt-4 pb-3 border-b border-border dark:border-border-dark">
       <View className="flex-row items-center gap-4 mb-3">
         <TouchableOpacity
           onPress={onBack}
-          className="w-9 h-9 rounded-full bg-premium-surface items-center justify-center"
+          className="w-9 h-9 rounded-full bg-surface-raised dark:bg-surface-raised-dark items-center justify-center"
           activeOpacity={0.7}
         >
-          <IconBack size={18} color={Colors.premium.black} strokeWidth={2} />
+          <IconBack size={18} color={themeColors.premium.black} strokeWidth={2} />
         </TouchableOpacity>
-        <H2 className="font-manrope-bold text-[18px] text-premium-black flex-1">
+        <H2 className="font-manrope-bold text-[18px] text-foreground dark:text-foreground-dark flex-1">
           {STEP_TITLES[step]}
         </H2>
       </View>
@@ -110,6 +111,7 @@ function ServicesStep({
   onToggle: (id: string) => void
   onNext: () => void
 }) {
+  const themeColors = useThemeColors()
   if (loading) return <LoadingSpinner />
 
   const grouped = services.reduce<Record<string, Service[]>>((acc, s) => {
@@ -128,7 +130,7 @@ function ServicesStep({
       <ScrollView contentContainerClassName="px-5 pt-5 pb-32" showsVerticalScrollIndicator={false}>
         {Object.entries(grouped).map(([category, items]) => (
           <View key={category} className="mb-6">
-            <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-premium-gray uppercase mb-3">
+            <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase mb-3">
               {category}
             </Caption>
             <View className="gap-2">
@@ -142,17 +144,17 @@ function ServicesStep({
                     className={`flex-row items-center p-4 rounded-2xl border ${
                       selected
                         ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-                        : 'bg-premium-white border-premium-divider-subtle'
+                        : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
                     }`}
                   >
                     <View className="flex-1 gap-1">
-                      <Body className="font-manrope-bold text-[14px] text-premium-black">
+                      <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
                         {service.name}
                       </Body>
                       <View className="flex-row items-center gap-3">
                         <View className="flex-row items-center gap-1">
-                          <IconClock size={12} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-                          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+                          <IconClock size={12} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+                          <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
                             {service.duration_minutes} min
                           </Caption>
                         </View>
@@ -163,10 +165,10 @@ function ServicesStep({
                     </View>
                     <View
                       className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                        selected ? 'bg-gold border-gold' : 'border-premium-divider-disabled'
+                        selected ? 'bg-gold border-gold' : 'border-border dark:border-border-dark-disabled'
                       }`}
                     >
-                      {selected && <IconCheck size={13} color={Colors.premium.white} strokeWidth={2.5} />}
+                      {selected && <IconCheck size={13} color={themeColors.premium.white} strokeWidth={2.5} />}
                     </View>
                   </TouchableOpacity>
                 )
@@ -176,13 +178,13 @@ function ServicesStep({
         ))}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4 gap-2">
+      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4 gap-2">
         {selectedIds.length > 0 && (
           <View className="flex-row justify-between items-center mb-1">
-            <Caption className="font-manrope-medium text-[12px] text-premium-gray">
+            <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
               {selectedIds.length} servicio{selectedIds.length > 1 ? 's' : ''} seleccionado{selectedIds.length > 1 ? 's' : ''}
             </Caption>
-            <Caption className="font-manrope-bold text-[14px] text-premium-black">
+            <Caption className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
               Total: {totalPrice}€
             </Caption>
           </View>
@@ -198,6 +200,7 @@ function ServicesStep({
 // ─── Paso 2: Profesional ───────────────────────────────────────────────────────
 
 function EmployeeAvatar({ employee, size = 48 }: { employee: EmployeeInfo; size?: number }) {
+  const themeColors = useThemeColors()
   const style = { width: size, height: size, borderRadius: size / 2 }
   if (employee.photoUrl) {
     return <Image source={{ uri: employee.photoUrl }} style={style} className="mr-4" />
@@ -207,16 +210,17 @@ function EmployeeAvatar({ employee, size = 48 }: { employee: EmployeeInfo; size?
       style={style}
       className="bg-premium-divider-subtle items-center justify-center mr-4"
     >
-      <IconUser size={size * 0.45} color={Colors.premium.gray.DEFAULT} strokeWidth={1.5} />
+      <IconUser size={size * 0.45} color={themeColors.premium.gray.DEFAULT} strokeWidth={1.5} />
     </View>
   )
 }
 
 function SelectionCircle({ selected }: { selected: boolean }) {
+  const themeColors = useThemeColors()
   return (
     <View
       className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-        selected ? 'bg-gold border-gold' : 'border-premium-divider-disabled'
+        selected ? 'bg-gold border-gold' : 'border-border dark:border-border-dark-disabled'
       }`}
     >
       {selected && <IconCheck size={13} color="#000" strokeWidth={2.5} />}
@@ -251,6 +255,7 @@ function EmployeeStep({
   onAssignServiceEmployee: (serviceId: string, employeeId: string) => void
   onContinue: () => void
 }) {
+  const themeColors = useThemeColors()
   if (loading || serviceEmployeesLoading) return <LoadingSpinner />
 
   // ── Modo multi-empleado ───────────────────────────────────────────────────────
@@ -261,7 +266,7 @@ function EmployeeStep({
           contentContainerClassName="px-5 pt-5 pb-32"
           showsVerticalScrollIndicator={false}
         >
-          <Body className="font-manrope-medium text-[13px] text-premium-gray mb-5">
+          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-5">
             Ningún profesional puede realizar todos tus servicios. Asigna uno a cada servicio.
           </Body>
 
@@ -270,7 +275,7 @@ function EmployeeStep({
             const assignedId = serviceEmployeeMap[svc.id]
             return (
               <View key={svc.id} className="mb-6">
-                <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-premium-gray uppercase mb-3">
+                <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase mb-3">
                   {svc.name}
                 </Caption>
                 <View className="gap-2">
@@ -290,12 +295,12 @@ function EmployeeStep({
                           className={`flex-row items-center p-4 rounded-2xl border ${
                             selected
                               ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-                              : 'bg-premium-white border-premium-divider-subtle'
+                              : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
                           }`}
                         >
                           <EmployeeAvatar employee={emp} size={44} />
                           <View className="flex-1">
-                            <Body className="font-manrope-bold text-[14px] text-premium-black">
+                            <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
                               {fullName}
                             </Body>
                           </View>
@@ -310,7 +315,7 @@ function EmployeeStep({
           })}
         </ScrollView>
 
-        <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4">
+        <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
           <Button variant="primary" size="sm" disabled={!allServicesAssigned} onPress={onContinue}>
             Continuar
           </Button>
@@ -328,7 +333,7 @@ function EmployeeStep({
         contentContainerClassName="px-5 pt-5 pb-32"
         showsVerticalScrollIndicator={false}
       >
-        <Body className="font-manrope-medium text-[13px] text-premium-gray mb-4">
+        <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-4">
           Elige un profesional concreto o deja que el sistema asigne el primero disponible.
         </Body>
 
@@ -339,17 +344,17 @@ function EmployeeStep({
           className={`flex-row items-center p-4 rounded-2xl border mb-2 ${
             anySelected
               ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-              : 'bg-premium-white border-premium-divider-subtle'
+              : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
           }`}
         >
-          <View className="w-12 h-12 rounded-full bg-premium-surface items-center justify-center mr-4">
-            <IconUser size={22} color={Colors.premium.gray.DEFAULT} strokeWidth={1.5} />
+          <View className="w-12 h-12 rounded-full bg-surface-raised dark:bg-surface-raised-dark items-center justify-center mr-4">
+            <IconUser size={22} color={themeColors.premium.gray.DEFAULT} strokeWidth={1.5} />
           </View>
           <View className="flex-1">
-            <Body className="font-manrope-bold text-[14px] text-premium-black">
+            <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
               Sin preferencia
             </Body>
-            <Caption className="font-manrope-medium text-[11px] text-premium-gray mt-0.5">
+            <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark mt-0.5">
               Primer profesional disponible
             </Caption>
           </View>
@@ -368,16 +373,16 @@ function EmployeeStep({
               className={`flex-row items-center p-4 rounded-2xl border mb-2 ${
                 selected
                   ? 'bg-[rgba(212,175,55,0.08)] border-gold'
-                  : 'bg-premium-white border-premium-divider-subtle'
+                  : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
               }`}
             >
               <EmployeeAvatar employee={emp} />
               <View className="flex-1">
-                <Body className="font-manrope-bold text-[14px] text-premium-black">
+                <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
                   {fullName}
                 </Body>
                 {emp.position && (
-                  <Caption className="font-manrope-medium text-[11px] text-premium-gray mt-0.5">
+                  <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark mt-0.5">
                     {emp.position}
                   </Caption>
                 )}
@@ -388,7 +393,7 @@ function EmployeeStep({
         })}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
         <Button variant="primary" size="sm" onPress={onContinue}>
           Continuar
         </Button>
@@ -411,8 +416,9 @@ function DateStep({
   onSelect: (date: string) => void
   onContinue: () => void
 }) {
+  const themeColors = useThemeColors()
   const markedDates = selectedDate
-    ? { [selectedDate]: { selected: true, selectedColor: Colors.gold.DEFAULT, selectedTextColor: Colors.premium.white } }
+    ? { [selectedDate]: { selected: true, selectedColor: themeColors.gold.DEFAULT, selectedTextColor: themeColors.premium.white } }
     : {}
 
   return (
@@ -427,15 +433,15 @@ function DateStep({
           theme={{
             backgroundColor: 'transparent',
             calendarBackground: 'transparent',
-            textSectionTitleColor: Colors.premium.gray.DEFAULT,
-            selectedDayBackgroundColor: Colors.gold.DEFAULT,
-            selectedDayTextColor: Colors.premium.white,
-            todayTextColor: Colors.gold.DEFAULT,
-            dayTextColor: Colors.premium.black,
-            textDisabledColor: Colors.premium.divider.disabled,
-            dotColor: Colors.gold.DEFAULT,
-            arrowColor: Colors.gold.DEFAULT,
-            monthTextColor: Colors.premium.black,
+            textSectionTitleColor: themeColors.premium.gray.DEFAULT,
+            selectedDayBackgroundColor: themeColors.gold.DEFAULT,
+            selectedDayTextColor: themeColors.premium.white,
+            todayTextColor: themeColors.gold.DEFAULT,
+            dayTextColor: themeColors.premium.black,
+            textDisabledColor: themeColors.premium.divider.disabled,
+            dotColor: themeColors.gold.DEFAULT,
+            arrowColor: themeColors.gold.DEFAULT,
+            monthTextColor: themeColors.premium.black,
             textMonthFontFamily: 'Manrope_700Bold',
             textMonthFontSize: 16,
             textDayFontFamily: 'Manrope_500Medium',
@@ -446,7 +452,7 @@ function DateStep({
         />
       </View>
 
-      <View className="bg-premium-white border-t border-premium-surface-soft px-5 py-4">
+      <View className="bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
         <Button variant="primary" size="sm" disabled={!selectedDate} onPress={onContinue}>
           Continuar
         </Button>
@@ -474,6 +480,7 @@ function SlotStep({
   onSelect: (slot: AvailableSlot) => void
   onContinue: () => void
 }) {
+  const themeColors = useThemeColors()
   if (loading) return <LoadingSpinner />
 
   const dateLabel = selectedDate
@@ -484,15 +491,15 @@ function SlotStep({
     <View className="flex-1">
       <View className="flex-1 px-5 pt-5">
         <View className="flex-row items-center gap-2 mb-5">
-          <IconCalendar size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
-          <Caption className="font-manrope-bold text-[12px] text-premium-gray capitalize">
+          <IconCalendar size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+          <Caption className="font-manrope-bold text-[12px] text-foreground-muted dark:text-foreground-muted-dark capitalize">
             {dateLabel}
           </Caption>
         </View>
 
         {slots.length === 0 ? (
           <View className="flex-1 items-center justify-center gap-3">
-            <Caption className="font-manrope-medium text-[13px] text-premium-gray text-center">
+            <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
               No hay disponibilidad para este día.{'\n'}Prueba con otra fecha.
             </Caption>
           </View>
@@ -515,15 +522,15 @@ function SlotStep({
                   onPress={() => onSelect(slot)}
                   activeOpacity={0.7}
                   className={`flex-row items-center p-4 rounded-2xl border ${
-                    isSelected ? 'bg-[rgba(212,175,55,0.08)] border-gold' : 'bg-premium-white border-premium-divider-subtle'
+                    isSelected ? 'bg-[rgba(212,175,55,0.08)] border-gold' : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
                   }`}
                 >
                   {/* Hora */}
                   <View className="bg-[rgba(212,175,55,0.1)] rounded-xl px-3 py-2 mr-4 items-center">
-                    <Body className="font-manrope-bold text-[16px] text-premium-black">
+                    <Body className="font-manrope-bold text-[16px] text-foreground dark:text-foreground-dark">
                       {timeLabel}
                     </Body>
-                    <Caption className="font-manrope-medium text-[10px] text-premium-gray">
+                    <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark">
                       {endLabel}
                     </Caption>
                   </View>
@@ -531,14 +538,14 @@ function SlotStep({
                   {/* Profesional(es) y duración */}
                   <View className="flex-1 gap-1">
                     <View className="flex-row items-center gap-1.5">
-                      <IconUser size={12} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-                      <Body className="font-manrope-bold text-[13px] text-premium-black flex-1">
+                      <IconUser size={12} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+                      <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark flex-1">
                         {employeeNames}
                       </Body>
                     </View>
                     <View className="flex-row items-center gap-1.5">
-                      <IconClock size={11} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-                      <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+                      <IconClock size={11} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+                      <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
                         {totalDuration} min
                         {isMulti ? ` · ${slot.employees.length} profesionales` : ''}
                       </Caption>
@@ -547,7 +554,7 @@ function SlotStep({
 
                   <IconBack
                     size={16}
-                    color={Colors.premium.gray.DEFAULT}
+                    color={themeColors.premium.gray.DEFAULT}
                     strokeWidth={2}
                     style={{ transform: [{ rotate: '180deg' }] }}
                   />
@@ -558,7 +565,7 @@ function SlotStep({
         )}
       </View>
 
-      <View className="bg-premium-white border-t border-premium-surface-soft px-5 py-4">
+      <View className="bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
         <Button
           variant="primary"
           size="sm"
@@ -591,6 +598,7 @@ function ConfirmStep({
   loading: boolean
   error: string | null
 }) {
+  const themeColors = useThemeColors()
   const startLabel = format(parseISO(selectedSlot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
   const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0)
   const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0)
@@ -602,68 +610,68 @@ function ConfirmStep({
     <View className="flex-1">
       <ScrollView contentContainerClassName="px-5 pt-5 pb-32" showsVerticalScrollIndicator={false}>
         {/* Fecha y empleado(s) */}
-        <View className="bg-premium-white border border-premium-divider-subtle rounded-2xl p-4 mb-4 gap-3">
+        <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4 gap-3">
           <View className="flex-row items-center gap-2">
-            <IconCalendar size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
-            <Body className="font-manrope-bold text-[13px] text-premium-black capitalize flex-1">
+            <IconCalendar size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+            <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark capitalize flex-1">
               {startLabel}
             </Body>
           </View>
           <View className="flex-row items-center gap-2">
-            <IconUser size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-            <Body className="font-manrope-medium text-[13px] text-premium-black">
+            <IconUser size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+            <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
               {employeeNames}
             </Body>
           </View>
         </View>
 
         {/* Servicios */}
-        <View className="bg-premium-white border border-premium-divider-subtle rounded-2xl p-4 mb-4 gap-3">
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-premium-gray uppercase">
+        <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4 gap-3">
+          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase">
             Servicios
           </Caption>
           {selectedServices.map((s) => (
             <View key={s.id} className="flex-row justify-between items-center">
               <View className="flex-row items-center gap-2 flex-1">
-                <IconCheck size={12} color={Colors.gold.DEFAULT} strokeWidth={2.5} />
-                <Body className="font-manrope-medium text-[13px] text-premium-black flex-1">
+                <IconCheck size={12} color={themeColors.gold.DEFAULT} strokeWidth={2.5} />
+                <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
                   {s.name}
                 </Body>
               </View>
-              <Body className="font-manrope-bold text-[13px] text-premium-black">
+              <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">
                 {s.price}€
               </Body>
             </View>
           ))}
-          <View className="border-t border-premium-surface-soft pt-3 flex-row justify-between items-center">
+          <View className="border-t border-border dark:border-border-dark pt-3 flex-row justify-between items-center">
             <View className="flex-row items-center gap-1.5">
-              <IconClock size={12} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+              <IconClock size={12} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
                 {totalDuration} min en total
               </Caption>
             </View>
-            <Body className="font-manrope-bold text-[15px] text-premium-black">
+            <Body className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark">
               {totalPrice}€
             </Body>
           </View>
         </View>
 
         {/* Notas */}
-        <View className="bg-premium-white border border-premium-divider-subtle rounded-2xl p-4 mb-4">
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-premium-gray uppercase mb-3">
+        <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
+          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase mb-3">
             Notas para el salón (opcional)
           </Caption>
           <TextInput
             value={clientNotes}
             onChangeText={onNotesChange}
             placeholder="Ej: alérgica al amoniaco, corte específico..."
-            placeholderTextColor={Colors.premium.gray.DEFAULT}
+            placeholderTextColor={themeColors.premium.gray.DEFAULT}
             multiline
             numberOfLines={3}
             style={{
               fontFamily: 'Manrope_500Medium',
               fontSize: 13,
-              color: Colors.premium.black,
+              color: themeColors.premium.black,
               textAlignVertical: 'top',
               minHeight: 72,
             }}
@@ -673,7 +681,7 @@ function ConfirmStep({
         {error && <ErrorMessage message={error} />}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-premium-white border-t border-premium-surface-soft px-5 py-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
         <Button variant="primary" size="sm" loading={loading} onPress={onConfirm}>
           Confirmar reserva
         </Button>
@@ -695,6 +703,7 @@ function DoneStep({
   slot: AvailableSlot
   onGoHome: () => void
 }) {
+  const themeColors = useThemeColors()
   const dateLabel = format(parseISO(slot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
   const totalPrice = services.reduce((sum, s) => sum + s.price, 0)
   const serviceNames = services.map((s) => s.name).join(', ')
@@ -707,15 +716,15 @@ function DoneStep({
       <View className="flex-1 items-center justify-center gap-6">
         {/* Icono */}
         <View className="w-24 h-24 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-          <IconCheckCircle size={48} color={Colors.gold.DEFAULT} strokeWidth={1.5} />
+          <IconCheckCircle size={48} color={themeColors.gold.DEFAULT} strokeWidth={1.5} />
         </View>
 
         {/* Título */}
         <View className="items-center gap-2">
-          <H1 className="font-manrope-bold text-[24px] text-premium-black text-center">
+          <H1 className="font-manrope-bold text-[24px] text-foreground dark:text-foreground-dark text-center">
             ¡Reserva confirmada!
           </H1>
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
             Recibirás la confirmación por WhatsApp.
           </Body>
         </View>
@@ -723,16 +732,16 @@ function DoneStep({
         {/* Resumen de la cita */}
         <View className="w-full bg-[rgba(212,175,55,0.06)] border border-[rgba(212,175,55,0.25)] rounded-2xl p-4 gap-3">
           <View className="flex-row items-start gap-2.5">
-            <IconCalendar size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
-            <Body className="font-manrope-semibold text-[13px] text-premium-black flex-1 capitalize">
+            <IconCalendar size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+            <Body className="font-manrope-semibold text-[13px] text-foreground dark:text-foreground-dark flex-1 capitalize">
               {dateLabel}
             </Body>
           </View>
 
           {serviceNames.length > 0 && (
             <View className="flex-row items-start gap-2.5">
-              <IconCheck size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-premium-black flex-1">
+              <IconCheck size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
                 {serviceNames}
               </Body>
             </View>
@@ -740,8 +749,8 @@ function DoneStep({
 
           {employeeNames.length > 0 && (
             <View className="flex-row items-start gap-2.5">
-              <IconUser size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-premium-black flex-1">
+              <IconUser size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
                 {employeeNames}
               </Body>
             </View>
@@ -749,18 +758,18 @@ function DoneStep({
 
           {totalPrice > 0 && (
             <View className="border-t border-[rgba(212,175,55,0.2)] pt-3 flex-row justify-between items-center">
-              <Caption className="font-manrope-medium text-[12px] text-premium-gray">
+              <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
                 Total estimado
               </Caption>
-              <Body className="font-manrope-bold text-[15px] text-premium-black">
+              <Body className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark">
                 {totalPrice}€
               </Body>
             </View>
           )}
         </View>
 
-        <View className="bg-premium-surface rounded-lg px-4 py-2">
-          <Caption className="font-manrope-bold text-[11px] text-premium-gray tracking-[1.5px]">
+        <View className="bg-surface-raised dark:bg-surface-raised-dark rounded-lg px-4 py-2">
+          <Caption className="font-manrope-bold text-[11px] text-foreground-muted dark:text-foreground-muted-dark tracking-[1.5px]">
             Ref: {appointmentId.slice(0, 8).toUpperCase()}
           </Caption>
         </View>
@@ -800,7 +809,7 @@ export default function BookingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top', 'bottom']}>
       <BookingHeader step={flow.step} onBack={handleBack} />
 
       {flow.step === 'services' && (

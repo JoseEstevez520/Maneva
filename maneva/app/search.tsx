@@ -22,7 +22,7 @@ import {
   IconArrowUpRight,
   IconStar,
 } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSalonsWithRating } from '@/hooks/useSalons'
 import { useLocation } from '@/hooks/useLocation'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
@@ -64,6 +64,7 @@ interface Filters {
 }
 
 export default function SearchScreen() {
+  const themeColors = useThemeColors()
   const router = useRouter()
   const [query, setQuery] = useState('')
   const { coords } = useLocation()
@@ -183,28 +184,28 @@ export default function SearchScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top']}>
       {/* ── Header ── */}
-      <View className="bg-premium-white pt-[10px]">
+      <View className="bg-surface dark:bg-surface-dark pt-[10px]">
         <View className="flex-row items-center px-5 mb-4 gap-4">
-          <View className="flex-1 flex-row items-center bg-premium-surface rounded-2xl px-3 h-12">
-            <IconSearch color={Colors.premium.black} size={20} strokeWidth={2} style={{ marginRight: 8 }} />
+          <View className="flex-1 flex-row items-center bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-3 h-12">
+            <IconSearch color={themeColors.premium.black} size={20} strokeWidth={2} style={{ marginRight: 8 }} />
             <TextInput
-              className="flex-1 font-manrope-medium text-[14px] text-premium-black py-0 h-full"
+              className="flex-1 font-manrope-medium text-[14px] text-foreground dark:text-foreground-dark py-0 h-full"
               value={query}
               onChangeText={setQuery}
               autoFocus
               placeholder="Busca una peluquería"
-              placeholderTextColor={Colors.premium.gray.DEFAULT}
+              placeholderTextColor={themeColors.premium.gray.DEFAULT}
             />
             {query.length > 0 && (
               <TouchableOpacity onPress={() => setQuery('')} className="p-1">
-                <IconClose color={Colors.premium.gray.DEFAULT} size={18} strokeWidth={2} />
+                <IconClose color={themeColors.premium.gray.DEFAULT} size={18} strokeWidth={2} />
               </TouchableOpacity>
             )}
           </View>
           <TouchableOpacity onPress={() => router.back()}>
-            <Body className="font-manrope-bold text-[14px] text-premium-black">Cancelar</Body>
+            <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">Cancelar</Body>
           </TouchableOpacity>
         </View>
 
@@ -251,13 +252,13 @@ export default function SearchScreen() {
             />
           )}
         </ScrollView>
-        <View className="h-[1px] bg-premium-surface-soft w-full" />
+        <View className="h-[1px] bg-surface-overlay dark:bg-surface-overlay-dark w-full" />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-10">
         {/* ── Buscar por Servicio ── */}
         <View className="mt-8">
-          <Caption className="px-5 font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-5">
+          <Caption className="px-5 font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-5">
             FILTRAR POR SERVICIO
           </Caption>
           <ScrollView
@@ -271,12 +272,12 @@ export default function SearchScreen() {
                 className={`px-5 py-3 rounded-full border ${
                   filters.selectedServices.includes(service.id)
                     ? 'border-gold bg-[rgba(212,175,55,0.1)]'
-                    : 'border-premium-surface-soft bg-premium-white'
+                    : 'border-border dark:border-border-dark bg-surface dark:bg-surface-dark'
                 }`}
                 activeOpacity={0.7}
                 onPress={() => toggleService(service.id)}
               >
-                <Body className="font-manrope-bold text-[13px] text-premium-black">
+                <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">
                   {service.name}
                 </Body>
               </TouchableOpacity>
@@ -287,7 +288,7 @@ export default function SearchScreen() {
         {/* ── Modo de búsqueda activo ── */}
         {filters.selectedServices.length > 0 && (
           <View className="mx-5 mb-4 p-3 bg-[rgba(212,175,55,0.1)] border border-gold rounded-lg">
-            <Caption className="font-manrope-medium text-[12px] text-premium-black">
+            <Caption className="font-manrope-medium text-[12px] text-foreground dark:text-foreground-dark">
               Buscando salones con: {filters.selectedServices
                 .map((id) => SERVICES.find((s) => s.id === id)?.name)
                 .join(', ')}
@@ -298,7 +299,7 @@ export default function SearchScreen() {
         {/* ── Salones ── */}
         <View className="mt-4">
           <View className="px-5 flex-row items-center justify-between mb-5">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black">
+            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark">
               {!hasActiveFilters
                 ? `TODOS LOS SALONES (${filteredSalons.length})`
                 : filters.selectedServices.length > 0
@@ -311,10 +312,10 @@ export default function SearchScreen() {
             <LoadingSpinner className="pt-10 items-center" />
           ) : filteredSalons.length === 0 ? (
             <View className="px-5">
-              <Body className="font-manrope-medium text-[13px] text-premium-gray mb-2">
+              <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-2">
                 No se encontraron resultados
               </Body>
-              <Caption className="font-manrope-medium text-[12px] text-premium-gray">
+              <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
                 {filters.selectedServices.length > 0
                   ? 'Intenta con otros servicios'
                   : query.length > 0
@@ -388,6 +389,7 @@ function FilterChip({
   variant?: 'default' | 'clear'
   onPress?: () => void
 }) {
+  const themeColors = useThemeColors()
   const scale = useSharedValue(1)
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
@@ -396,14 +398,14 @@ function FilterChip({
       ? 'bg-premium-black border-premium-black'
       : active
         ? 'bg-gold border-gold'
-        : 'bg-premium-white border-premium-divider-strong'
+        : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark-strong'
 
   const textColor =
     variant === 'clear'
       ? 'text-premium-white'
       : active
         ? 'text-premium-white'
-        : 'text-premium-black'
+        : 'text-foreground dark:text-foreground-dark'
 
   return (
     <AnimatedFilterChip
@@ -415,7 +417,7 @@ function FilterChip({
       className={`flex-row items-center px-4 py-2 rounded-full border gap-1.5 ${containerStyle}`}
     >
       {variant === 'clear' && (
-        <IconClose size={12} color={Colors.premium.white} strokeWidth={2.5} />
+        <IconClose size={12} color={themeColors.premium.white} strokeWidth={2.5} />
       )}
       <Caption className={`font-manrope-bold text-[12px] ${textColor}`}>
         {label}
@@ -423,7 +425,7 @@ function FilterChip({
       {iconTail === 'expand_more' && (
         <IconExpandMore
           size={16}
-          color={active ? Colors.premium.white : Colors.premium.black}
+          color={active ? themeColors.premium.white : themeColors.premium.black}
           strokeWidth={2}
         />
       )}
@@ -436,6 +438,7 @@ function FilterChip({
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 function SalonResultRow({ salon }: { salon: SearchSalon }) {
+  const themeColors = useThemeColors()
   const router = useRouter()
   const scale = useSharedValue(1)
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
@@ -450,27 +453,27 @@ function SalonResultRow({ salon }: { salon: SearchSalon }) {
     >
       <Image
         source={{ uri: PLACEHOLDER_IMAGE }}
-        className="w-14 h-14 rounded-full border border-premium-surface-soft"
+        className="w-14 h-14 rounded-full border border-border dark:border-border-dark"
       />
       <View className="flex-1">
         <View className="flex-row justify-between items-center mb-1">
-          <H2 className="font-manrope-extrabold text-[15px] text-premium-black flex-1">
+          <H2 className="font-manrope-extrabold text-[15px] text-foreground dark:text-foreground-dark flex-1">
             {salon.salons?.name ?? salon.name}
           </H2>
-          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+          <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
             {salon.distance}km
           </Caption>
         </View>
         <View className="flex-row items-center gap-1.5">
           {salon.avgRating !== null && (
             <View className="flex-row items-center gap-1">
-              <IconStar size={12} fill={Colors.gold.DEFAULT} color={Colors.gold.DEFAULT} />
-              <Caption className="font-manrope-bold text-[12px] text-premium-black">
+              <IconStar size={12} fill={themeColors.gold.DEFAULT} color={themeColors.gold.DEFAULT} />
+              <Caption className="font-manrope-bold text-[12px] text-foreground dark:text-foreground-dark">
                 {salon.avgRating.toFixed(1)}
               </Caption>
             </View>
           )}
-          <Caption className="flex-1 font-manrope-medium text-[12px] text-premium-gray-secondary" numberOfLines={1}>
+          <Caption className="flex-1 font-manrope-medium text-[12px] text-foreground-subtle dark:text-foreground-subtle-dark" numberOfLines={1}>
             {salon.address ?? salon.city ?? 'Madrid'}
           </Caption>
         </View>
@@ -492,6 +495,7 @@ function RatingFilterModal({
   onClose: () => void
   onApply: (rating: number) => void
 }) {
+  const themeColors = useThemeColors()
   const [tempRating, setTempRating] = React.useState(minRating)
 
   // Sincronizar el estado temporal con el valor confirmado cada vez que el modal se abre
@@ -508,13 +512,13 @@ function RatingFilterModal({
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
         <Pressable className="flex-1" onPress={onClose} />
-        <View className="bg-premium-white rounded-t-3xl pt-6 px-5 pb-10">
+        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
           <View className="flex-row justify-between items-center mb-6">
-            <H2 className="font-manrope-extrabold text-[18px] text-premium-black">
+            <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
               Filtrar por valoración
             </H2>
             <TouchableOpacity onPress={onClose}>
-              <IconClose size={20} color={Colors.premium.black} strokeWidth={2} />
+              <IconClose size={20} color={themeColors.premium.black} strokeWidth={2} />
             </TouchableOpacity>
           </View>
 
@@ -525,7 +529,7 @@ function RatingFilterModal({
                 className={`p-4 rounded-lg border flex-row items-center gap-2 ${
                   tempRating === option.value
                     ? 'bg-gold border-gold'
-                    : 'bg-premium-white-pale border-premium-divider-strong'
+                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
                 }`}
                 onPress={() => setTempRating(option.value)}
               >
@@ -536,13 +540,13 @@ function RatingFilterModal({
                       size={16}
                       fill={
                         i < Math.floor(option.stars)
-                          ? Colors.gold.DEFAULT
-                          : Colors.premium.gray.pale
+                          ? themeColors.gold.DEFAULT
+                          : themeColors.premium.gray.pale
                       }
                       color={
                         i < Math.floor(option.stars)
-                          ? Colors.gold.DEFAULT
-                          : Colors.premium.gray.pale
+                          ? themeColors.gold.DEFAULT
+                          : themeColors.premium.gray.pale
                       }
                     />
                   ))}
@@ -551,7 +555,7 @@ function RatingFilterModal({
                   className={`font-manrope-medium text-[13px] ${
                     tempRating === option.value
                       ? 'text-premium-white'
-                      : 'text-premium-gray'
+                      : 'text-foreground-muted dark:text-foreground-muted-dark'
                   }`}
                 >
                   {option.label}
@@ -566,7 +570,7 @@ function RatingFilterModal({
               onApply(tempRating)
             }}
           >
-            <Body className="font-manrope-extrabold text-[15px] text-premium-white">
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-premium-white">
               Aplicar filtro
             </Body>
           </TouchableOpacity>
@@ -589,6 +593,7 @@ function PriceFilterModal({
   onClose: () => void
   onApply: (priceRange: number) => void
 }) {
+  const themeColors = useThemeColors()
   const [tempPrice, setTempPrice] = React.useState(priceRange)
 
   React.useEffect(() => { if (visible) setTempPrice(priceRange) }, [visible, priceRange])
@@ -597,13 +602,13 @@ function PriceFilterModal({
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
         <Pressable className="flex-1" onPress={onClose} />
-        <View className="bg-premium-white rounded-t-3xl pt-6 px-5 pb-10">
+        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
           <View className="flex-row justify-between items-center mb-6">
-            <H2 className="font-manrope-extrabold text-[18px] text-premium-black">
+            <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
               Rango de precio
             </H2>
             <TouchableOpacity onPress={onClose}>
-              <IconClose size={20} color={Colors.premium.black} strokeWidth={2} />
+              <IconClose size={20} color={themeColors.premium.black} strokeWidth={2} />
             </TouchableOpacity>
           </View>
 
@@ -614,7 +619,7 @@ function PriceFilterModal({
                 className={`p-4 rounded-lg border ${
                   tempPrice === option.id
                     ? 'bg-gold border-gold'
-                    : 'bg-premium-white-pale border-premium-divider-strong'
+                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
                 }`}
                 onPress={() => setTempPrice(option.id)}
               >
@@ -622,7 +627,7 @@ function PriceFilterModal({
                   className={`font-manrope-medium text-[13px] ${
                     tempPrice === option.id
                       ? 'text-premium-white'
-                      : 'text-premium-gray'
+                      : 'text-foreground-muted dark:text-foreground-muted-dark'
                   }`}
                 >
                   {option.label}
@@ -637,7 +642,7 @@ function PriceFilterModal({
               onApply(tempPrice)
             }}
           >
-            <Body className="font-manrope-extrabold text-[15px] text-premium-white">
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-premium-white">
               Aplicar filtro
             </Body>
           </TouchableOpacity>
@@ -660,6 +665,7 @@ function GenderFilterModal({
   onClose: () => void
   onApply: (gender: string | null) => void
 }) {
+  const themeColors = useThemeColors()
   const [tempGender, setTempGender] = React.useState(gender)
 
   React.useEffect(() => { if (visible) setTempGender(gender) }, [visible, gender])
@@ -668,13 +674,13 @@ function GenderFilterModal({
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
         <Pressable className="flex-1" onPress={onClose} />
-        <View className="bg-premium-white rounded-t-3xl pt-6 px-5 pb-10">
+        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
           <View className="flex-row justify-between items-center mb-6">
-            <H2 className="font-manrope-extrabold text-[18px] text-premium-black">
+            <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
               Tipo de salón
             </H2>
             <TouchableOpacity onPress={onClose}>
-              <IconClose size={20} color={Colors.premium.black} strokeWidth={2} />
+              <IconClose size={20} color={themeColors.premium.black} strokeWidth={2} />
             </TouchableOpacity>
           </View>
 
@@ -685,7 +691,7 @@ function GenderFilterModal({
                 className={`p-4 rounded-lg border ${
                   tempGender === option.id
                     ? 'bg-gold border-gold'
-                    : 'bg-premium-white-pale border-premium-divider-strong'
+                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
                 }`}
                 onPress={() => setTempGender(option.id)}
               >
@@ -693,7 +699,7 @@ function GenderFilterModal({
                   className={`font-manrope-medium text-[13px] ${
                     tempGender === option.id
                       ? 'text-premium-white'
-                      : 'text-premium-gray'
+                      : 'text-foreground-muted dark:text-foreground-muted-dark'
                   }`}
                 >
                   {option.label}
@@ -708,7 +714,7 @@ function GenderFilterModal({
               onApply(tempGender)
             }}
           >
-            <Body className="font-manrope-extrabold text-[15px] text-premium-white">
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-premium-white">
               Aplicar filtro
             </Body>
           </TouchableOpacity>

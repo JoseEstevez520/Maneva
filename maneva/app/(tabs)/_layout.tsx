@@ -1,6 +1,6 @@
 import React from "react";
 import { IconHome, IconMail, IconSettings, IconSparkles } from "@/components/ui/icons";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import { Tabs, useRouter } from "expo-router";
 import { View, Pressable } from "react-native";
 import Animated, {
@@ -15,15 +15,14 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
  * FAB del asistente IA.
- * Se monta sobre la tab bar con posición absoluta. La animación de entrada
- * tiene un pequeño delay para que no compita visualmente con la carga de tabs.
+ * Se monta sobre la tab bar con posición absoluta.
  */
 function AIAssistantFAB() {
   const router = useRouter();
+  const themeColors = useThemeColors();
   const mountScale = useSharedValue(0);
   const pressScale = useSharedValue(1);
 
-  // Animación de entrada al montar
   useEffect(() => {
     mountScale.value = withDelay(400, withSpring(1, { damping: 12, stiffness: 180 }));
   }, []);
@@ -50,13 +49,12 @@ function AIAssistantFAB() {
           width: 56,
           height: 56,
           borderRadius: 28,
-          backgroundColor: Colors.premium.white,
+          backgroundColor: themeColors.premium.white,
           borderWidth: 1.5,
-          borderColor: Colors.gold.DEFAULT,
+          borderColor: themeColors.gold.DEFAULT,
           alignItems: "center",
           justifyContent: "center",
-          // Sombra sutil dorada — presente pero sin romper el UI limpio
-          shadowColor: Colors.gold.DEFAULT,
+          shadowColor: themeColors.gold.DEFAULT,
           shadowOffset: { width: 0, height: 3 },
           shadowOpacity: 0.25,
           shadowRadius: 8,
@@ -64,24 +62,26 @@ function AIAssistantFAB() {
         },
       ]}
     >
-      <IconSparkles size={22} color={Colors.gold.DEFAULT} strokeWidth={2} />
+      <IconSparkles size={22} color={themeColors.gold.DEFAULT} strokeWidth={2} />
     </AnimatedPressable>
   );
 }
 
 export default function TabLayout() {
+  const themeColors = useThemeColors();
+
   return (
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarActiveTintColor: Colors.gold.DEFAULT,
-          tabBarInactiveTintColor: Colors.premium.gray.DEFAULT,
+          tabBarActiveTintColor: themeColors.gold.DEFAULT,
+          tabBarInactiveTintColor: themeColors.premium.gray.DEFAULT,
           tabBarStyle: {
-            backgroundColor: Colors.premium.white,
+            backgroundColor: themeColors.premium.white,
             borderTopWidth: 1,
-            borderTopColor: Colors.premium.gray.light,
+            borderTopColor: themeColors.premium.gray.light,
             height: 60,
             paddingTop: 10,
           },
@@ -116,7 +116,6 @@ export default function TabLayout() {
         />
       </Tabs>
 
-      {/* FAB del asistente IA — flota sobre todas las tabs */}
       <AIAssistantFAB />
     </View>
   );

@@ -1,7 +1,7 @@
 import { safeStorage } from "@/lib/storage";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import {
   FlatList,
   Image,
@@ -19,10 +19,11 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Dot = ({ isActive }: { isActive: boolean }) => {
+  const themeColors = useThemeColors()
   const animatedStyle = useAnimatedStyle(() => {
     return {
       width: withSpring(isActive ? 24 : 8),
-      backgroundColor: isActive ? Colors.premium.black : Colors.premium.gray.light,
+      backgroundColor: isActive ? themeColors.premium.black : themeColors.premium.gray.light,
     };
   });
 
@@ -60,6 +61,7 @@ const slides = [
 ];
 
 export default function OnboardingScreen() {
+  const themeColors = useThemeColors()
   const { width } = useWindowDimensions();
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -87,11 +89,11 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       {/* Header con botón Saltar */}
       <View className="flex-row justify-end px-6 pt-4 pb-2">
         <TouchableOpacity onPress={completeOnboarding}>
-          <Text className="text-premium-gray font-manrope-medium text-base">
+          <Text className="text-foreground-muted dark:text-foreground-muted-dark font-manrope-medium text-base">
             Saltar
           </Text>
         </TouchableOpacity>
@@ -117,10 +119,10 @@ export default function OnboardingScreen() {
               className="w-full h-72 rounded-premium-xl mb-8 border-4 border-white shadow-premium-soft"
               resizeMode="cover"
             />
-            <Text className="text-3xl font-manrope-extrabold text-premium-black text-center mb-3 leading-tight">
+            <Text className="text-3xl font-manrope-extrabold text-foreground dark:text-foreground-dark text-center mb-3 leading-tight">
               {item.title}
             </Text>
-            <Text className="text-base text-premium-gray font-manrope-regular text-center leading-relaxed">
+            <Text className="text-base text-foreground-muted dark:text-foreground-muted-dark font-manrope-regular text-center leading-relaxed">
               {item.description}
             </Text>
           </View>

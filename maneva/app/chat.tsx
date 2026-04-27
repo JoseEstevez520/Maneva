@@ -27,7 +27,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from 'react-native-reanimated'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import {
   IconClose,
@@ -111,7 +111,7 @@ function TypingIndicator() {
   return (
     <Animated.View
       entering={FadeInDown.duration(200)}
-      className="flex-row items-center gap-1 bg-premium-surface px-4 py-3 rounded-2xl rounded-tl-sm self-start ml-5 mb-3"
+      className="flex-row items-center gap-1 bg-surface-raised dark:bg-surface-raised-dark px-4 py-3 rounded-2xl rounded-tl-sm self-start ml-5 mb-3"
     >
       <Animated.View style={style1} className="w-2 h-2 rounded-full bg-premium-gray" />
       <Animated.View style={style2} className="w-2 h-2 rounded-full bg-premium-gray" />
@@ -124,6 +124,7 @@ function TypingIndicator() {
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'
   const router = useRouter()
+  const themeColors = useThemeColors()
 
   return (
     <Animated.View
@@ -134,12 +135,12 @@ function MessageBubble({ message }: { message: Message }) {
         className={`px-4 py-3 ${
           isUser
             ? 'bg-premium-black rounded-2xl rounded-tr-sm'
-            : 'bg-premium-surface rounded-2xl rounded-tl-sm'
+            : 'bg-surface-raised dark:bg-surface-raised-dark rounded-2xl rounded-tl-sm'
         }`}
       >
         <Body
           className={`font-manrope-medium text-[14px] leading-[20px] ${
-            isUser ? 'text-premium-white' : 'text-premium-black'
+            isUser ? 'text-premium-white' : 'text-foreground dark:text-foreground-dark'
           }`}
         >
           {message.content}
@@ -154,22 +155,22 @@ function MessageBubble({ message }: { message: Message }) {
               key={salon.id}
               onPress={() => router.push(`/salon/${salon.id}`)}
               activeOpacity={0.8}
-              className="bg-premium-white border border-premium-divider-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
+              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
             >
               <View className="w-8 h-8 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-                <IconSparkles size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
+                <IconSparkles size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
               </View>
               <View className="flex-1">
-                <Caption className="font-manrope-extrabold text-[12px] text-premium-black">
+                <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
                   {salon.name}
                 </Caption>
                 {salon.city && (
-                  <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+                  <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
                     {salon.city}
                   </Caption>
                 )}
               </View>
-              <IconLocation size={14} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+              <IconLocation size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
             </TouchableOpacity>
           ))}
         </View>
@@ -185,7 +186,7 @@ function QuickChips({ onSelect }: { onSelect: (text: string) => void }) {
       entering={FadeInDown.delay(200).duration(400).springify()}
       className="px-5 mt-4 gap-2"
     >
-      <Caption className="font-manrope-medium text-[11px] text-premium-gray mb-1">
+      <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark mb-1">
         Puedes preguntarme sobre...
       </Caption>
       <View className="flex-row flex-wrap gap-2">
@@ -194,9 +195,9 @@ function QuickChips({ onSelect }: { onSelect: (text: string) => void }) {
             key={chip}
             onPress={() => onSelect(chip)}
             activeOpacity={0.7}
-            className="bg-premium-white border border-premium-divider-strong rounded-full px-4 py-2"
+            className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-full px-4 py-2"
           >
-            <Caption className="font-manrope-medium text-[12px] text-premium-black">
+            <Caption className="font-manrope-medium text-[12px] text-foreground dark:text-foreground-dark">
               {chip}
             </Caption>
           </TouchableOpacity>
@@ -213,6 +214,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 // ─── Pantalla principal ────────────────────────────────────────────────────────
 
 export default function ChatScreen() {
+  const themeColors = useThemeColors()
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -286,21 +288,21 @@ export default function ChatScreen() {
   const canSend = input.trim().length > 0 && !isTyping
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top', 'bottom']}>
       {/* ── Header ── */}
       <Animated.View
         entering={FadeInDown.duration(300)}
-        className="flex-row items-center justify-between px-5 py-4 border-b border-premium-surface-soft"
+        className="flex-row items-center justify-between px-5 py-4 border-b border-border dark:border-border-dark"
       >
         <View className="flex-row items-center gap-3">
-          <View className="w-9 h-9 rounded-full bg-premium-white border border-gold items-center justify-center">
-            <IconSparkles size={16} color={Colors.gold.DEFAULT} strokeWidth={2} />
+          <View className="w-9 h-9 rounded-full bg-surface dark:bg-surface-dark border border-gold items-center justify-center">
+            <IconSparkles size={16} color={themeColors.gold.DEFAULT} strokeWidth={2} />
           </View>
           <View>
-            <H2 className="font-manrope-extrabold text-[16px] text-premium-black leading-[20px]">
+            <H2 className="font-manrope-extrabold text-[16px] text-foreground dark:text-foreground-dark leading-[20px]">
               Asistente Maneva
             </H2>
-            <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+            <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
               IA · Responde en segundos
             </Caption>
           </View>
@@ -309,9 +311,9 @@ export default function ChatScreen() {
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
-          className="w-8 h-8 rounded-full bg-premium-surface items-center justify-center"
+          className="w-8 h-8 rounded-full bg-surface-raised dark:bg-surface-raised-dark items-center justify-center"
         >
-          <IconClose size={16} color={Colors.premium.black} strokeWidth={2.5} />
+          <IconClose size={16} color={themeColors.premium.black} strokeWidth={2.5} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -332,8 +334,8 @@ export default function ChatScreen() {
           {messages.length === 0 && (
             <Animated.View entering={FadeInDown.duration(400).springify()}>
               <View className="self-start ml-5 mb-3 max-w-[82%]">
-                <View className="bg-premium-surface px-4 py-3 rounded-2xl rounded-tl-sm">
-                  <Body className="font-manrope-medium text-[14px] leading-[20px] text-premium-black">
+                <View className="bg-surface-raised dark:bg-surface-raised-dark px-4 py-3 rounded-2xl rounded-tl-sm">
+                  <Body className="font-manrope-medium text-[14px] leading-[20px] text-foreground dark:text-foreground-dark">
                     ¡Hola! Soy el asistente de Maneva. Puedo ayudarte a encontrar salones,
                     consultar servicios o resolver cualquier duda. ¿En qué te ayudo?
                   </Body>
@@ -351,11 +353,11 @@ export default function ChatScreen() {
         </ScrollView>
 
         {/* ── Input ── */}
-        <View className="flex-row items-end gap-3 px-5 py-3 border-t border-premium-surface-soft">
+        <View className="flex-row items-end gap-3 px-5 py-3 border-t border-border dark:border-border-dark">
           <TextInput
-            className="flex-1 bg-premium-surface rounded-2xl px-4 py-3 font-manrope-medium text-[14px] text-premium-black max-h-[100px]"
+            className="flex-1 bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-4 py-3 font-manrope-medium text-[14px] text-foreground dark:text-foreground-dark max-h-[100px]"
             placeholder="Escribe tu pregunta..."
-            placeholderTextColor={Colors.premium.gray.DEFAULT}
+            placeholderTextColor={themeColors.premium.gray.DEFAULT}
             value={input}
             onChangeText={setInput}
             multiline
@@ -374,12 +376,12 @@ export default function ChatScreen() {
             disabled={!canSend}
             style={sendAnimatedStyle}
             className={`w-11 h-11 rounded-full items-center justify-center ${
-              canSend ? 'bg-premium-black' : 'bg-premium-divider-strong'
+              canSend ? 'bg-foreground dark:bg-foreground-dark' : 'bg-border dark:bg-border-dark'
             }`}
           >
             <IconSend
               size={18}
-              color={canSend ? Colors.premium.white : Colors.premium.gray.DEFAULT}
+              color={canSend ? themeColors.premium.white : themeColors.premium.gray.DEFAULT}
               strokeWidth={2}
             />
           </AnimatedPressable>

@@ -16,7 +16,7 @@ import {
   IconLocation,
   IconPhone,
 } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useCampaignDetail } from '@/hooks/useCampaignDetail'
@@ -25,13 +25,14 @@ const PLACEHOLDER_IMAGE =
   'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=300&fit=crop&q=80'
 
 export default function CampaignDetailScreen() {
+  const themeColors = useThemeColors()
   const { id } = useLocalSearchParams() as { id: string }
   const router = useRouter()
   const { data: campaign, loading, error } = useCampaignDetail(id)
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center">
         <LoadingSpinner />
       </SafeAreaView>
     )
@@ -39,16 +40,16 @@ export default function CampaignDetailScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-premium-white items-center justify-center px-6">
-        <Body className="text-premium-gray text-center">{error}</Body>
+      <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center px-6">
+        <Body className="text-foreground-muted dark:text-foreground-muted-dark text-center">{error}</Body>
       </SafeAreaView>
     )
   }
 
   if (!campaign) {
     return (
-      <SafeAreaView className="flex-1 bg-premium-white items-center justify-center">
-        <Body className="text-premium-gray">Campaña no encontrada</Body>
+      <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center">
+        <Body className="text-foreground-muted dark:text-foreground-muted-dark">Campaña no encontrada</Body>
       </SafeAreaView>
     )
   }
@@ -63,14 +64,14 @@ export default function CampaignDetailScreen() {
   const isActive = new Date() <= parseISO(campaign.end_date)
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top']}>
       {/* Header con botón de volver */}
       <View className="absolute top-0 left-0 z-10 pt-4 px-5">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 bg-premium-white rounded-full items-center justify-center shadow-md"
+          className="w-10 h-10 bg-surface dark:bg-surface-dark rounded-full items-center justify-center shadow-md"
         >
-          <IconBack size={20} color={Colors.premium.black} strokeWidth={2} />
+          <IconBack size={20} color={themeColors.premium.black} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -78,12 +79,12 @@ export default function CampaignDetailScreen() {
         {/* Imagen */}
         <Image
           source={{ uri: PLACEHOLDER_IMAGE }}
-          className="w-full h-56 bg-premium-surface-soft"
+          className="w-full h-56 bg-surface-overlay dark:bg-surface-overlay-dark"
         />
 
         {/* Info Principal */}
-        <View className="px-5 pt-6 pb-6 border-b border-premium-surface-soft">
-          <H1 className="font-manrope-extrabold text-[28px] text-premium-black mb-3">
+        <View className="px-5 pt-6 pb-6 border-b border-border dark:border-border-dark">
+          <H1 className="font-manrope-extrabold text-[28px] text-foreground dark:text-foreground-dark mb-3">
             {campaign.name}
           </H1>
 
@@ -91,7 +92,7 @@ export default function CampaignDetailScreen() {
           {campaign.type && (
             <View className="mb-4 inline-flex bg-[rgba(212,175,55,0.1)] border border-gold px-3 py-1 rounded-full w-fit">
               <View className="flex-row items-center gap-1.5">
-                <IconTag size={14} color={Colors.gold.DEFAULT} strokeWidth={2} />
+                <IconTag size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
                 <Caption className="font-manrope-extrabold text-[11px] text-gold tracking-wider">
                   {typeLabel}
                 </Caption>
@@ -100,7 +101,7 @@ export default function CampaignDetailScreen() {
           )}
 
           {/* Salón */}
-          <Body className="font-manrope-medium text-[14px] text-premium-gray mb-4">
+          <Body className="font-manrope-medium text-[14px] text-foreground-muted dark:text-foreground-muted-dark mb-4">
             {salonName} • {salonCity}
           </Body>
 
@@ -121,20 +122,20 @@ export default function CampaignDetailScreen() {
         </View>
 
         {/* Fechas */}
-        <View className="px-5 py-6 border-b border-premium-surface-soft">
-          <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
+        <View className="px-5 py-6 border-b border-border dark:border-border-dark">
+          <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-4">
             PERÍODO DE VALIDEZ
           </Caption>
           <View className="gap-2">
             <View className="flex-row items-center gap-2">
-              <IconCalendar size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-premium-black">
+              <IconCalendar size={16} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
                 Desde {startFormatted}
               </Body>
             </View>
             <View className="flex-row items-center gap-2">
-              <IconCalendar size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-premium-black">
+              <IconCalendar size={16} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
                 Hasta {endFormatted}
               </Body>
             </View>
@@ -142,21 +143,21 @@ export default function CampaignDetailScreen() {
         </View>
 
         {/* Ubicación del Salón */}
-        <View className="px-5 py-6 border-b border-premium-surface-soft">
-          <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
+        <View className="px-5 py-6 border-b border-border dark:border-border-dark">
+          <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-4">
             UBICACIÓN
           </Caption>
-          <View className="p-4 bg-premium-white-pale rounded-lg gap-3">
+          <View className="p-4 bg-background dark:bg-background-dark rounded-lg gap-3">
             <View>
-              <H2 className="font-manrope-extrabold text-[14px] text-premium-black mb-2">
+              <H2 className="font-manrope-extrabold text-[14px] text-foreground dark:text-foreground-dark mb-2">
                 {salonName}
               </H2>
             </View>
 
             {salonAddress && (
               <View className="flex-row items-flex-start gap-2">
-                <IconLocation size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} style={{ marginTop: 2 }} />
-                <Body className="font-manrope-medium text-[13px] text-premium-gray flex-1">
+                <IconLocation size={16} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} style={{ marginTop: 2 }} />
+                <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark flex-1">
                   {salonAddress}
                 </Body>
               </View>
@@ -164,7 +165,7 @@ export default function CampaignDetailScreen() {
 
             {salonPhone && (
               <View className="flex-row items-center gap-2">
-                <IconPhone size={16} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+                <IconPhone size={16} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
                 <Body className="font-manrope-medium text-[13px] text-gold">
                   {salonPhone}
                 </Body>
@@ -173,7 +174,7 @@ export default function CampaignDetailScreen() {
 
             <TouchableOpacity
               onPress={() => router.push(`/salon/${campaign.location_id}`)}
-              className="mt-2 py-2 border-t border-premium-divider-strong"
+              className="mt-2 py-2 border-t border-border dark:border-border-dark-strong"
             >
               <Body className="font-manrope-bold text-[13px] text-gold">
                 Ver perfil del salón →
@@ -185,10 +186,10 @@ export default function CampaignDetailScreen() {
         {/* Descripción / Condiciones */}
         {campaign.condition && typeof campaign.condition === 'object' && campaign.condition.description && (
           <View className="px-5 py-6">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-black mb-4">
+            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-4">
               DETALLES DE LA OFERTA
             </Caption>
-            <Body className="font-manrope-medium text-[13px] text-premium-gray leading-5">
+            <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark leading-5">
               {campaign.condition.description}
             </Body>
           </View>
@@ -197,14 +198,14 @@ export default function CampaignDetailScreen() {
 
       {/* Botón fijo */}
       {isActive && (
-        <View className="absolute bottom-0 left-0 right-0 bg-premium-white px-5 py-4 border-t border-premium-surface-soft">
+        <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark px-5 py-4 border-t border-border dark:border-border-dark">
           <TouchableOpacity
             className="w-full bg-gold rounded-full py-4 items-center active:opacity-80"
             onPress={() => {
               router.push(`/salon/${campaign.location_id}`)
             }}
           >
-            <Body className="font-manrope-extrabold text-[15px] text-premium-black">
+            <Body className="font-manrope-extrabold text-[15px] text-foreground dark:text-foreground-dark">
               Ir al salón y reservar
             </Body>
           </TouchableOpacity>

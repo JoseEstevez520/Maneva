@@ -1,5 +1,7 @@
 import { View, ActivityIndicator } from 'react-native'
-import { Colors } from '@/constants/theme'
+
+// El dorado es invariante en ambos temas — se usa directamente como default
+const GOLD = '#D4AF37'
 
 interface LoadingSpinnerProps {
   className?: string
@@ -7,7 +9,7 @@ interface LoadingSpinnerProps {
   size?: 'small' | 'large'
 }
 
-export function LoadingSpinner({ className = 'py-6 items-center flex-1 justify-center', color = Colors.gold.DEFAULT, size = 'large' }: LoadingSpinnerProps) {
+export function LoadingSpinner({ className = 'py-6 items-center flex-1 justify-center', color = GOLD, size = 'large' }: LoadingSpinnerProps) {
   return (
     <View className={className}>
       <ActivityIndicator size={size} color={color} />

@@ -7,7 +7,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 bg-premium-white-soft items-center justify-center px-8">
+    <View className="flex-1 bg-background dark:bg-background-dark items-center justify-center px-8">
       {/* Logo + nombre + frase */}
       <Animated.View
         entering={FadeInDown.duration(800).springify()}
@@ -18,10 +18,10 @@ export default function WelcomeScreen() {
           className="w-40 h-40 -mb-2"
           resizeMode="contain"
         />
-        <H1 className="font-manrope-extrabold text-5xl tracking-tighter text-premium-black mb-3">
+        <H1 className="font-manrope-extrabold text-5xl tracking-tighter text-foreground dark:text-foreground-dark mb-3">
           MANEVA
         </H1>
-        <Body className="font-manrope text-premium-gray text-center text-base">
+        <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark text-center text-base">
           Tu peluquería premium, a un toque
         </Body>
       </Animated.View>
@@ -47,9 +47,9 @@ export default function WelcomeScreen() {
         <TouchableOpacity
           onPress={() => router.push("/register")}
           activeOpacity={0.85}
-          className="w-full bg-premium-white border-2 border-premium-black rounded-2xl py-4 items-center"
+          className="w-full bg-surface dark:bg-surface-dark border-2 border-premium-black rounded-2xl py-4 items-center"
         >
-          <Caption className="font-manrope-extrabold !text-premium-black uppercase tracking-widest text-sm">
+          <Caption className="font-manrope-extrabold !text-foreground dark:text-foreground-dark uppercase tracking-widest text-sm">
             Crear cuenta
           </Caption>
         </TouchableOpacity>

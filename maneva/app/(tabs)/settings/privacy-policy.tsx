@@ -6,7 +6,7 @@ import { BrandHeader } from '@/components/ui/BrandHeader'
 
 export default function PrivacyPolicyScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
       <BrandHeader />
 
       <View className="flex-1 items-center justify-center px-8">
@@ -15,7 +15,7 @@ export default function PrivacyPolicyScreen() {
           className="w-[220px] h-[220px] rounded-[20px] mb-8"
           resizeMode="contain"
         />
-        <Body className="text-[28px] font-manrope-extrabold text-premium-black text-center">
+        <Body className="text-[28px] font-manrope-extrabold text-foreground dark:text-foreground-dark text-center">
           shhhh es privado
         </Body>
       </View>

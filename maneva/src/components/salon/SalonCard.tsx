@@ -5,14 +5,11 @@ import { RatingStars } from './RatingStars'
 import { UnifiedSalon } from '@/services/salons.service'
 
 export function SalonCard({ salon, onPress }: { salon: UnifiedSalon; onPress?: () => void }) {
-  // A salon card should look premium: image on top, info below
-  // For the boilerplate, we use a placeholder image if none.
-
   const renderContent = () => (
-    <View className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-black/10 border border-gray-100 mb-4">
-      <View className="h-40 bg-gray-200">
-        <Image 
-          source={{ uri: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=500&q=80' }} 
+    <View className="bg-surface dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm shadow-black/10 border border-border dark:border-border-dark mb-4">
+      <View className="h-40 bg-surface-raised dark:bg-surface-raised-dark">
+        <Image
+          source={{ uri: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=500&q=80' }}
           className="w-full h-full"
           resizeMode="cover"
         />

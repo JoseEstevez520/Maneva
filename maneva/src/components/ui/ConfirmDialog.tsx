@@ -35,20 +35,18 @@ export function ConfirmDialog({
       <TouchableWithoutFeedback onPress={onCancel}>
         <View className="flex-1 bg-black/50 items-center justify-center px-6">
           <TouchableWithoutFeedback>
-            <View className="w-full bg-premium-white rounded-[24px] p-6 gap-5">
-              {/* Texto */}
+            <View className="w-full bg-surface dark:bg-surface-dark rounded-[24px] p-6 gap-5">
               <View className="gap-2">
-                <H2 className="font-manrope-bold text-[18px] text-premium-black text-center">
+                <H2 className="font-manrope-bold text-[18px] text-center">
                   {title}
                 </H2>
                 {message ? (
-                  <Body className="font-manrope-medium text-[13px] text-premium-gray text-center leading-[20px]">
+                  <Body className="font-manrope-medium text-[13px] text-center leading-[20px]">
                     {message}
                   </Body>
                 ) : null}
               </View>
 
-              {/* Botones */}
               <View className="gap-2.5">
                 <TouchableOpacity
                   onPress={onConfirm}
@@ -57,7 +55,7 @@ export function ConfirmDialog({
                     destructive ? 'bg-error-dark' : 'bg-gold'
                   }`}
                 >
-                  <Caption numberOfLines={1} className="font-manrope-extrabold text-[11px] tracking-[1.5px] uppercase text-premium-white">
+                  <Caption numberOfLines={1} className="font-manrope-extrabold text-[11px] tracking-[1.5px] uppercase text-premium-white dark:text-premium-white">
                     {confirmLabel}
                   </Caption>
                 </TouchableOpacity>
@@ -68,7 +66,7 @@ export function ConfirmDialog({
                     activeOpacity={0.7}
                     className="w-full py-3 items-center"
                   >
-                    <Caption numberOfLines={1} className="font-manrope-medium text-[12px] text-premium-gray">
+                    <Caption numberOfLines={1} className="font-manrope-medium text-[12px]">
                       {cancelLabel}
                     </Caption>
                   </TouchableOpacity>

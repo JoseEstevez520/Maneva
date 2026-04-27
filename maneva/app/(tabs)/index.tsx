@@ -17,7 +17,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { IconSearch, IconCalendar, IconLocation, IconStar, IconTag, IconChevron } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useNextAppointment } from '@/hooks/useAppointments'
 import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
 import { useActiveCampaigns } from '@/hooks/useCampaigns'
@@ -54,12 +54,12 @@ function SectionHeader({
       className="flex-row items-center mb-[14px]"
     >
       {/* flex-1 para que el título no empuje la acción a una segunda línea */}
-      <Caption className="flex-1 font-manrope-extrabold text-[11px] tracking-[2.5px] text-premium-black uppercase">
+      <Caption className="flex-1 font-manrope-extrabold text-[11px] tracking-[2.5px] text-foreground dark:text-foreground-dark uppercase">
         {title}
       </Caption>
       {actionLabel && (
         <TouchableOpacity onPress={onAction} className="ml-3" style={{ flexShrink: 0 }}>
-          <Caption numberOfLines={1} className="font-manrope-bold text-[9px] tracking-[2px] text-premium-gray uppercase border-b border-premium-gray-light pb-[1px]">
+          <Caption numberOfLines={1} className="font-manrope-bold text-[9px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase border-b border-border dark:border-border-dark pb-[1px]">
             {actionLabel}
           </Caption>
         </TouchableOpacity>
@@ -70,21 +70,22 @@ function SectionHeader({
 
 function SearchBar({ anchorRef }: { anchorRef?: (node: View | null) => void }) {
   const router = useRouter();
+  const themeColors = useThemeColors();
   return (
     <View className="px-5 pt-6 pb-2">
       <View ref={anchorRef}>
         <TouchableOpacity
-          className="flex-row items-center bg-premium-white rounded-2xl px-4 py-[14px] gap-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.1)]"
+          className="flex-row items-center bg-surface dark:bg-surface-dark rounded-2xl px-4 py-[14px] gap-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.1)]"
           activeOpacity={0.9}
           onPress={() => router.push("/search")}
         >
           <IconSearch
-            color={Colors.premium.gray.DEFAULT}
+            color={themeColors.premium.gray.DEFAULT}
             size={20}
             strokeWidth={2}
           />
           <View className="flex-1">
-            <Body className="font-manrope-medium text-[14px] text-premium-gray">
+            <Body className="font-manrope-medium text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
               Busca una peluquería o servicio
             </Body>
           </View>
@@ -117,6 +118,7 @@ function setNodeRef(
 function NextAppointmentSection() {
   const { data: appt, loading } = useNextAppointment();
   const router = useRouter();
+  const themeColors = useThemeColors();
 
   return (
     <View className="px-5 mt-7">
@@ -124,12 +126,12 @@ function NextAppointmentSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : appt ? (
-        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 gap-4">
+        <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 gap-4">
           <View className="flex-row items-start gap-3">
             <View className="flex-1 gap-1">
               <View className="flex-row items-center gap-1.5 mb-1">
                 <IconCalendar
-                  color={Colors.gold.DEFAULT}
+                  color={themeColors.gold.DEFAULT}
                   size={13}
                   strokeWidth={2.5}
                 />
@@ -137,11 +139,11 @@ function NextAppointmentSection() {
                   {formatAppointmentDate(appt.scheduled_at)}
                 </Caption>
               </View>
-              <H2 className="font-manrope-bold text-[20px] text-premium-black leading-[26px]">
+              <H2 className="font-manrope-bold text-[20px] text-foreground dark:text-foreground-dark leading-[26px]">
                 {appt.salon_name}
               </H2>
               {appt.service_name && (
-                <Body className="font-manrope-medium text-[13px] text-premium-gray mt-0.5">
+                <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mt-0.5">
                   {appt.service_name}
                 </Body>
               )}
@@ -156,14 +158,14 @@ function NextAppointmentSection() {
             activeOpacity={0.85}
             onPress={() => router.push('/bookings')}
           >
-            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
+            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white dark:text-premium-white">
               VER DETALLES
             </Caption>
           </TouchableOpacity>
         </View>
       ) : (
-        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+        <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
+          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
             No tienes citas próximas
           </Body>
           <TouchableOpacity
@@ -171,7 +173,7 @@ function NextAppointmentSection() {
             activeOpacity={0.85}
             onPress={() => router.push('/search')}
           >
-            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
+            <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white dark:text-premium-white">
               RESERVAR AHORA
             </Caption>
           </TouchableOpacity>
@@ -186,6 +188,7 @@ function NextAppointmentSection() {
 function MySalonSection() {
   const { data: salon, loading } = useFavoriteSalon();
   const router = useRouter();
+  const themeColors = useThemeColors();
 
   return (
     <View className="px-5 mt-7">
@@ -193,13 +196,13 @@ function MySalonSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : salon ? (
-        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row h-[120px] overflow-hidden">
+        <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row h-[120px] overflow-hidden">
           <Image source={{ uri: PLACEHOLDER_IMAGE }} className="w-1/3 h-full" />
           <View className="flex-1 p-[14px] justify-between">
             <View>
               <View className="flex-row items-center justify-between mb-1">
                 <Body
-                  className="font-manrope-bold text-[14px] text-premium-black flex-1 mr-1.5"
+                  className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark flex-1 mr-1.5"
                   numberOfLines={1}
                 >
                   {salon.name}
@@ -207,18 +210,18 @@ function MySalonSection() {
                 {salon.avgRating !== null && (
                   <View className="flex-row items-center gap-[3px]">
                     <IconStar
-                      color={Colors.gold.DEFAULT}
+                      color={themeColors.gold.DEFAULT}
                       size={11}
-                      fill={Colors.gold.DEFAULT}
+                      fill={themeColors.gold.DEFAULT}
                     />
-                    <Caption className="font-manrope-extrabold text-[11px] text-premium-black">
+                    <Caption className="font-manrope-extrabold text-[11px] text-foreground dark:text-foreground-dark">
                       {salon.avgRating.toFixed(1)}
                     </Caption>
                   </View>
                 )}
               </View>
               <Caption
-                className="font-manrope-medium text-[10px] text-premium-gray leading-[14px]"
+                className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark leading-[14px]"
                 numberOfLines={1}
               >
                 {salon.salons?.description ?? "Tu salón de confianza"}
@@ -229,15 +232,15 @@ function MySalonSection() {
               activeOpacity={0.85}
               onPress={() => router.push(`/salon/${salon.id}`)}
             >
-              <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white">
+              <Caption className="font-manrope-extrabold text-[9px] tracking-[2.5px] uppercase text-premium-white dark:text-premium-white">
                 VER SALÓN
               </Caption>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
-        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">
+        <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
+          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
             Aún no tienes un salón favorito
           </Body>
         </View>
@@ -252,6 +255,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 function TodayCard({ id, name, city }: { id: string; name: string; city: string | null }) {
   const router = useRouter()
+  const themeColors = useThemeColors()
   const scale = useSharedValue(1)
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
@@ -261,7 +265,7 @@ function TodayCard({ id, name, city }: { id: string; name: string; city: string 
       onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
       onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
       style={animatedStyle}
-      className="w-[240px] bg-premium-white rounded-[24px] overflow-hidden border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
+      className="w-[240px] bg-surface dark:bg-surface-dark rounded-[24px] overflow-hidden border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
     >
       <View>
         <Image
@@ -272,18 +276,18 @@ function TodayCard({ id, name, city }: { id: string; name: string; city: string 
       </View>
       <View className="p-[14px] gap-1.5">
         <Body
-          className="font-manrope-bold text-[14px] text-premium-black"
+          className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark"
           numberOfLines={1}
         >
           {name}
         </Body>
         <View className="flex-row items-center gap-1">
           <IconLocation
-            color={Colors.premium.gray.DEFAULT}
+            color={themeColors.premium.gray.DEFAULT}
             size={13}
             strokeWidth={2}
           />
-          <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+          <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
             {city ?? "Madrid"}
           </Caption>
         </View>
@@ -307,7 +311,7 @@ function AvailableTodaySection() {
           contentContainerClassName="gap-4 pb-2"
         >
           {salons.length === 0 ? (
-            <Body className="font-manrope-medium text-[13px] text-premium-gray text-center py-4">
+            <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center py-4">
               Sin salones disponibles
             </Body>
           ) : (
@@ -330,6 +334,7 @@ function AvailableTodaySection() {
 
 function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   const router = useRouter()
+  const themeColors = useThemeColors()
   const scale = useSharedValue(1)
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
@@ -351,18 +356,18 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
       onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
       onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
       style={animatedStyle}
-      className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
+      className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
     >
       {/* Encabezado con tipo de oferta */}
-      <View className="bg-[rgba(212,175,55,0.08)] border-b border-premium-surface px-5 py-3 flex-row items-center gap-2">
+      <View className="bg-[rgba(212,175,55,0.08)] border-b border-border dark:border-border-dark px-5 py-3 flex-row items-center gap-2">
         <View className="bg-[rgba(212,175,55,0.15)] rounded-lg p-1.5">
-          <IconTag size={12} color={Colors.gold.DEFAULT} strokeWidth={2} />
+          <IconTag size={12} color={themeColors.gold.DEFAULT} strokeWidth={2} />
         </View>
         <Caption className="font-manrope-extrabold text-[10px] text-gold tracking-wider">
           {typeLabel}
         </Caption>
         {daysRemaining > 0 && (
-          <Caption className="font-manrope-medium text-[10px] text-premium-gray ml-auto">
+          <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark ml-auto">
             {daysRemaining} {daysRemaining === 1 ? 'día' : 'días'}
           </Caption>
         )}
@@ -371,18 +376,18 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
       {/* Contenido principal */}
       <View className="p-5 gap-3">
         {/* Nombre de la campaña */}
-        <Body className="font-manrope-bold text-[15px] text-premium-black leading-[20px]">
+        <Body className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark leading-[20px]">
           {offer.name}
         </Body>
 
         {/* Salón */}
         <View className="flex-row items-center gap-2">
-          <IconLocation size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
+          <IconLocation size={13} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
           <View className="flex-1">
-            <Caption className="font-manrope-extrabold text-[11px] text-premium-black">
+            <Caption className="font-manrope-extrabold text-[11px] text-foreground dark:text-foreground-dark">
               {salonName}
             </Caption>
-            <Caption className="font-manrope-medium text-[10px] text-premium-gray">
+            <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark">
               {salonCity}
             </Caption>
           </View>
@@ -391,8 +396,8 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
         {/* Fila inferior: validez + CTA sutil integrado */}
         <View className="flex-row items-center justify-between mt-1">
           <View className="flex-row items-center gap-2">
-            <IconCalendar size={13} color={Colors.premium.gray.DEFAULT} strokeWidth={2} />
-            <Caption className="font-manrope-medium text-[11px] text-premium-gray">
+            <IconCalendar size={13} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+            <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
               Válido hasta {endFormatted}
             </Caption>
           </View>
@@ -401,7 +406,7 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
             <Caption className="font-manrope-extrabold text-[11px] text-gold">
               Ver oferta
             </Caption>
-            <IconChevron size={13} color={Colors.gold.DEFAULT} strokeWidth={2.5} />
+            <IconChevron size={13} color={themeColors.gold.DEFAULT} strokeWidth={2.5} />
           </View>
         </View>
       </View>
@@ -418,8 +423,8 @@ function SpecialOffersSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : campaigns.length === 0 ? (
-        <View className="bg-premium-white rounded-[24px] border border-premium-surface shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
-          <Body className="font-manrope-medium text-[13px] text-premium-gray text-center">Sin ofertas activas ahora mismo</Body>
+        <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] p-5 items-center gap-[14px]">
+          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">Sin ofertas activas ahora mismo</Body>
         </View>
       ) : (
         <View className="gap-[14px]">

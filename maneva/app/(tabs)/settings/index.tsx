@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 
 import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
 import { IconChevron, IconUser } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { useUserStyleProfile } from '@/hooks/useUserStyleProfile'
@@ -24,27 +24,28 @@ type MenuRowProps = {
 function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View className="mt-8">
-      <Caption className="px-6 mb-3 font-manrope-extrabold text-[11px] tracking-[3px] uppercase text-premium-gray-secondary">
+      <Caption className="px-6 mb-3 font-manrope-extrabold text-[11px] tracking-[3px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark">
         {title}
       </Caption>
-      <View className="bg-premium-white border-y border-premium-divider">{children}</View>
+      <View className="bg-surface dark:bg-surface-dark border-y border-border dark:border-border-dark">{children}</View>
     </View>
   )
 }
 
 function MenuRow({ label, onPress, disabled = false, showChevron = true, danger = false }: MenuRowProps) {
-  const textColor = danger ? 'text-red-600' : 'text-premium-black'
+  const themeColors = useThemeColors()
+  const textColor = danger ? 'text-red-600' : 'text-foreground dark:text-foreground-dark'
 
   return (
     <TouchableOpacity
-      className={`px-6 py-6 flex-row items-center justify-between border-b border-premium-divider ${disabled ? 'opacity-50' : ''}`}
+      className={`px-6 py-6 flex-row items-center justify-between border-b border-border dark:border-border-dark ${disabled ? 'opacity-50' : ''}`}
       onPress={onPress}
       disabled={disabled || !onPress}
       activeOpacity={0.75}
     >
       <Body className={`font-manrope-medium text-[16px] flex-1 pr-3 ${textColor}`}>{label}</Body>
       {showChevron ? (
-        <IconChevron size={20} color={Colors.premium.gray.iconMuted} strokeWidth={2.2} />
+        <IconChevron size={20} color={themeColors.premium.gray.iconMuted} strokeWidth={2.2} />
       ) : null}
     </TouchableOpacity>
   )
@@ -61,16 +62,18 @@ function SwitchRow({
   onValueChange: (nextValue: boolean) => void
   disabled?: boolean
 }) {
+  const themeColors = useThemeColors()
+
   return (
-    <View className={`px-6 py-6 flex-row items-center justify-between border-b border-premium-divider ${disabled ? 'opacity-50' : ''}`}>
-      <Body className="font-manrope-medium text-[16px] text-premium-black">{label}</Body>
+    <View className={`px-6 py-6 flex-row items-center justify-between border-b border-border dark:border-border-dark ${disabled ? 'opacity-50' : ''}`}>
+      <Body className="font-manrope-medium text-[16px] text-foreground dark:text-foreground-dark">{label}</Body>
       <Switch
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
-        thumbColor={value ? Colors.gold.DEFAULT : Colors.premium.white}
-        ios_backgroundColor={Colors.premium.divider.switch}
+        trackColor={{ false: themeColors.premium.divider.switch, true: themeColors.gold.light }}
+        thumbColor={value ? themeColors.gold.DEFAULT : themeColors.premium.white}
+        ios_backgroundColor={themeColors.premium.divider.switch}
       />
     </View>
   )
@@ -79,6 +82,7 @@ function SwitchRow({
 export default function SettingsScreen() {
   const router = useRouter()
   const { user } = useAuthStore()
+  const themeColors = useThemeColors()
   const { data: profile } = useUserProfile()
   const { styleProfile, saveStyleProfile } = useUserStyleProfile()
   const { logout } = useAuth()
@@ -124,18 +128,18 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
-      <View className="items-center border-b border-premium-divider bg-premium-white py-5">
-        <H1 className="font-manrope-extrabold text-[18px] tracking-[6px] text-premium-black">MANEVA</H1>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
+      <View className="items-center border-b border-border dark:border-border-dark bg-surface dark:bg-surface-dark py-5">
+        <H1 className="font-manrope-extrabold text-[18px] tracking-[6px]">MANEVA</H1>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
-        <View className="items-center pt-10 pb-6 px-6 bg-premium-white">
-          <View className="w-[120px] h-[120px] rounded-full border border-gold-border-alt items-center justify-center bg-premium-surface shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
-            <IconUser size={42} color={Colors.premium.gray.secondary} strokeWidth={2.2} />
+        <View className="items-center pt-10 pb-6 px-6 bg-surface dark:bg-surface-dark">
+          <View className="w-[120px] h-[120px] rounded-full border border-gold-border-alt items-center justify-center bg-surface-raised dark:bg-surface-raised-dark shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+            <IconUser size={42} color={themeColors.premium.gray.secondary} strokeWidth={2.2} />
           </View>
-          <H2 className="mt-8 px-3 font-manrope-bold text-[28px] leading-[34px] text-premium-black text-center">{fullName}</H2>
-          <Caption className="mt-2 font-manrope-medium text-premium-gray">{user?.email ?? ''}</Caption>
+          <H2 className="mt-8 px-3 font-manrope-bold text-[28px] leading-[34px] text-center">{fullName}</H2>
+          <Caption className="mt-2 font-manrope-medium">{user?.email ?? ''}</Caption>
         </View>
 
         <MenuSection title="Mi Cuenta">

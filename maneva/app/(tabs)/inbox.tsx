@@ -4,9 +4,10 @@ import Animated, { FadeInDown } from 'react-native-reanimated'
 import { ScreenLayout } from '@/components/ui/ScreenLayout'
 import { Body, Caption } from '@/components/ui/Typography'
 import { IconMail } from '@/components/ui/icons'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 export default function InboxScreen() {
+  const themeColors = useThemeColors()
   return (
     <ScreenLayout header="brand" scrollable={false}>
       <Animated.View
@@ -18,12 +19,12 @@ export default function InboxScreen() {
           accessibilityElementsHidden={true}
           importantForAccessibility="no-hide-descendants"
         >
-          <IconMail size={34} color={Colors.gold.DEFAULT} strokeWidth={2.2} />
+          <IconMail size={34} color={themeColors.gold.DEFAULT} strokeWidth={2.2} />
         </View>
-        <Body className="font-manrope-extrabold text-[17px] text-premium-black text-center mb-2">
+        <Body className="font-manrope-extrabold text-[17px] text-foreground dark:text-foreground-dark text-center mb-2">
           Tu buzón está vacío
         </Body>
-        <Caption className="font-manrope-medium text-[13px] text-premium-gray text-center leading-relaxed">
+        <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center leading-relaxed">
           Aquí aparecerán tus conversaciones y notificaciones
         </Caption>
       </Animated.View>

@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Body, Caption, H1 } from "@/components/ui/Typography";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import { getCurrentUser } from "@/services/auth.service";
 import { replaceUserPreferences } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
@@ -30,6 +30,7 @@ const SERVICES = [
 ];
 
 export default function PreferencesOnboardingScreen() {
+  const themeColors = useThemeColors()
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -98,7 +99,7 @@ export default function PreferencesOnboardingScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView contentContainerClassName="px-6 pt-6 pb-10">
         <View className="flex-row items-center gap-2 mb-8">
           <Image
@@ -106,7 +107,7 @@ export default function PreferencesOnboardingScreen() {
             className="w-10 h-10"
             resizeMode="contain"
           />
-          <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">
+          <H1 className="font-manrope-extrabold text-xl tracking-tight text-foreground dark:text-foreground-dark">
             MANEVA
           </H1>
         </View>
@@ -115,17 +116,17 @@ export default function PreferencesOnboardingScreen() {
           <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] uppercase text-gold mb-2">
             Configuración
           </Caption>
-          <H1 className="font-manrope-extrabold text-3xl text-premium-black mb-2">
+          <H1 className="font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark mb-2">
             Preferencias
           </H1>
-          <Body className="font-manrope text-premium-gray">
+          <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
             Elige los servicios que más te interesan para personalizar tu
             inicio.
           </Body>
         </View>
 
         <View className="mb-6">
-          <Caption className="font-manrope-semibold text-premium-gray text-[11px] uppercase tracking-[1.8px] mb-3">
+          <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-3">
             Servicios de interés
           </Caption>
           <View className="flex-row flex-wrap gap-2">
@@ -139,12 +140,12 @@ export default function PreferencesOnboardingScreen() {
                   className={`self-start shrink-0 px-3 py-2 rounded-full border ${
                     isActive
                       ? "bg-premium-black border-premium-black"
-                      : "bg-premium-white border-premium-divider-muted"
+                      : "bg-surface dark:bg-surface-dark border-border dark:border-border-dark-muted"
                   }`}
                 >
                   <Caption
                     className={`font-manrope-extrabold uppercase tracking-[0.8px] text-[10px] ${
-                      isActive ? "text-premium-white" : "text-premium-black"
+                      isActive ? "text-premium-white" : "text-foreground dark:text-foreground-dark"
                     }`}
                   >
                     {service}
@@ -170,7 +171,7 @@ export default function PreferencesOnboardingScreen() {
           disabled={!canContinue}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={Colors.premium.black} />
+            <ActivityIndicator size="small" color={themeColors.premium.black} />
           ) : (
             <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
               Continuar

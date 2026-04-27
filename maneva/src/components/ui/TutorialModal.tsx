@@ -1,4 +1,4 @@
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import { getCurrentUser } from "@/services/auth.service";
 import { safeStorage } from "@/lib/storage";
 import { useAuthStore } from "@/store/authStore";
@@ -76,6 +76,7 @@ export function TutorialModal({
   onStepChange,
 }: TutorialModalProps) {
   const { user } = useAuthStore();
+  const themeColors = useThemeColors();
   const [isVisible, setIsVisible] = useState(false);
   const [step, setStep] = useState(0);
   const [storageKey, setStorageKey] = useState<string | null>(null);
@@ -244,7 +245,7 @@ export function TutorialModal({
               top: popupTop,
             },
           ]}
-          className="bg-premium-white rounded-[24px] p-5 shadow-2xl items-center relative"
+          className="bg-surface dark:bg-surface-dark rounded-[24px] p-5 shadow-2xl items-center relative"
         >
           {placement !== "center" && (
             <View
@@ -257,7 +258,7 @@ export function TutorialModal({
                       borderLeftWidth: ARROW_SIZE,
                       borderRightWidth: ARROW_SIZE,
                       borderBottomWidth: ARROW_SIZE,
-                      borderBottomColor: Colors.premium.white,
+                      borderBottomColor: themeColors.premium.white,
                     }
                   : {
                       bottom: -ARROW_SIZE,
@@ -265,7 +266,7 @@ export function TutorialModal({
                       borderLeftWidth: ARROW_SIZE,
                       borderRightWidth: ARROW_SIZE,
                       borderTopWidth: ARROW_SIZE,
-                      borderTopColor: Colors.premium.white,
+                      borderTopColor: themeColors.premium.white,
                     },
               ]}
             />
@@ -284,7 +285,7 @@ export function TutorialModal({
 
           {/* Header del pop-up */}
           <View className="w-12 h-12 rounded-full bg-gold/10 items-center justify-center mb-3">
-            <StepIcon color={Colors.gold.DEFAULT} size={28} strokeWidth={2} />
+            <StepIcon color={themeColors.gold.DEFAULT} size={28} strokeWidth={2} />
           </View>
 
           <H2 className="text-center mb-2">{currentStep.title}</H2>
@@ -298,7 +299,7 @@ export function TutorialModal({
             {TUTORIAL_STEPS.map((_, idx) => (
               <View
                 key={idx}
-                className={`h-2 rounded-full transition-all ${idx === step ? "w-6 bg-premium-black" : "w-2 bg-premium-gray-light"}`}
+                className={`h-2 rounded-full transition-all ${idx === step ? "w-6 bg-foreground dark:bg-foreground-dark" : "w-2 bg-border-strong dark:bg-border-strong-dark"}`}
               />
             ))}
           </View>

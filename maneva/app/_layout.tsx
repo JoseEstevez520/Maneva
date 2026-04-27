@@ -5,11 +5,13 @@ import type { Session } from "@supabase/supabase-js";
 import "react-native-reanimated";
 import "../global.css";
 import * as NavigationBar from "expo-navigation-bar";
+import { useColorScheme } from "nativewind";
 
 import { supabase } from "@/lib/supabase";
 import { safeStorage } from "@/lib/storage";
 import { getUserPreference } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
+import { useUiStore } from "@/store/uiStore";
 import {
   Manrope_400Regular,
   Manrope_500Medium,
@@ -46,10 +48,11 @@ SplashScreen.preventAutoHideAsync();
  * Nota: solo afecta a Android. En iOS el área inferior la gestiona
  * SafeAreaView y no existe una barra de navegación equivalente.
  */
-async function configureNavigationBar() {
+async function configureNavigationBar(scheme: 'light' | 'dark') {
   // Con edge-to-edge habilitado en Android, setPositionAsync y setBackgroundColorAsync
   // muestran warnings porque no son compatibles. Mantenemos solo el estilo de iconos.
-  await NavigationBar.setButtonStyleAsync("dark")
+  // En dark mode los iconos deben ser claros (light) sobre fondo oscuro, y viceversa.
+  await NavigationBar.setButtonStyleAsync(scheme === 'dark' ? 'light' : 'dark')
 }
 
 export default function RootLayout() {
@@ -58,6 +61,14 @@ export default function RootLayout() {
   const [checkedOnboarding, setCheckedOnboarding] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [redirectHref, setRedirectHref] = useState<string | null>(null);
+
+  // ── Dark mode: sincronizar uiStore → NativeWind ──────────────────────────
+  const { setColorScheme: setNativewindScheme } = useColorScheme()
+  const colorScheme = useUiStore(s => s.colorScheme)
+
+  useEffect(() => {
+    setNativewindScheme(colorScheme)
+  }, [colorScheme, setNativewindScheme])
 
   const [loaded, error] = useFonts({
     Manrope_400Regular,
@@ -76,10 +87,10 @@ export default function RootLayout() {
   // Configurar la barra de navegación Android al montar la app.
   // El catch evita una promesa rechazada silenciosa en dispositivos sin soporte.
   useEffect(() => {
-    configureNavigationBar().catch((e) => {
+    configureNavigationBar(colorScheme).catch((e) => {
       console.warn('NavigationBar config failed:', e)
     })
-  }, []);
+  }, [colorScheme]);
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -242,7 +253,7 @@ export default function RootLayout() {
           options={{ presentation: "modal", title: "Modal" }}
         />
       </Stack>
-      <StatusBar style="dark" />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </>
   );
 }

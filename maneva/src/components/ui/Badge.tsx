@@ -1,13 +1,5 @@
-/**
- * Badge.tsx
- * ───────────────────────────────────────────────────────────────��─────────
- * Componente reutilizable para mostrar badges/etiquetas.
- * Soporta múltiples variantes de color.
- * ─────────────────────────────────────────────────────────────────────────
- */
 import React from 'react'
 import { View, Text } from 'react-native'
-import { Colors } from '@/constants/theme'
 
 type BadgeVariant = 'gold' | 'black' | 'success' | 'warning' | 'error'
 
@@ -17,14 +9,12 @@ type BadgeProps = {
   size?: 'sm' | 'md'
 }
 
-// Regla de contraste: fondos claros (gold, warning) → texto negro.
-// Fondos oscuros/saturados (black, success, error) → texto blanco.
 const variantStyles: Record<BadgeVariant, { bg: string; text: string }> = {
-  gold:    { bg: 'bg-gold',           text: 'text-premium-white' },
-  black:   { bg: 'bg-premium-black',  text: 'text-premium-white' },
-  success: { bg: 'bg-success',         text: 'text-premium-white' },
-  warning: { bg: 'bg-warning',         text: 'text-premium-black' },
-  error:   { bg: 'bg-error',           text: 'text-premium-white' },
+  gold:    { bg: 'bg-gold',                                                           text: 'text-premium-white' },
+  black:   { bg: 'bg-foreground dark:bg-foreground-dark',                             text: 'text-surface dark:text-surface-dark' },
+  success: { bg: 'bg-success',                                                        text: 'text-premium-white' },
+  warning: { bg: 'bg-warning',                                                        text: 'text-foreground dark:text-foreground-dark' },
+  error:   { bg: 'bg-error',                                                          text: 'text-premium-white' },
 }
 
 export function Badge({ text, variant = 'black', size = 'md' }: BadgeProps) {

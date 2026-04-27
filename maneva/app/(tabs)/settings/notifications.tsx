@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconChevron } from '@/components/ui/icons'
 import { BrandHeader } from '@/components/ui/BrandHeader'
-import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/useThemeColors'
 import { useNotificationSettings, type OffersScope } from '@/hooks/useNotificationSettings'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet'
@@ -17,6 +17,7 @@ const OFFERS_OPTIONS: SelectOption<OffersScope>[] = [
 ]
 
 export default function NotificationsScreen() {
+  const themeColors = useThemeColors()
   const {
     offersScope,
     homeServiceEnabled,
@@ -43,48 +44,48 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
       <BrandHeader />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-premium-black">Notificaciones</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Notificaciones</H2>
         </View>
 
         {error ? <ErrorMessage message={error} className="mx-6 mb-4 rounded-xl border border-red-200 bg-red-50 p-3" /> : null}
 
-        <Caption className="px-6 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary">
+        <Caption className="px-6 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark">
           Ofertas
         </Caption>
 
-        <TouchableOpacity onPress={() => setOffersSelectorVisible(true)} activeOpacity={0.8} className="px-6 py-5 bg-premium-white border-y border-premium-divider">
+        <TouchableOpacity onPress={() => setOffersSelectorVisible(true)} activeOpacity={0.8} className="px-6 py-5 bg-surface dark:bg-surface-dark border-y border-border dark:border-border-dark">
           <View className="flex-row items-center justify-between">
             <View className="flex-1 pr-3">
-              <Body className="font-manrope-medium text-[17px] text-premium-black">Notificaciones de ofertas</Body>
-              <Body className="mt-1 text-[14px] text-premium-gray">{offersLabel}</Body>
+              <Body className="font-manrope-medium text-[17px] text-foreground dark:text-foreground-dark">Notificaciones de ofertas</Body>
+              <Body className="mt-1 text-[14px] text-foreground-muted dark:text-foreground-muted-dark">{offersLabel}</Body>
             </View>
-            <IconChevron size={20} color={Colors.premium.gray.iconMuted} strokeWidth={2.2} />
+            <IconChevron size={20} color={themeColors.premium.gray.iconMuted} strokeWidth={2.2} />
           </View>
         </TouchableOpacity>
 
-        <Caption className="px-6 pt-10 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-premium-gray-secondary">
+        <Caption className="px-6 pt-10 pb-3 font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark">
           A domicilio
         </Caption>
 
-        <View className="px-6 py-5 bg-premium-white border-y border-premium-divider">
+        <View className="px-6 py-5 bg-surface dark:bg-surface-dark border-y border-border dark:border-border-dark">
           <View className="flex-row items-start justify-between gap-3">
             <View className="flex-1">
-              <Body className="font-manrope-medium text-[17px] text-premium-black">A domicilio</Body>
-              <Body className="mt-1 leading-7 text-[14px] text-premium-gray">
+              <Body className="font-manrope-medium text-[17px] text-foreground dark:text-foreground-dark">A domicilio</Body>
+              <Body className="mt-1 leading-7 text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
                 Recibir notificaciones cuando un peluquero realice cortes a domicilio en mi zona
               </Body>
             </View>
             <Switch
               value={homeServiceEnabled}
               onValueChange={handleHomeServiceToggle}
-              trackColor={{ false: Colors.premium.divider.switch, true: Colors.gold.light }}
-              thumbColor={homeServiceEnabled ? Colors.gold.DEFAULT : Colors.premium.white}
-              ios_backgroundColor={Colors.premium.divider.switch}
+              trackColor={{ false: themeColors.premium.divider.switch, true: themeColors.gold.light }}
+              thumbColor={homeServiceEnabled ? themeColors.gold.DEFAULT : themeColors.premium.white}
+              ios_backgroundColor={themeColors.premium.divider.switch}
             />
           </View>
         </View>

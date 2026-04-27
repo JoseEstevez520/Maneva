@@ -16,7 +16,7 @@ import MapView, { Circle, Region } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Body, Caption, H1 } from "@/components/ui/Typography";
-import { Colors } from "@/constants/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import { getCurrentUser } from "@/services/auth.service";
 import { setUserPreference } from "@/services/users.service";
 import { useAuthStore } from "@/store/authStore";
@@ -75,6 +75,7 @@ type NominatimReverseItem = {
 };
 
 export default function LocationOnboardingScreen() {
+  const themeColors = useThemeColors()
   const router = useRouter();
   const { user } = useAuthStore();
   const mapRef = useRef<MapView | null>(null);
@@ -350,7 +351,7 @@ export default function LocationOnboardingScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-premium-white-soft">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView contentContainerClassName="px-6 pt-6 pb-10">
         <View className="flex-row items-center gap-2 mb-8">
           <Image
@@ -358,7 +359,7 @@ export default function LocationOnboardingScreen() {
             className="w-10 h-10"
             resizeMode="contain"
           />
-          <H1 className="font-manrope-extrabold text-xl tracking-tight text-premium-black">
+          <H1 className="font-manrope-extrabold text-xl tracking-tight text-foreground dark:text-foreground-dark">
             MANEVA
           </H1>
         </View>
@@ -367,20 +368,20 @@ export default function LocationOnboardingScreen() {
           <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] uppercase text-gold mb-2">
             Configuración
           </Caption>
-          <H1 className="font-manrope-extrabold text-3xl text-premium-black mb-2">
+          <H1 className="font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark mb-2">
             Ubicación
           </H1>
-          <Body className="font-manrope text-premium-gray">
+          <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
             Usaremos tu ciudad para mostrarte salones cercanos desde el inicio.
           </Body>
         </View>
 
         <View className="mb-2">
-          <Caption className="font-manrope-semibold text-premium-gray text-[11px] uppercase tracking-[1.8px] mb-2">
+          <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-2">
             Buscar ciudad manualmente
           </Caption>
         </View>
-        <View className="bg-premium-white rounded-2xl border border-premium-divider-faint px-4 py-3 mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.06)]">
+        <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint px-4 py-3 mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.06)]">
           <View className="flex-row items-center gap-2">
             <View className="flex-1">
               <TextInput
@@ -396,8 +397,8 @@ export default function LocationOnboardingScreen() {
                 }}
                 onSubmitEditing={handleApplyManualCity}
                 placeholder="Ejemplo: Madrid"
-                placeholderTextColor={Colors.premium.gray.faint}
-                className="font-manrope text-premium-black text-base"
+                placeholderTextColor={themeColors.premium.gray.faint}
+                className="font-manrope text-foreground dark:text-foreground-dark text-base"
                 autoCapitalize="words"
                 autoCorrect={false}
                 returnKeyType="search"
@@ -417,13 +418,13 @@ export default function LocationOnboardingScreen() {
         </View>
 
         <View className="mb-5">
-          <Caption className="font-manrope-semibold text-premium-gray text-[11px] uppercase tracking-[1.8px] mb-2">
+          <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-2">
             Mapa de zona y radio
           </Caption>
-          <View className="bg-premium-white rounded-2xl border border-premium-divider-faint overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+          <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
             {Platform.OS === "web" ? (
               <View className="h-[260px] items-center justify-center px-5">
-                <Body className="font-manrope text-premium-gray text-center">
+                <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark text-center">
                   El mapa interactivo no está disponible en web. Puedes
                   seleccionar ciudad manualmente y elegir el radio.
                 </Body>
@@ -457,12 +458,12 @@ export default function LocationOnboardingScreen() {
               </View>
             )}
 
-            <View className="px-4 py-3 border-t border-premium-divider-lighter">
+            <View className="px-4 py-3 border-t border-border dark:border-border-dark-lighter">
               <View className="flex-row justify-between items-center mb-1">
-                <Caption className="font-manrope-semibold text-premium-gray text-[10px] uppercase tracking-[1.4px]">
+                <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[10px] uppercase tracking-[1.4px]">
                   Radio de búsqueda
                 </Caption>
-                <Caption className="font-manrope-extrabold text-premium-black text-[11px]">
+                <Caption className="font-manrope-extrabold text-foreground dark:text-foreground-dark text-[11px]">
                   {radiusKm.toFixed(0)} km
                 </Caption>
               </View>
@@ -471,9 +472,9 @@ export default function LocationOnboardingScreen() {
                 maximumValue={30}
                 step={1}
                 value={radiusKm}
-                minimumTrackTintColor={Colors.gold.DEFAULT}
-                maximumTrackTintColor={Colors.premium.gray.track}
-                thumbTintColor={Colors.premium.black}
+                minimumTrackTintColor={themeColors.gold.DEFAULT}
+                maximumTrackTintColor={themeColors.premium.gray.track}
+                thumbTintColor={themeColors.premium.black}
                 onValueChange={(value) => setRadiusKm(value)}
                 onSlidingComplete={(value) => {
                   setMapRegion(
@@ -496,7 +497,7 @@ export default function LocationOnboardingScreen() {
           disabled={loadingLocation || resolvingCity}
         >
           {loadingLocation ? (
-            <ActivityIndicator size="small" color={Colors.premium.black} />
+            <ActivityIndicator size="small" color={themeColors.premium.black} />
           ) : (
             <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
               Usar mi ubicación actual
@@ -505,7 +506,7 @@ export default function LocationOnboardingScreen() {
         </TouchableOpacity>
 
         <View className="mb-6">
-          <Caption className="font-manrope-semibold text-premium-gray text-[11px] uppercase tracking-[1.8px] mb-3">
+          <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-3">
             Ciudades populares
           </Caption>
           <View className="flex-row flex-wrap gap-2">
@@ -516,10 +517,10 @@ export default function LocationOnboardingScreen() {
                   key={city}
                   onPress={() => handleSelectCity(city)}
                   activeOpacity={0.85}
-                  className={`px-4 py-2 rounded-full border ${isActive ? "bg-premium-black border-premium-black" : "bg-premium-white border-premium-divider-muted"}`}
+                  className={`px-4 py-2 rounded-full border ${isActive ? "bg-premium-black border-premium-black" : "bg-surface dark:bg-surface-dark border-border dark:border-border-dark-muted"}`}
                 >
                   <Caption
-                    className={`font-manrope-extrabold uppercase tracking-[1.2px] text-[10px] ${isActive ? "text-premium-white" : "text-premium-black"}`}
+                    className={`font-manrope-extrabold uppercase tracking-[1.2px] text-[10px] ${isActive ? "text-premium-white" : "text-foreground dark:text-foreground-dark"}`}
                   >
                     {city}
                   </Caption>
@@ -530,8 +531,8 @@ export default function LocationOnboardingScreen() {
         </View>
 
         {!!cityToSave && (
-          <View className="mb-4 bg-premium-white-dim border border-premium-divider rounded-xl px-4 py-3">
-            <Body className="font-manrope-medium text-premium-black">
+          <View className="mb-4 bg-surface dark:bg-surface-dark-dim border border-border dark:border-border-dark rounded-xl px-4 py-3">
+            <Body className="font-manrope-medium text-foreground dark:text-foreground-dark">
               Ciudad: {cityToSave} · Radio: {radiusKm} km
             </Body>
           </View>
@@ -552,7 +553,7 @@ export default function LocationOnboardingScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={Colors.premium.white} />
+            <ActivityIndicator size="small" color={themeColors.premium.white} />
           ) : (
             <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
               Continuar
