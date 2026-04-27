@@ -85,12 +85,12 @@ Deno.serve(async (req: Request) => {
     ])
 
     // 4. Cargar historial últimas 24h (máx 20 mensajes)
+    // Nota: whatsapp_messages no tiene location_id, se filtra solo por phone_number
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { data: history } = await supabase
       .from('whatsapp_messages')
       .select('direction, message, ai_response, created_at')
       .eq('phone_number', phone)
-      .eq('location_id', locationId)
       .gte('created_at', since24h)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -149,7 +149,6 @@ Deno.serve(async (req: Request) => {
     await supabase.from('whatsapp_messages').insert([
       {
         phone_number: phone,
-        location_id: locationId,
         direction: 'inbound',
         message: userMessage,
         user_id: userId,
@@ -157,7 +156,6 @@ Deno.serve(async (req: Request) => {
       },
       {
         phone_number: phone,
-        location_id: locationId,
         direction: 'outbound',
         message: replyText,
         user_id: userId,
