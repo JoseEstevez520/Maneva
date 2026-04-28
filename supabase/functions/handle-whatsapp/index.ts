@@ -95,13 +95,13 @@ Deno.serve(async (req: Request) => {
       .order('created_at', { ascending: false })
       .limit(20)
 
-    const chronological = (history ?? []).reverse()
+    // .slice() crea una copia antes de invertir — .reverse() muta en-site y corrompería `history`
+    const chronological = (history ?? []).slice().reverse()
 
     // 5. Recuperar BookingProgress del último mensaje del bot
-    // Esto es lo que garantiza que el bot nunca olvida lo que ya se habló:
-    // el estado completo se persiste en BD en cada respuesta.
-    const lastOutbound = (history ?? []).find((m) => m.direction === 'outbound')
+    const lastOutbound = chronological.filter((m) => m.direction === 'outbound').pop()
     const progress = parseProgress(lastOutbound?.ai_response ?? null)
+    console.log(`[progress] slots=${progress.slots.length} serviceIds=${progress.serviceIds.length} checkedDate=${progress.checkedDate}`)
 
     // 6. Historial de mensajes para DeepSeek
     const conversationHistory: ChatMessage[] = chronological
@@ -119,15 +119,98 @@ Deno.serve(async (req: Request) => {
       progress,
     })
 
-    // 8. Llamar a DeepSeek
-    const aiResponse = await callDeepSeek(
-      [
-        { role: 'system', content: systemPrompt },
-        ...conversationHistory,
-        { role: 'user', content: userMessage },
-      ],
-      DEEPSEEK_API_KEY,
-    )
+    // 8a. Short-circuit: el usuario está dando su nombre para una reserva como invitado
+    if (progress.awaitingGuestName && progress.selectedSlot) {
+      const guestName = userMessage.trim()
+      console.log(`[guest-name] received="${guestName}"`)
+
+      const nameParts = guestName.split(/\s+/).filter(Boolean)
+      const firstName = nameParts[0] ?? guestName
+      const lastName = nameParts.slice(1).join(' ') || null
+
+      let guestReply: string
+      let guestProgress: BookingProgress
+
+      // Resolver el ID del invitado:
+      // public.users.id suele ser FK de auth.users.id → no podemos insertar directamente.
+      // Creamos el usuario via Admin API (gestiona auth.users + dispara el trigger a public.users).
+      let guestId: string | null = null
+
+      const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
+        phone,
+        phone_confirm: true,
+      })
+
+      if (authData?.user?.id) {
+        guestId = authData.user.id
+        // Actualizar nombre — el trigger puede haber creado el registro sin nombre
+        await supabase
+          .from('users')
+          .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
+      } else {
+        console.error('[guest-createUser]', authErr?.message, authErr?.status)
+        // Fallback: inserción directa (funciona si no hay FK a auth.users)
+        const { data: directUser, error: directErr } = await supabase
+          .from('users')
+          .insert({ phone, first_name: firstName, last_name: lastName })
+          .select('id')
+          .single()
+        if (directUser?.id) {
+          guestId = directUser.id
+        } else {
+          console.error('[guest-insert]', directErr?.message, directErr?.code)
+        }
+      }
+
+      if (guestId) {
+        try {
+          const booking = await createBooking(supabase, {
+            clientId: guestId,
+            locationId,
+            slot: progress.selectedSlot,
+            serviceIds: progress.serviceIds,
+            source: 'whatsapp',
+          })
+          const s = progress.selectedSlot
+          guestReply = `✅ ¡Cita confirmada, ${firstName}!\n\n📅 ${formatSlotShort(s)}\n💇 ${s.employeeName}\n🔖 Ref: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos. Puedes cancelar hasta 24h antes respondiendo a este chat.`
+          guestProgress = emptyProgress()
+        } catch (e) {
+          console.error('[guest-booking]', e)
+          guestReply = 'Hubo un error al confirmar la reserva. ¿Puedes intentarlo de nuevo?'
+          guestProgress = progress
+        }
+      } else {
+        guestReply = 'Hubo un problema al registrar tus datos. ¿Puedes intentarlo de nuevo?'
+        guestProgress = progress
+      }
+
+      await supabase.from('whatsapp_messages').insert([
+        { phone_number: phone, direction: 'inbound', message: userMessage, user_id: guestId, processed_by_ai: true },
+        { phone_number: phone, direction: 'outbound', message: guestReply, user_id: guestId, ai_response: JSON.stringify(guestProgress), processed_by_ai: true },
+      ])
+
+      return twimlResponse(guestReply)
+    }
+
+    // 8b. Short-circuit: si el usuario manda un número puro y hay slots pendientes, evitar LLM
+    const numMatch = /^\s*(\d+)[.\s]*$/.exec(userMessage.trim())
+    const userNum = numMatch ? parseInt(numMatch[1], 10) : null
+    let aiResponse: AIResponse
+
+    if (userNum !== null && progress.slots.length > 0 && userNum >= 1 && userNum <= progress.slots.length) {
+      console.log(`[short-circuit] userNum=${userNum} slots=${progress.slots.length}`)
+      aiResponse = { reply: '', action: { type: 'book', slotIndex: userNum } }
+    } else {
+      aiResponse = await callDeepSeek(
+        [
+          { role: 'system', content: systemPrompt },
+          ...conversationHistory,
+          { role: 'user', content: userMessage },
+        ],
+        DEEPSEEK_API_KEY,
+      )
+      console.log(`[deepseek] action=${aiResponse.action?.type ?? 'null'} reply="${aiResponse.reply?.slice(0, 60)}"`)
+    }
 
     // 9. Ejecutar acción si la hay
     let replyText = aiResponse.reply
@@ -206,7 +289,7 @@ function buildSystemPrompt(params: {
       .map((s, i) => `  ${i + 1}. ${formatSlotShort(s)} — ${s.employeeName}`)
       .join('\n')
     stateSection += `\n\nSLOTS DISPONIBLES (ya mostrados al cliente):\n${slotList}`
-    stateSection += '\n→ El cliente debe elegir uno. Si dice "el primero", slotIndex=0; "el segundo", slotIndex=1; etc.'
+    stateSection += '\n→ El cliente debe elegir uno. Si dice "el 1" o "el primero", slotIndex=1; "el 2" o "el segundo", slotIndex=2; etc. slotIndex es 1-based (el mismo número que ve el cliente).'
   } else if (progress.checkedDate && !progress.checkedDateHadSlots) {
     stateSection += `\nFECHA SIN DISPONIBILIDAD: ${progress.checkedDate}`
     stateSection += '\n→ Propón otra fecha o pregunta si quiere buscar en otro día.'
@@ -241,15 +324,17 @@ INSTRUCCIONES:
 
 ACCIONES DISPONIBLES (sustituir null por el objeto):
   Consultar disponibilidad: {"type":"check_availability","serviceIds":["<id>"],"date":"YYYY-MM-DD","preferredTime":"HH:MM"}
-  Confirmar reserva:        {"type":"book","slotIndex":<número 0-based>}
+  Confirmar reserva:        {"type":"book","slotIndex":<número 1-based, igual al que eligió el cliente>}
   Cancelar cita:            {"type":"cancel","appointmentId":"<id>"}
   Ver mis citas:            {"type":"list_appointments"}
 
 REGLAS CRÍTICAS:
 - NUNCA inventes IDs de servicios. Usa solo los de la lista de arriba.
 - NUNCA inventes slots. Solo usa los del ESTADO ACTUAL → SLOTS DISPONIBLES.
-- Si el cliente da el número de una opción (ej: "el 2"), slotIndex = número - 1.
-- Si aún no hay slots mostrados, usa check_availability antes de book.`
+- Si el cliente da el número de una opción (ej: "el 2"), slotIndex = 2 (el mismo número, NO restar 1).
+- Si aún no hay slots mostrados, usa check_availability antes de book.
+- NUNCA repitas frases de mensajes anteriores del asistente. Genera siempre una respuesta nueva.
+- Si hay SLOTS DISPONIBLES en el estado y el cliente da un número, USA SIEMPRE la acción book.`
 }
 
 // ─── Ejecutor de acciones ──────────────────────────────────────────────────────
@@ -305,12 +390,28 @@ async function handleAction(params: {
 
   // ── book ──────────────────────────────────────────────────────────────────────
   if (action.type === 'book') {
-    const slot: SlotOption | undefined = progress.slots[action.slotIndex ?? 0]
+    // Intentar 1-based primero; si falla, intentar 0-based como fallback
+    const rawIndex = action.slotIndex ?? 1
+    const slot: SlotOption | undefined = progress.slots[rawIndex - 1] ?? progress.slots[rawIndex]
+
+    console.log(`[book] slotIndex=${rawIndex} slots.length=${progress.slots.length} slot=${slot ? 'found' : 'NOT FOUND'}`)
 
     if (!slot) {
+      // Si hay slots en progreso, re-mostrarlos para que el usuario elija un número válido.
+      // IMPORTANTE: no usar frases que el LLM aprenda a repetir en el siguiente turno.
+      if (progress.slots.length > 0) {
+        const slotList = progress.slots
+          .map((s, i) => `${i + 1}. ${formatSlotShort(s)} — ${s.employeeName}`)
+          .join('\n')
+        return {
+          reply: `Elige un número del 1 al ${progress.slots.length}:\n\n${slotList}`,
+          progress,
+        }
+      }
+      // Sin slots en progreso: resetear y pedir fecha nueva
       return {
-        reply: 'No encontré ese horario en la lista. ¿Puedes indicarme el número de la opción?',
-        progress,
+        reply: 'No tengo horarios guardados. ¿Para qué día quieres la cita?',
+        progress: emptyProgress(),
       }
     }
 
