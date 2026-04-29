@@ -17,6 +17,7 @@ import {
   removeFavoriteSalon,
   UnifiedSalon,
   FavoriteSalonInfo,
+  type SalonDetail,
 } from '@/services/salons.service'
 import { useAuthStore } from '@/store/authStore'
 
@@ -74,7 +75,7 @@ export function useSalonsWithRating() {
 
 /** Hook de detalle — devuelve una sede por ID */
 export function useSalon(id: string) {
-  const [data, setData] = useState<UnifiedSalon | null>(null)
+  const [data, setData] = useState<SalonDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

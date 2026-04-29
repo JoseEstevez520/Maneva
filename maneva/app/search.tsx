@@ -452,7 +452,7 @@ function SalonResultRow({ salon }: { salon: SearchSalon }) {
       className="flex-row items-center py-6 px-5 border-b border-premium-white-pale gap-5"
     >
       <Image
-        source={{ uri: PLACEHOLDER_IMAGE }}
+        source={{ uri: salon.salons?.logo ?? salon.Image ?? PLACEHOLDER_IMAGE }}
         className="w-14 h-14 rounded-full border border-border dark:border-border-dark"
       />
       <View className="flex-1">
