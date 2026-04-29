@@ -149,7 +149,7 @@ function NextAppointmentSection() {
               )}
             </View>
             <Image
-              source={{ uri: PLACEHOLDER_IMAGE }}
+              source={{ uri: appt.salon_image ?? PLACEHOLDER_IMAGE }}
               className="w-20 h-20 rounded-2xl shrink-0"
             />
           </View>
@@ -197,7 +197,7 @@ function MySalonSection() {
         <LoadingSpinner className="py-6 items-center" />
       ) : salon ? (
         <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] flex-row h-[120px] overflow-hidden">
-          <Image source={{ uri: PLACEHOLDER_IMAGE }} className="w-1/3 h-full" />
+          <Image source={{ uri: salon.Image ?? PLACEHOLDER_IMAGE }} className="w-1/3 h-full" />
           <View className="flex-1 p-[14px] justify-between">
             <View>
               <View className="flex-row items-center justify-between mb-1">
@@ -253,7 +253,7 @@ function MySalonSection() {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
-function TodayCard({ id, name, city }: { id: string; name: string; city: string | null }) {
+function TodayCard({ id, name, city, image }: { id: string; name: string; city: string | null; image: string | null }) {
   const router = useRouter()
   const themeColors = useThemeColors()
   const scale = useSharedValue(1)
@@ -269,7 +269,7 @@ function TodayCard({ id, name, city }: { id: string; name: string; city: string 
     >
       <View>
         <Image
-          source={{ uri: PLACEHOLDER_IMAGE }}
+          source={{ uri: image ?? PLACEHOLDER_IMAGE }}
           className="w-full h-[140px]"
         />
 
@@ -321,6 +321,7 @@ function AvailableTodaySection() {
                 id={salon.id}
                 name={salon.name}
                 city={salon.city}
+                image={salon.Image ?? null}
               />
             ))
           )}

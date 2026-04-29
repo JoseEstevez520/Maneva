@@ -24,7 +24,7 @@ type EcoLabel = Database['public']['Tables']['eco_labels']['Row']
  * Tipo unificado para la UI
  */
 export type UnifiedSalon = SalonLocation & {
-  salons: Pick<Salon, 'name' | 'description'> | null
+  salons: Pick<Salon, 'name' | 'description' | 'logo'> | null
 }
 
 /** Tipo para el perfil detallado del salón */
@@ -33,7 +33,7 @@ export type SalonDetail = UnifiedSalon & {
   employees: EmployeeWithUser[] | null
   campaigns: Campaign[] | null
   reviews: Review[] | null
-  ecoLabels: EcoLabel[] | null
+  eco_labels: EcoLabel[] | null
   avgRating: number | null
 }
 
@@ -58,7 +58,8 @@ export async function getSalonsWithRating(): Promise<
       *,
       salons (
         name,
-        description
+        description,
+        logo
       ),
       reviews (
         rating
@@ -104,7 +105,8 @@ export async function getSalons(): Promise<UnifiedSalon[]> {
       *,
       salons (
         name,
-        description
+        description,
+        logo
       )
     `)
     .eq('active', true)
@@ -123,7 +125,8 @@ export async function getSalonById(id: string): Promise<SalonDetail> {
       *,
       salons (
         name,
-        description
+        description,
+        logo
       ),
       services (
         id,
@@ -166,8 +169,12 @@ export async function getSalonById(id: string): Promise<SalonDetail> {
 
   if (error) throw error
 
-  type SalonWithAll = SalonDetail & {
-    reviews: { rating: number; comment?: string; created_at: string; id: string }[] | null
+  type SalonWithAll = UnifiedSalon & {
+    services: Service[] | null
+    employees: EmployeeWithUser[] | null
+    campaigns: Campaign[] | null
+    reviews: Review[] | null
+    eco_labels: EcoLabel[] | null
   }
 
   const salon = data as SalonWithAll
@@ -193,7 +200,8 @@ export async function getFavoriteSalon(userId: string): Promise<FavoriteSalonInf
         *,
         salons (
           name,
-          description
+          description,
+          logo
         ),
         reviews (
           rating

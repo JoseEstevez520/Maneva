@@ -1455,6 +1455,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          Image: string | null
           latitude: number | null
           longitude: number | null
           name: string
@@ -1472,6 +1473,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          Image?: string | null
           latitude?: number | null
           longitude?: number | null
           name: string
@@ -1489,6 +1491,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          Image?: string | null
           latitude?: number | null
           longitude?: number | null
           name?: string
@@ -1534,6 +1537,7 @@ export type Database = {
           email_contact: string | null
           fiscal_address: string | null
           id: string
+          logo: string | null
           name: string
           nif: string | null
           phone: string | null
@@ -1554,6 +1558,7 @@ export type Database = {
           email_contact?: string | null
           fiscal_address?: string | null
           id?: string
+          logo?: string | null
           name: string
           nif?: string | null
           phone?: string | null
@@ -1574,6 +1579,7 @@ export type Database = {
           email_contact?: string | null
           fiscal_address?: string | null
           id?: string
+          logo?: string | null
           name?: string
           nif?: string | null
           phone?: string | null
@@ -1899,7 +1905,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           first_name?: string | null
-          id?: string
+          id: string
           language_id?: string | null
           last_name?: string | null
           phone?: string | null
@@ -1971,7 +1977,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_my_account: { Args: never; Returns: undefined }
+      get_auth_user_id_by_phone: { Args: { p_phone: string }; Returns: string }
+      soft_delete_user: { Args: { user_uuid: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

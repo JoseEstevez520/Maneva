@@ -67,6 +67,7 @@ export type NextAppointment = {
   salon_name: string
   service_name: string | null
   location_id: string
+  salon_image: string | null
 }
 
 export async function getNextAppointment(userId: string): Promise<NextAppointment | null> {
@@ -80,7 +81,8 @@ export async function getNextAppointment(userId: string): Promise<NextAppointmen
       status,
       location_id,
       salon_locations (
-        name
+        name,
+        Image
       ),
       appointment_services (
         services (
@@ -105,7 +107,7 @@ export async function getNextAppointment(userId: string): Promise<NextAppointmen
     scheduled_at: string
     status: string
     location_id: string
-    salon_locations: { name: string } | null
+    salon_locations: { name: string; Image: string | null } | null
     appointment_services: { services: { name: string } | null }[] | null
   }
 
@@ -117,6 +119,7 @@ export async function getNextAppointment(userId: string): Promise<NextAppointmen
     location_id: raw.location_id,
     salon_name: raw.salon_locations?.name ?? 'Salón',
     service_name: raw.appointment_services?.[0]?.services?.name ?? null,
+    salon_image: raw.salon_locations?.Image ?? null,
   }
 }
 
