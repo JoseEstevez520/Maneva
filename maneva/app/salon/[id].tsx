@@ -61,9 +61,10 @@ export default function SalonDetailScreen() {
   const reviews = salon.reviews ?? []
 
   const fromEmployees = employees.map((employee) => employee.photo_url)
-  const candidates = [salon.cover_image, ...fromEmployees]
+  const candidates = [salon.Image, ...fromEmployees]
   const validImages = candidates.filter((image): image is string => Boolean(image))
   const galleryImages = validImages.length > 0 ? validImages : [PLACEHOLDER_IMAGE]
+  const logoImage = salon.salons?.logo || galleryImages[0]
 
   const shortDescription = salon.salons?.description
     ? salon.salons.description.length > 110
@@ -90,7 +91,7 @@ export default function SalonDetailScreen() {
                     router.back()
                     return
                   }
-                  router.replace('/(tabs)/index')
+                  router.replace('/(tabs)')
                 }}
                 className="w-10 h-10 rounded-full bg-black/25 items-center justify-center"
                 activeOpacity={0.85}
@@ -102,7 +103,7 @@ export default function SalonDetailScreen() {
 
           <View className="px-4 pb-5">
             <View className="-mt-8 w-[68px] h-[68px] rounded-full border-4 border-premium-white overflow-hidden bg-surface-overlay dark:bg-surface-overlay-dark">
-              <Image source={{ uri: galleryImages[0] }} className="w-full h-full" resizeMode="cover" />
+              <Image source={{ uri: logoImage }} className="w-full h-full" resizeMode="cover" />
             </View>
 
             <View className="mt-2 flex-row items-start justify-between gap-3">
@@ -260,7 +261,7 @@ export default function SalonDetailScreen() {
                 <View className="flex-row items-start gap-2">
                   <IconLocation size={14} color={themeColors.gold.DEFAULT} />
                   <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark flex-1">
-                    {salon.street_address || 'Dirección no disponible'}{salon.city ? `, ${salon.city}` : ''}{salon.postal_code ? `, ${salon.postal_code}` : ''}
+                    {salon.address || 'Dirección no disponible'}{salon.city ? `, ${salon.city}` : ''}{salon.postal_code ? `, ${salon.postal_code}` : ''}
                   </Caption>
                 </View>
                 <View className="flex-row items-center gap-2">
@@ -270,7 +271,7 @@ export default function SalonDetailScreen() {
                 <View className="flex-row items-center gap-2">
                   <IconClock size={14} color={themeColors.gold.DEFAULT} />
                   <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark">
-                    {salon.opening_time && salon.closing_time ? `${salon.opening_time} - ${salon.closing_time}` : 'Horario no disponible'}
+                    Horario no disponible
                   </Caption>
                 </View>
                 {salon.salons?.description ? (
