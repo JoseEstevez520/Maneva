@@ -1,23 +1,3 @@
-/**
- * handle-whatsapp — Edge Function autónoma (Twilio → DeepSeek → Supabase)
- * ─────────────────────────────────────────────────────────────────────────────
- * FLUJO:
- *   1. Recibe webhook de Twilio (POST form-urlencoded)
- *   2. Identifica usuario y carga contexto del salón
- *   3. Recupera BookingProgress del último mensaje del bot (memoria persistente)
- *   4. Llama a DeepSeek con historial + estado actual
- *   5. Ejecuta la acción devuelta (consultar huecos, reservar, cancelar…)
- *   6. Guarda ambos mensajes en whatsapp_messages con el nuevo BookingProgress
- *   7. Responde a Twilio con TwiML
- *
- * VARIABLES DE ENTORNO:
- *   SUPABASE_URL              — automática
- *   SUPABASE_SERVICE_ROLE_KEY — automática
- *   DEEPSEEK_API_KEY          — tu API key de DeepSeek
- *   DEFAULT_LOCATION_ID       — UUID del salón por defecto
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { parseTwilioWebhook, normalizePhone, twimlResponse, errorResponse } from '../_shared/twilio.ts'
 import { callDeepSeek, ChatMessage, AIResponse } from '../_shared/deepseek.ts'
@@ -40,6 +20,32 @@ const supabase = createClient(
 const DEEPSEEK_API_KEY = Deno.env.get('DEEPSEEK_API_KEY')!
 const DEFAULT_LOCATION_ID = Deno.env.get('DEFAULT_LOCATION_ID')!
 
+type ServiceRow = {
+  id: string
+  name: string
+  duration_minutes: number
+  price: number
+  category: string | null
+}
+
+type ApptRow = {
+  scheduled_at: string
+  status: string
+  appointment_services: { services: { name: string } | null }[]
+}
+
+function persist(rows: object[]): void {
+  const p = (async () => {
+    const { error } = await supabase.from('whatsapp_messages').insert(rows)
+    if (error) console.error('[persist] Supabase error:', error.code, error.message, error.details)
+    else console.log('[persist] OK')
+  })()
+  try {
+    // @ts-ignore EdgeRuntime es global en Supabase Edge Functions
+    EdgeRuntime.waitUntil(p)
+  } catch { /* noop fuera del runtime */ }
+}
+
 // ─── Handler principal ─────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
@@ -54,7 +60,7 @@ Deno.serve(async (req: Request) => {
 
     if (!phone || !userMessage.trim()) return twimlResponse('')
 
-    // 1. Resolver salón por número de WhatsApp de destino
+    // Resolver salón por número de WhatsApp de destino
     const { data: channel } = await supabase
       .from('booking_channels')
       .select('location_id')
@@ -65,45 +71,38 @@ Deno.serve(async (req: Request) => {
 
     const locationId = channel?.location_id ?? DEFAULT_LOCATION_ID
 
-    // 2. Identificar usuario por teléfono
-    const { data: userRow } = await supabase
-      .from('users')
-      .select('id, first_name')
-      .eq('phone', phone)
-      .maybeSingle()
+    // Identificar usuario, cargar salón e historial en paralelo
+    const [
+      { data: userRow },
+      [{ data: location }, { data: services }],
+      { data: history },
+    ] = await Promise.all([
+      supabase.from('users').select('id, first_name').eq('phone', phone).maybeSingle(),
+      Promise.all([
+        supabase.from('salon_locations').select('name').eq('id', locationId).single(),
+        supabase
+          .from('services')
+          .select('id, name, duration_minutes, price, category')
+          .eq('location_id', locationId)
+          .eq('active', true),
+      ]),
+      supabase
+        .from('whatsapp_messages')
+        .select('direction, message, ai_response, created_at')
+        .eq('phone_number', phone)
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(20),
+    ])
 
     const userId = userRow?.id ?? null
 
-    // 3. Cargar nombre del salón y servicios activos
-    const [{ data: location }, { data: services }] = await Promise.all([
-      supabase.from('salon_locations').select('name').eq('id', locationId).single(),
-      supabase
-        .from('services')
-        .select('id, name, duration_minutes, price, category')
-        .eq('location_id', locationId)
-        .eq('active', true),
-    ])
-
-    // 4. Cargar historial últimas 24h (máx 20 mensajes)
-    // Nota: whatsapp_messages no tiene location_id, se filtra solo por phone_number
-    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data: history } = await supabase
-      .from('whatsapp_messages')
-      .select('direction, message, ai_response, created_at')
-      .eq('phone_number', phone)
-      .gte('created_at', since24h)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    // .slice() crea una copia antes de invertir — .reverse() muta en-site y corrompería `history`
+    // .slice() antes de .reverse() para no mutar el array original
     const chronological = (history ?? []).slice().reverse()
-
-    // 5. Recuperar BookingProgress del último mensaje del bot
     const lastOutbound = chronological.filter((m) => m.direction === 'outbound').pop()
     const progress = parseProgress(lastOutbound?.ai_response ?? null)
     console.log(`[progress] slots=${progress.slots.length} serviceIds=${progress.serviceIds.length} checkedDate=${progress.checkedDate}`)
 
-    // 6. Historial de mensajes para DeepSeek
     const conversationHistory: ChatMessage[] = chronological
       .filter((m) => m.message)
       .map((m) => ({
@@ -111,7 +110,6 @@ Deno.serve(async (req: Request) => {
         content: m.message!,
       }))
 
-    // 7. System prompt con estado persistido
     const systemPrompt = buildSystemPrompt({
       locationName: location?.name ?? 'la peluquería',
       services: services ?? [],
@@ -119,7 +117,7 @@ Deno.serve(async (req: Request) => {
       progress,
     })
 
-    // 8a. Short-circuit: el usuario está dando su nombre para una reserva como invitado
+    // Short-circuit: el usuario está dando su nombre para confirmar como invitado
     if (progress.awaitingGuestName && progress.selectedSlot) {
       const guestName = userMessage.trim()
       console.log(`[guest-name] received="${guestName}"`)
@@ -130,12 +128,9 @@ Deno.serve(async (req: Request) => {
 
       let guestReply: string
       let guestProgress: BookingProgress
-
-      // Resolver el ID del invitado:
-      // public.users.id suele ser FK de auth.users.id → no podemos insertar directamente.
-      // Creamos el usuario via Admin API (gestiona auth.users + dispara el trigger a public.users).
       let guestId: string | null = null
 
+      // createUser gestiona auth.users + dispara el trigger a public.users
       const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
         phone,
         phone_confirm: true,
@@ -143,22 +138,47 @@ Deno.serve(async (req: Request) => {
 
       if (authData?.user?.id) {
         guestId = authData.user.id
-        // Actualizar nombre — el trigger puede haber creado el registro sin nombre
-        await supabase
+        // El trigger crea public.users sin nombre — lo completamos
+        const { error: updateErr } = await supabase
           .from('users')
-          .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
+          .update({ phone, first_name: firstName, last_name: lastName })
+          .eq('id', guestId)
+        if (updateErr) {
+          const { error: upsertErr } = await supabase
+            .from('users')
+            .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
+          if (upsertErr) console.error('[guest-upsert]', upsertErr.message, upsertErr.code)
+        }
       } else {
-        console.error('[guest-createUser]', authErr?.message, authErr?.status)
-        // Fallback: inserción directa (funciona si no hay FK a auth.users)
-        const { data: directUser, error: directErr } = await supabase
+        console.warn('[guest-createUser]', authErr?.message, authErr?.status)
+
+        const { data: existingByPhone } = await supabase
           .from('users')
-          .insert({ phone, first_name: firstName, last_name: lastName })
           .select('id')
-          .single()
-        if (directUser?.id) {
-          guestId = directUser.id
+          .eq('phone', phone)
+          .maybeSingle()
+
+        if (existingByPhone?.id) {
+          guestId = existingByPhone.id
+          await supabase
+            .from('users')
+            .update({ first_name: firstName, last_name: lastName })
+            .eq('id', guestId)
         } else {
-          console.error('[guest-insert]', directErr?.message, directErr?.code)
+          // El teléfono existe en auth.users pero public.users.phone es NULL
+          const { data: authUserId, error: rpcErr } = await supabase
+            .rpc('get_auth_user_id_by_phone', { p_phone: phone })
+          if (rpcErr) console.error('[guest-rpc]', rpcErr.message)
+
+          if (authUserId) {
+            guestId = authUserId as string
+            const { error: upsertErr } = await supabase
+              .from('users')
+              .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
+            if (upsertErr) console.error('[guest-upsert-rpc]', upsertErr.message, upsertErr.code)
+          } else {
+            console.error('[guest-create] No se pudo resolver usuario para teléfono:', phone)
+          }
         }
       }
 
@@ -184,15 +204,15 @@ Deno.serve(async (req: Request) => {
         guestProgress = progress
       }
 
-      await supabase.from('whatsapp_messages').insert([
+      const guestTwiml = twimlResponse(guestReply)
+      persist([
         { phone_number: phone, direction: 'inbound', message: userMessage, user_id: guestId, processed_by_ai: true },
         { phone_number: phone, direction: 'outbound', message: guestReply, user_id: guestId, ai_response: JSON.stringify(guestProgress), processed_by_ai: true },
       ])
-
-      return twimlResponse(guestReply)
+      return guestTwiml
     }
 
-    // 8b. Short-circuit: si el usuario manda un número puro y hay slots pendientes, evitar LLM
+    // Short-circuit: número puro con slots pendientes → evitar llamada al LLM
     const numMatch = /^\s*(\d+)[.\s]*$/.exec(userMessage.trim())
     const userNum = numMatch ? parseInt(numMatch[1], 10) : null
     let aiResponse: AIResponse
@@ -212,8 +232,7 @@ Deno.serve(async (req: Request) => {
       console.log(`[deepseek] action=${aiResponse.action?.type ?? 'null'} reply="${aiResponse.reply?.slice(0, 60)}"`)
     }
 
-    // 9. Ejecutar acción si la hay
-    let replyText = aiResponse.reply
+    let replyText = (aiResponse.reply ?? '').trim() || '¿En qué puedo ayudarte? Puedo consultar disponibilidad, hacer o cancelar una cita.'
     let newProgress = progress
 
     if (aiResponse.action) {
@@ -228,26 +247,12 @@ Deno.serve(async (req: Request) => {
       newProgress = result.progress
     }
 
-    // 10. Persistir ambos mensajes (el estado siempre va en ai_response del outbound)
-    await supabase.from('whatsapp_messages').insert([
-      {
-        phone_number: phone,
-        direction: 'inbound',
-        message: userMessage,
-        user_id: userId,
-        processed_by_ai: true,
-      },
-      {
-        phone_number: phone,
-        direction: 'outbound',
-        message: replyText,
-        user_id: userId,
-        ai_response: JSON.stringify(newProgress),
-        processed_by_ai: true,
-      },
+    const twiml = twimlResponse(replyText)
+    persist([
+      { phone_number: phone, direction: 'inbound', message: userMessage, user_id: userId, processed_by_ai: true },
+      { phone_number: phone, direction: 'outbound', message: replyText, user_id: userId, ai_response: JSON.stringify(newProgress), processed_by_ai: true },
     ])
-
-    return twimlResponse(replyText)
+    return twiml
   } catch (err) {
     console.error('[handle-whatsapp] Error:', err)
     return errorResponse('Error interno')
@@ -255,14 +260,6 @@ Deno.serve(async (req: Request) => {
 })
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
-
-type ServiceRow = {
-  id: string
-  name: string
-  duration_minutes: number
-  price: number
-  category: string | null
-}
 
 function buildSystemPrompt(params: {
   locationName: string
@@ -276,7 +273,6 @@ function buildSystemPrompt(params: {
     .map((s) => `- ${s.name} (${s.duration_minutes} min, ${s.price}€) [ID: ${s.id}]`)
     .join('\n')
 
-  // Inyectar estado actual para que DeepSeek sepa exactamente en qué punto está la reserva
   let stateSection = ''
 
   if (progress.serviceIds.length > 0) {
@@ -348,7 +344,6 @@ async function handleAction(params: {
 }): Promise<{ reply: string; progress: BookingProgress }> {
   const { action, locationId, userId, progress, services } = params
 
-  // ── check_availability ────────────────────────────────────────────────────────
   if (action.type === 'check_availability') {
     const serviceIds = action.serviceIds.length > 0 ? action.serviceIds : progress.serviceIds
     const serviceNames = serviceIds.map((id) => services.find((s) => s.id === id)?.name ?? id)
@@ -388,34 +383,29 @@ async function handleAction(params: {
     }
   }
 
-  // ── book ──────────────────────────────────────────────────────────────────────
   if (action.type === 'book') {
-    // Intentar 1-based primero; si falla, intentar 0-based como fallback
+    if (progress.serviceIds.length === 0) {
+      return {
+        reply: '¿Para qué servicio quieres la cita? (corte, coloración, etc.)',
+        progress,
+      }
+    }
+
+    // Intentar 1-based; fallback a 0-based por si el LLM se equivoca
     const rawIndex = action.slotIndex ?? 1
     const slot: SlotOption | undefined = progress.slots[rawIndex - 1] ?? progress.slots[rawIndex]
-
     console.log(`[book] slotIndex=${rawIndex} slots.length=${progress.slots.length} slot=${slot ? 'found' : 'NOT FOUND'}`)
 
     if (!slot) {
-      // Si hay slots en progreso, re-mostrarlos para que el usuario elija un número válido.
-      // IMPORTANTE: no usar frases que el LLM aprenda a repetir en el siguiente turno.
       if (progress.slots.length > 0) {
         const slotList = progress.slots
           .map((s, i) => `${i + 1}. ${formatSlotShort(s)} — ${s.employeeName}`)
           .join('\n')
-        return {
-          reply: `Elige un número del 1 al ${progress.slots.length}:\n\n${slotList}`,
-          progress,
-        }
+        return { reply: `Elige un número del 1 al ${progress.slots.length}:\n\n${slotList}`, progress }
       }
-      // Sin slots en progreso: resetear y pedir fecha nueva
-      return {
-        reply: 'No tengo horarios guardados. ¿Para qué día quieres la cita?',
-        progress: emptyProgress(),
-      }
+      return { reply: 'No tengo horarios guardados. ¿Para qué día quieres la cita?', progress: emptyProgress() }
     }
 
-    // Usuario no registrado: guardar slot y pedir nombre
     if (!userId) {
       return {
         reply: `Perfecto, ${formatSlotShort(slot)} con ${slot.employeeName}. Para confirmar necesito tu nombre completo.`,
@@ -437,7 +427,6 @@ async function handleAction(params: {
     }
   }
 
-  // ── cancel ────────────────────────────────────────────────────────────────────
   if (action.type === 'cancel') {
     const { error } = await supabase
       .from('appointments')
@@ -449,13 +438,9 @@ async function handleAction(params: {
     return { reply: '❌ Cita cancelada correctamente.', progress: emptyProgress() }
   }
 
-  // ── list_appointments ─────────────────────────────────────────────────────────
   if (action.type === 'list_appointments') {
     if (!userId) {
-      return {
-        reply: 'No encontré tu cuenta. Regístrate en la app para gestionar tus citas.',
-        progress,
-      }
+      return { reply: 'No encontré tu cuenta. Regístrate en la app para gestionar tus citas.', progress }
     }
 
     const { data: appts } = await supabase
@@ -471,13 +456,7 @@ async function handleAction(params: {
       return { reply: 'No tienes citas próximas.', progress }
     }
 
-    type ApptRow = {
-      scheduled_at: string
-      status: string
-      appointment_services: { services: { name: string } | null }[]
-    }
-
-    const list = (appts as unknown as ApptRow[])
+    const list = (appts as ApptRow[])
       .map((a) => {
         const svc = a.appointment_services?.[0]?.services?.name ?? 'Servicio'
         return `• ${svc} — ${formatDateTime(a.scheduled_at)}`

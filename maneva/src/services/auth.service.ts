@@ -15,7 +15,17 @@ export async function signUp(
   fullName: string,
   phone?: string,
 ) {
-  // Separar nombre y apellido para el trigger de la base de datos (tabla users)
+  const trimmedPhone = phone?.trim() || undefined;
+
+  if (trimmedPhone) {
+    const exists = await checkPhoneExists(trimmedPhone);
+    if (exists) {
+      const err = new Error("PHONE_ALREADY_EXISTS");
+      err.name = "PHONE_ALREADY_EXISTS";
+      throw err;
+    }
+  }
+
   const [firstName, ...lastNameParts] = fullName.split(" ");
   const lastName = lastNameParts.join(" ") || "";
 
@@ -27,14 +37,12 @@ export async function signUp(
         first_name: firstName,
         last_name: lastName,
         full_name: fullName,
-        phone: phone ?? "",
+        phone: trimmedPhone ?? "",
       },
     },
   });
   if (error) throw error;
 
-  // Si Supabase no devuelve sesión al registrarse, iniciamos sesión
-  // con las mismas credenciales para garantizar login inmediato.
   if (!data.session) {
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -43,17 +51,13 @@ export async function signUp(
     if (signInError) throw signInError;
   }
 
-  // El trigger de Supabase crea la fila en public.users con first_name y last_name
-  // pero normalmente no copia el teléfono desde raw_user_meta_data.
-  // Lo escribimos explícitamente para garantizar que quede guardado.
-  if (phone?.trim()) {
+  if (trimmedPhone) {
     const { data: sessionData } = await supabase.auth.getUser();
     if (sessionData?.user) {
       await supabase
         .from("users")
-        .update({ phone: phone.trim() })
+        .update({ phone: trimmedPhone })
         .eq("id", sessionData.user.id);
-      // Fallo silencioso: no bloqueamos el registro si esta escritura falla.
     }
   }
 
@@ -65,15 +69,10 @@ export async function signOut() {
   if (error) throw error;
 }
 
-/**
- * Devuelve el usuario autenticado actual.
- * Usar este helper en lugar de llamar a supabase.auth.getUser() fuera de services/.
- */
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
   if (error) {
     const normalized = error.message.toLowerCase();
-    // Sin sesión activa no debe romper la app; simplemente no hay usuario autenticado.
     if (normalized.includes("auth session missing")) {
       return null;
     }
@@ -96,4 +95,90 @@ export async function getProfile(userId: string) {
     .single();
   if (error) throw error;
   return data;
+}
+
+// ── Merge WhatsApp account ───────────────────────────────────────────────────
+
+export async function signUpAndMerge(
+  email: string,
+  password: string,
+  fullName: string,
+  phone: string,
+) {
+  const trimmedPhone = phone.trim();
+  const [firstName, ...lastNameParts] = fullName.split(" ");
+  const lastName = lastNameParts.join(" ") || "";
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: fullName,
+        phone: trimmedPhone,
+      },
+    },
+  });
+  if (error) throw error;
+
+  if (!data.session) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError) throw signInError;
+  }
+
+  // Merge: transfiere citas y mensajes de la cuenta WhatsApp a esta nueva cuenta.
+  // No es fatal si falla — el usuario queda registrado igualmente.
+  const { error: mergeError } = await supabase.functions.invoke(
+    "merge-whatsapp-account",
+    { body: { phone: normalizePhoneE164(trimmedPhone) } },
+  );
+  if (mergeError) {
+    console.warn("[signUpAndMerge] merge failed:", mergeError.message);
+  }
+
+  return data;
+}
+
+// ── Phone OTP ────────────────────────────────────────────────────────────────
+
+export async function checkPhoneExists(phone: string): Promise<boolean> {
+  const { data, error } = await supabase.functions.invoke("check-phone", {
+    body: { phone: normalizePhoneE164(phone) },
+  });
+  if (error) return false;
+  return (data as { exists: boolean })?.exists ?? false;
+}
+
+export async function sendPhoneOtp(phone: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithOtp({
+    phone: normalizePhoneE164(phone),
+  });
+  if (error) throw error;
+}
+
+export async function verifyPhoneOtp(
+  phone: string,
+  token: string,
+): Promise<void> {
+  const { error } = await supabase.auth.verifyOtp({
+    phone: normalizePhoneE164(phone),
+    token,
+    type: "sms",
+  });
+  if (error) throw error;
+}
+
+// Convierte número español a E.164 (+34XXXXXXXXX)
+function normalizePhoneE164(phone: string): string {
+  const stripped = phone.replace(/[\s\-().]/g, "");
+  if (stripped.startsWith("+")) return stripped;
+  if (stripped.startsWith("0034")) return `+${stripped.slice(2)}`;
+  if (stripped.startsWith("34") && stripped.length >= 11) return `+${stripped}`;
+  if (stripped.length === 9) return `+34${stripped}`;
+  return `+${stripped}`;
 }

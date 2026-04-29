@@ -18,9 +18,9 @@ export function parseTwilioWebhook(rawBody: string): TwilioWebhookPayload {
   }
 }
 
-// Extrae el número limpio: "whatsapp:+34612345678" → "+34612345678"
+// Extrae el número limpio y normalizado en E.164: "whatsapp:+34 612 345 678" → "+34612345678"
 export function normalizePhone(twilioPhone: string): string {
-  return twilioPhone.replace(/^whatsapp:/, '')
+  return twilioPhone.replace(/^whatsapp:/, '').replace(/\s/g, '')
 }
 
 // TwiML es el formato XML que Twilio usa para responder mensajes

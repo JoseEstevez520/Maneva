@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Image,
@@ -41,9 +41,10 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterScreen() {
-  const themeColors = useThemeColors()
+  const themeColors = useThemeColors();
   const router = useRouter();
-  const { register, loading, error } = useAuth();
+  const { register, registerAndMerge, loading, error, phoneAlreadyExists } = useAuth();
+  const [pendingData, setPendingData] = useState<RegisterForm | null>(null);
 
   const {
     control,
@@ -61,6 +62,7 @@ export default function RegisterScreen() {
   });
 
   const onSubmit = async (data: RegisterForm) => {
+    setPendingData(data);
     const success = await register(
       data.email,
       data.password,
@@ -72,12 +74,25 @@ export default function RegisterScreen() {
     }
   };
 
+  const handleMerge = async () => {
+    if (!pendingData?.phone) return;
+    const success = await registerAndMerge(
+      pendingData.email,
+      pendingData.password,
+      pendingData.fullName,
+      pendingData.phone,
+    );
+    if (success) {
+      router.replace("/onboarding");
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-background dark:bg-background-dark"
     >
-      {/* Cabecera fija con fondo para que el contenido haga scroll por detrás sin solaparse */}
+      {/* Cabecera fija */}
       <Animated.View
         entering={FadeInDown.duration(600).springify()}
         className="absolute top-0 left-0 right-0 z-20 bg-background dark:bg-background-dark px-6 pt-14 pb-4"
@@ -98,7 +113,7 @@ export default function RegisterScreen() {
         contentContainerClassName="flex-grow px-8 pt-32 pb-16"
         showsVerticalScrollIndicator={false}
       >
-        {/* Título de la pantalla */}
+        {/* Título */}
         <Animated.View
           entering={FadeInDown.delay(100).duration(800).springify()}
           className="mb-8"
@@ -111,7 +126,28 @@ export default function RegisterScreen() {
           </Body>
         </Animated.View>
 
-        {/* Mensaje de error general */}
+        {/* Banner: teléfono ya existe (cuenta de WhatsApp) */}
+        {phoneAlreadyExists && (
+          <Animated.View
+            entering={FadeInUp}
+            className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6 gap-3"
+          >
+            <Caption className="font-manrope-semibold text-amber-800">
+              Ese número ya tiene citas pedidas por WhatsApp. Pulsa el botón
+              para crear tu cuenta y vincular tus citas automáticamente.
+            </Caption>
+            <Button
+              onPress={handleMerge}
+              loading={loading}
+              size="sm"
+              variant="secondary"
+            >
+              Crear cuenta y vincular mis citas
+            </Button>
+          </Animated.View>
+        )}
+
+        {/* Error general */}
         {error && (
           <Animated.View
             entering={FadeInUp}
@@ -128,7 +164,6 @@ export default function RegisterScreen() {
           entering={FadeInUp.delay(200).duration(800).springify()}
           className="gap-4"
         >
-          {/* Nombre completo */}
           <Controller
             control={control}
             name="fullName"
@@ -139,12 +174,13 @@ export default function RegisterScreen() {
                 value={value}
                 onChangeText={onChange}
                 error={errors.fullName?.message}
-                leftIcon={<IconUser color={themeColors.premium.gray.icon} size={20} />}
+                leftIcon={
+                  <IconUser color={themeColors.premium.gray.icon} size={20} />
+                }
               />
             )}
           />
 
-          {/* Correo */}
           <Controller
             control={control}
             name="email"
@@ -157,29 +193,31 @@ export default function RegisterScreen() {
                 error={errors.email?.message}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon={<IconMail color={themeColors.premium.gray.icon} size={20} />}
+                leftIcon={
+                  <IconMail color={themeColors.premium.gray.icon} size={20} />
+                }
               />
             )}
           />
 
-          {/* Teléfono */}
           <Controller
             control={control}
             name="phone"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Teléfono"
+                label="Teléfono (opcional)"
                 placeholder="+34 600 000 000"
                 value={value}
                 onChangeText={onChange}
                 error={errors.phone?.message}
                 keyboardType="phone-pad"
-                leftIcon={<IconPhone color={themeColors.premium.gray.icon} size={20} />}
+                leftIcon={
+                  <IconPhone color={themeColors.premium.gray.icon} size={20} />
+                }
               />
             )}
           />
 
-          {/* Contraseña */}
           <Controller
             control={control}
             name="password"
@@ -195,7 +233,6 @@ export default function RegisterScreen() {
             )}
           />
 
-          {/* Confirmar contraseña */}
           <Controller
             control={control}
             name="confirmPassword"

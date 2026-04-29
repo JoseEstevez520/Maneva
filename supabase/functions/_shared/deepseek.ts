@@ -23,21 +23,31 @@ export type AIResponse = {
 export async function callDeepSeek(
   messages: ChatMessage[],
   apiKey: string,
+  timeoutMs = 10_000,
 ): Promise<AIResponse> {
-  const res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      response_format: { type: 'json_object' },
-      temperature: 0.3,
-      max_tokens: 1024,
-    }),
-  })
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+  let res: Response
+  try {
+    res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        response_format: { type: 'json_object' },
+        temperature: 0.3,
+        max_tokens: 512,
+      }),
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timer)
+  }
 
   if (!res.ok) {
     const text = await res.text()
