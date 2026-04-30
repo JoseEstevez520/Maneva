@@ -56,7 +56,7 @@ export async function signUp(
     if (sessionData?.user) {
       await supabase
         .from("users")
-        .update({ phone: trimmedPhone })
+        .update({ phone: normalizePhoneE164(trimmedPhone) })
         .eq("id", sessionData.user.id);
     }
   }

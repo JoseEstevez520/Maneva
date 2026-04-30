@@ -5,6 +5,7 @@ import {
   getAvailableSlots,
   createBooking,
   BookingProgress,
+  PendingAppointment,
   SlotOption,
   emptyProgress,
   parseProgress,
@@ -29,6 +30,7 @@ type ServiceRow = {
 }
 
 type ApptRow = {
+  id: string
   scheduled_at: string
   status: string
   appointment_services: { services: { name: string } | null }[]
@@ -71,13 +73,21 @@ Deno.serve(async (req: Request) => {
 
     const locationId = channel?.location_id ?? DEFAULT_LOCATION_ID
 
+    // Variantes de formato del teléfono: GoTrue/apps pueden guardar +34..., 34..., 0034..., 9 dígitos.
+    const phoneVariants = buildPhoneVariants(phone)
+    const phoneOrFilter = phoneVariants.map((v) => `phone.eq.${v}`).join(',')
+
     // Identificar usuario, cargar salón e historial en paralelo
     const [
-      { data: userRow },
+      { data: userRows },
       [{ data: location }, { data: services }],
       { data: history },
     ] = await Promise.all([
-      supabase.from('users').select('id, first_name').eq('phone', phone).maybeSingle(),
+      supabase
+        .from('users')
+        .select('id, first_name')
+        .or(phoneOrFilter)
+        .limit(1),
       Promise.all([
         supabase.from('salon_locations').select('name').eq('id', locationId).single(),
         supabase
@@ -95,7 +105,9 @@ Deno.serve(async (req: Request) => {
         .limit(20),
     ])
 
+    const userRow = userRows?.[0] ?? null
     const userId = userRow?.id ?? null
+    console.log(`[user] phone=${phone} userId=${userId ?? 'null'}`)
 
     // .slice() antes de .reverse() para no mutar el array original
     const chronological = (history ?? []).slice().reverse()
@@ -119,6 +131,31 @@ Deno.serve(async (req: Request) => {
 
     // Short-circuit: el usuario está dando su nombre para confirmar como invitado
     if (progress.awaitingGuestName && progress.selectedSlot) {
+      // Si el usuario ya está en BD (p.ej. fusionó su cuenta desde la app), confirmar directamente
+      if (userId) {
+        console.log(`[guest-name] userId ya conocido=${userId}, saltando creación de cuenta`)
+        try {
+          const booking = await createBooking(supabase, {
+            clientId: userId,
+            locationId,
+            slot: progress.selectedSlot,
+            serviceIds: progress.serviceIds,
+            source: 'whatsapp',
+          })
+          const s = progress.selectedSlot
+          const name = userRow?.first_name ?? ''
+          const reply = buildConfirmationReply(s, name, booking.id, progress.serviceNames)
+          persist([
+            { phone_number: phone, direction: 'inbound', message: userMessage, user_id: userId, processed_by_ai: true },
+            { phone_number: phone, direction: 'outbound', message: reply, user_id: userId, ai_response: JSON.stringify(emptyProgress()), processed_by_ai: true },
+          ])
+          return twimlResponse(reply)
+        } catch (e) {
+          console.error('[booking-known-user]', e)
+          return twimlResponse('Hubo un error al confirmar la reserva. ¿Puedes intentarlo de nuevo?')
+        }
+      }
+
       const guestName = userMessage.trim()
       console.log(`[guest-name] received="${guestName}"`)
 
@@ -130,55 +167,55 @@ Deno.serve(async (req: Request) => {
       let guestProgress: BookingProgress
       let guestId: string | null = null
 
-      // createUser gestiona auth.users + dispara el trigger a public.users
-      const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
-        phone,
-        phone_confirm: true,
-      })
+      // ── Paso 1: buscar en public.users por todas las variantes de teléfono ─────
+      const { data: existingByPhone } = await supabase
+        .from('users')
+        .select('id')
+        .or(phoneOrFilter)
+        .limit(1)
 
-      if (authData?.user?.id) {
-        guestId = authData.user.id
-        // El trigger crea public.users sin nombre — lo completamos
-        const { error: updateErr } = await supabase
+      if (existingByPhone?.[0]?.id) {
+        guestId = existingByPhone[0].id
+        console.log(`[guest-name] encontrado en public.users id=${guestId}`)
+        await supabase
           .from('users')
           .update({ phone, first_name: firstName, last_name: lastName })
           .eq('id', guestId)
-        if (updateErr) {
-          const { error: upsertErr } = await supabase
-            .from('users')
-            .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
-          if (upsertErr) console.error('[guest-upsert]', upsertErr.message, upsertErr.code)
-        }
-      } else {
-        console.warn('[guest-createUser]', authErr?.message, authErr?.status)
+      }
 
-        const { data: existingByPhone } = await supabase
-          .from('users')
-          .select('id')
-          .eq('phone', phone)
-          .maybeSingle()
-
-        if (existingByPhone?.id) {
-          guestId = existingByPhone.id
-          await supabase
-            .from('users')
-            .update({ first_name: firstName, last_name: lastName })
-            .eq('id', guestId)
-        } else {
-          // El teléfono existe en auth.users pero public.users.phone es NULL
+      // ── Paso 2: buscar en auth.users por teléfono (via RPC, prueba variantes) ─
+      if (!guestId) {
+        for (const variant of phoneVariants) {
           const { data: authUserId, error: rpcErr } = await supabase
-            .rpc('get_auth_user_id_by_phone', { p_phone: phone })
-          if (rpcErr) console.error('[guest-rpc]', rpcErr.message)
-
+            .rpc('get_auth_user_id_by_phone', { p_phone: variant })
+          console.log(`[guest-name] rpc variant=${variant} id=${authUserId ?? 'null'} err=${rpcErr?.message ?? 'none'}`)
           if (authUserId) {
             guestId = authUserId as string
             const { error: upsertErr } = await supabase
               .from('users')
               .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
             if (upsertErr) console.error('[guest-upsert-rpc]', upsertErr.message, upsertErr.code)
-          } else {
-            console.error('[guest-create] No se pudo resolver usuario para teléfono:', phone)
+            break
           }
+        }
+      }
+
+      // ── Paso 3: crear nueva cuenta (usuario realmente nuevo) ──────────────────
+      if (!guestId) {
+        const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
+          phone,
+          phone_confirm: true,
+        })
+        console.log(`[guest-name] createUser id=${authData?.user?.id ?? 'null'} err=${authErr?.message ?? 'none'}`)
+
+        if (authData?.user?.id) {
+          guestId = authData.user.id
+          const { error: upsertErr } = await supabase
+            .from('users')
+            .upsert({ id: guestId, phone, first_name: firstName, last_name: lastName }, { onConflict: 'id' })
+          if (upsertErr) console.error('[guest-upsert-new]', upsertErr.message, upsertErr.code)
+        } else {
+          console.error('[guest-name] todos los pasos fallaron para teléfono:', phone, authErr?.message)
         }
       }
 
@@ -192,7 +229,7 @@ Deno.serve(async (req: Request) => {
             source: 'whatsapp',
           })
           const s = progress.selectedSlot
-          guestReply = `✅ ¡Cita confirmada, ${firstName}!\n\n📅 ${formatSlotShort(s)}\n💇 ${s.employeeName}\n🔖 Ref: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos. Puedes cancelar hasta 24h antes respondiendo a este chat.`
+          guestReply = buildConfirmationReply(s, firstName, booking.id, progress.serviceNames)
           guestProgress = emptyProgress()
         } catch (e) {
           console.error('[guest-booking]', e)
@@ -212,10 +249,40 @@ Deno.serve(async (req: Request) => {
       return guestTwiml
     }
 
-    // Short-circuit: número puro con slots pendientes → evitar llamada al LLM
+    // Short-circuit: número puro con slots pendientes → reservar sin llamar al LLM
     const numMatch = /^\s*(\d+)[.\s]*$/.exec(userMessage.trim())
     const userNum = numMatch ? parseInt(numMatch[1], 10) : null
     let aiResponse: AIResponse
+
+    // Short-circuit: número puro con citas pendientes de cancelar → cancelar sin LLM
+    if (userNum !== null && progress.pendingAppointments.length > 0 && userNum >= 1 && userNum <= progress.pendingAppointments.length) {
+      const appt = progress.pendingAppointments[userNum - 1]
+      console.log(`[short-circuit-cancel] userNum=${userNum} apptId=${appt.id} userId=${userId ?? 'null'}`)
+
+      // Solo filtramos por id — el appt.id ya proviene del listado del propio usuario,
+      // así que es seguro. Evitamos filtrar por client_id para no fallar si userId
+      // cambia de formato entre turnos.
+      const { data: updated, error: cancelErr } = await supabase
+        .from('appointments')
+        .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+        .eq('id', appt.id)
+        .select('id')
+
+      const didCancel = !cancelErr && updated && updated.length > 0
+      console.log(`[short-circuit-cancel] didCancel=${didCancel} rows=${updated?.length ?? 0} err=${cancelErr?.message ?? 'none'}`)
+
+      const cancelReply = didCancel
+        ? `❌ Cancelada: ${appt.summary}\n\n¿Necesitas algo más?`
+        : 'No pude cancelar esa cita. ¿Puedes intentarlo de nuevo?'
+
+      const cancelProgress = didCancel ? emptyProgress() : progress
+      const cancelTwiml = twimlResponse(cancelReply)
+      persist([
+        { phone_number: phone, direction: 'inbound', message: userMessage, user_id: userId, processed_by_ai: true },
+        { phone_number: phone, direction: 'outbound', message: cancelReply, user_id: userId, ai_response: JSON.stringify(cancelProgress), processed_by_ai: true },
+      ])
+      return cancelTwiml
+    }
 
     if (userNum !== null && progress.slots.length > 0 && userNum >= 1 && userNum <= progress.slots.length) {
       console.log(`[short-circuit] userNum=${userNum} slots=${progress.slots.length}`)
@@ -302,21 +369,22 @@ function buildSystemPrompt(params: {
   const todayStr = today.toISOString().slice(0, 10)
   const todayWeekday = format(today, 'EEEE', { locale: es })
 
-  return `Eres el asistente de reservas de "${locationName}"${userName ? `, atendiendo a ${userName}` : ''}. Gestionas citas por WhatsApp.
+  return `Eres el asistente de reservas de "${locationName}"${userName ? `, atendiendo a ${userName}` : ''}. Gestionas citas por WhatsApp con un trato cercano y profesional.
 
 SERVICIOS DISPONIBLES:
 ${servicesList}
 
-ESTADO ACTUAL DE LA RESERVA:${stateSection || '\n(sin información previa — saluda y pregunta en qué puedes ayudar)'}
+ESTADO ACTUAL DE LA RESERVA:${stateSection || '\n(sin información previa — saluda de forma natural y pregunta en qué puedes ayudar)'}
 
 INSTRUCCIONES:
-- Responde SIEMPRE en español, de forma breve y amable (máx 4 frases).
+- Responde siempre en español, con un tono amable y natural. Sé conciso pero no robótico — adapta la longitud al contexto.
 - Hoy es ${todayStr} (${todayWeekday}). Interpreta fechas relativas correctamente.
-- Para reservar necesitas: servicio, fecha y hora. Recoge uno a uno si faltan.
+- Para reservar necesitas: servicio, fecha y hora. Recoge la información que falte de forma conversacional.
 - Si el ESTADO ACTUAL ya tiene datos, NO los vuelvas a pedir.
-- Cuando muestres slots disponibles, usa el formato de la acción check_availability — no los escribas tú directamente.
-- SIEMPRE devuelve JSON válido con exactamente estos campos:
-  {"reply": "<mensaje para el cliente>", "action": null}
+- Cuando muestres slots disponibles, usa la acción check_availability — no los escribas tú directamente.
+- Varía tu forma de expresarte; no uses siempre las mismas frases de saludo o confirmación.
+- Tu respuesta COMPLETA debe ser SOLO un objeto JSON válido, sin texto antes ni después, con exactamente estos dos campos:
+  {"reply": "<mensaje para el cliente, nunca vacío>", "action": null}
 
 ACCIONES DISPONIBLES (sustituir null por el objeto):
   Consultar disponibilidad: {"type":"check_availability","serviceIds":["<id>"],"date":"YYYY-MM-DD","preferredTime":"HH:MM"}
@@ -329,7 +397,7 @@ REGLAS CRÍTICAS:
 - NUNCA inventes slots. Solo usa los del ESTADO ACTUAL → SLOTS DISPONIBLES.
 - Si el cliente da el número de una opción (ej: "el 2"), slotIndex = 2 (el mismo número, NO restar 1).
 - Si aún no hay slots mostrados, usa check_availability antes de book.
-- NUNCA repitas frases de mensajes anteriores del asistente. Genera siempre una respuesta nueva.
+- Genera siempre una respuesta nueva; no copies frases literales de mensajes anteriores del asistente.
 - Si hay SLOTS DISPONIBLES en el estado y el cliente da un número, USA SIEMPRE la acción book.`
 }
 
@@ -368,17 +436,13 @@ async function handleAction(params: {
 
     if (slots.length === 0) {
       return {
-        reply: `Lo siento, no hay disponibilidad para el ${formatDate(action.date)}. ¿Quieres que busque otro día?`,
+        reply: `Lo siento, no hay disponibilidad para el ${capitalize(formatDate(action.date))}. ¿Quieres que busque otro día?`,
         progress: newProgress,
       }
     }
 
-    const slotList = slots
-      .map((s, i) => `${i + 1}. ${formatSlotShort(s)} — ${s.employeeName}`)
-      .join('\n')
-
     return {
-      reply: `Disponibilidad para el ${formatDate(action.date)}:\n\n${slotList}\n\n¿Cuál te viene mejor? Responde con el número.`,
+      reply: formatSlotList(action.date, slots, serviceNames),
       progress: newProgress,
     }
   }
@@ -397,18 +461,15 @@ async function handleAction(params: {
     console.log(`[book] slotIndex=${rawIndex} slots.length=${progress.slots.length} slot=${slot ? 'found' : 'NOT FOUND'}`)
 
     if (!slot) {
-      if (progress.slots.length > 0) {
-        const slotList = progress.slots
-          .map((s, i) => `${i + 1}. ${formatSlotShort(s)} — ${s.employeeName}`)
-          .join('\n')
-        return { reply: `Elige un número del 1 al ${progress.slots.length}:\n\n${slotList}`, progress }
+      if (progress.slots.length > 0 && progress.checkedDate) {
+        return { reply: formatSlotList(progress.checkedDate, progress.slots, progress.serviceNames), progress }
       }
       return { reply: 'No tengo horarios guardados. ¿Para qué día quieres la cita?', progress: emptyProgress() }
     }
 
     if (!userId) {
       return {
-        reply: `Perfecto, ${formatSlotShort(slot)} con ${slot.employeeName}. Para confirmar necesito tu nombre completo.`,
+        reply: `Perfecto, te reservo el ${formatSlotShort(slot)} con ${capitalize(slot.employeeName)}. Para confirmar necesito tu nombre completo.`,
         progress: { ...progress, selectedSlot: slot, awaitingGuestName: true },
       }
     }
@@ -422,19 +483,40 @@ async function handleAction(params: {
     })
 
     return {
-      reply: `✅ ¡Cita confirmada!\n\n📅 ${formatSlotShort(slot)}\n💇 ${slot.employeeName}\n🔖 Ref: ${booking.id.slice(0, 8).toUpperCase()}\n\nTe esperamos. Puedes cancelar hasta 24h antes respondiendo a este chat.`,
+      reply: buildConfirmationReply(slot, null, booking.id, progress.serviceNames),
       progress: emptyProgress(),
     }
   }
 
   if (action.type === 'cancel') {
-    const { error } = await supabase
+    if (!userId) {
+      return { reply: 'No encontré tu cuenta. Regístrate en la app para gestionar tus citas.', progress }
+    }
+
+    // El ref mostrado al usuario son los primeros 8 chars del UUID (mayúsculas).
+    // Buscamos por prefijo con ilike para cubrir tanto refs cortos como UUIDs completos.
+    const apptRef = action.appointmentId.toLowerCase()
+    // Buscar por prefijo (el ref visible al usuario son los primeros 8 chars del UUID)
+    const { data: found } = await supabase
+      .from('appointments')
+      .select('id')
+      .ilike('id', `${apptRef}%`)
+      .not('status', 'eq', 'cancelled')
+      .limit(1)
+
+    if (!found?.[0]?.id) {
+      return { reply: 'No encontré esa cita o ya estaba cancelada. ¿Puedes revisar la referencia?', progress }
+    }
+
+    const { data: updated, error } = await supabase
       .from('appointments')
       .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
-      .eq('id', action.appointmentId)
-      .eq('client_id', userId ?? '')
+      .eq('id', found[0].id)
+      .select('id')
 
-    if (error) return { reply: 'No pude cancelar esa cita. ¿Es correcto el identificador?', progress }
+    console.log(`[cancel] id=${found[0].id} rows=${updated?.length ?? 0} err=${error?.message ?? 'none'}`)
+
+    if (error || !updated?.length) return { reply: 'No pude cancelar esa cita. Inténtalo de nuevo.', progress }
     return { reply: '❌ Cita cancelada correctamente.', progress: emptyProgress() }
   }
 
@@ -445,35 +527,59 @@ async function handleAction(params: {
 
     const { data: appts } = await supabase
       .from('appointments')
-      .select('scheduled_at, status, appointment_services ( services ( name ) )')
+      .select('id, scheduled_at, status, appointment_services ( services ( name ) )')
       .eq('client_id', userId)
       .in('status', ['pending', 'confirmed'])
       .gte('scheduled_at', new Date().toISOString())
       .order('scheduled_at', { ascending: true })
-      .limit(3)
+      .limit(5)
 
     if (!appts || appts.length === 0) {
       return { reply: 'No tienes citas próximas.', progress }
     }
 
-    const list = (appts as ApptRow[])
-      .map((a) => {
-        const svc = a.appointment_services?.[0]?.services?.name ?? 'Servicio'
-        return `• ${svc} — ${formatDateTime(a.scheduled_at)}`
-      })
-      .join('\n')
+    const pendingAppointments: PendingAppointment[] = []
+    const lines = (appts as ApptRow[]).map((a, i) => {
+      const svcs = a.appointment_services.map((as) => as.services?.name).filter(Boolean).join(' + ') || 'Servicio'
+      const dateStr = capitalize(formatDateTime(a.scheduled_at))
+      const summary = `${svcs} — ${dateStr}`
+      pendingAppointments.push({ id: a.id, summary })
+      return `${i + 1}. 📅 ${dateStr} — ${svcs} (Ref: ${a.id.slice(0, 8).toUpperCase()})`
+    })
 
-    return { reply: `Tus próximas citas:\n\n${list}`, progress }
+    const reply = `Tus próximas citas:\n\n${lines.join('\n')}\n\n¿Quieres cancelar alguna? Responde con el número 👇`
+    return { reply, progress: { ...emptyProgress(), pendingAppointments } }
   }
 
   return { reply: 'No entendí esa acción. ¿Puedes repetirlo de otra forma?', progress }
 }
 
+// ─── Helpers de teléfono ───────────────────────────────────────────────────────
+
+// Genera todas las variantes de formato de un teléfono para cubrir inconsistencias
+// entre cómo lo guarda GoTrue, la app o mensajes de WhatsApp/Twilio.
+// Ej: "+34604815848" → ["+34604815848", "34604815848", "0034604815848", "604815848"]
+function buildPhoneVariants(phone: string): string[] {
+  const digits = phone.replace(/[^0-9]/g, '')           // "34604815848"
+  const local = digits.startsWith('34') ? digits.slice(2) : digits  // "604815848"
+  return [...new Set([
+    phone,                   // +34604815848 (E.164, el formato canónico)
+    digits,                  // 34604815848
+    `0034${local}`,          // 0034604815848
+    local,                   // 604815848
+  ])]
+}
+
 // ─── Helpers de formato ────────────────────────────────────────────────────────
+
+function capitalize(s: string): string {
+  if (!s) return s
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
 function formatSlotShort(slot: SlotOption): string {
   try {
-    return format(parseISO(slot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
+    return capitalize(format(parseISO(slot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es }))
   } catch {
     return slot.start
   }
@@ -489,8 +595,58 @@ function formatDate(dateStr: string): string {
 
 function formatDateTime(isoStr: string): string {
   try {
-    return format(parseISO(isoStr), "d MMM 'a las' HH:mm", { locale: es })
+    return format(parseISO(isoStr), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
   } catch {
     return isoStr
   }
+}
+
+// Formatea la lista de slots disponibles agrupada por franja horaria
+function formatSlotList(date: string, slots: SlotOption[], serviceNames: string[]): string {
+  const dateHeader = capitalize(formatDate(date))
+  const servicesStr = serviceNames.length > 0 ? ` · ${serviceNames.join(' + ')}` : ''
+
+  const morning: SlotOption[] = []
+  const afternoon: SlotOption[] = []
+
+  for (const s of slots) {
+    const hour = parseInt(s.start.slice(11, 13), 10)
+    if (hour < 14) morning.push(s)
+    else afternoon.push(s)
+  }
+
+  let idx = 1
+  const lines: string[] = [`📅 ${dateHeader}${servicesStr}\n`]
+
+  if (morning.length > 0) {
+    lines.push('🌅 Mañana')
+    for (const s of morning) {
+      lines.push(`  ${idx}. ${s.start.slice(11, 16)} h — ${capitalize(s.employeeName)}`)
+      idx++
+    }
+  }
+
+  if (afternoon.length > 0) {
+    if (morning.length > 0) lines.push('')
+    lines.push('🌆 Tarde')
+    for (const s of afternoon) {
+      lines.push(`  ${idx}. ${s.start.slice(11, 16)} h — ${capitalize(s.employeeName)}`)
+      idx++
+    }
+  }
+
+  lines.push('\nResponde con el número que prefieras 👇')
+  return lines.join('\n')
+}
+
+// Mensaje de confirmación de cita (usado en flujo normal y en flujo de invitado)
+function buildConfirmationReply(
+  slot: SlotOption,
+  name: string | null,
+  bookingId: string,
+  serviceNames: string[],
+): string {
+  const greeting = name ? `, ${name}` : ''
+  const svcs = serviceNames.length > 0 ? `\n✂️ ${serviceNames.join(' + ')}` : ''
+  return `✅ ¡Cita confirmada${greeting}!\n\n📅 ${formatSlotShort(slot)}${svcs}\n💇 ${capitalize(slot.employeeName)}\n🔖 Ref: ${bookingId.slice(0, 8).toUpperCase()}\n\nTe esperamos. Puedes cancelar hasta 24h antes respondiendo aquí.`
 }

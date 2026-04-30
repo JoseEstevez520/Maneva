@@ -7,6 +7,11 @@ export type SlotOption = {
   employeeName: string
 }
 
+export type PendingAppointment = {
+  id: string        // UUID completo para cancelar
+  summary: string   // texto para mostrar al usuario
+}
+
 export type BookingProgress = {
   type: 'booking_progress'
   serviceIds: string[]
@@ -16,6 +21,7 @@ export type BookingProgress = {
   slots: SlotOption[]
   selectedSlot: SlotOption | null
   awaitingGuestName: boolean
+  pendingAppointments: PendingAppointment[]  // para el flujo de cancelación
 }
 
 export function emptyProgress(): BookingProgress {
@@ -28,6 +34,7 @@ export function emptyProgress(): BookingProgress {
     slots: [],
     selectedSlot: null,
     awaitingGuestName: false,
+    pendingAppointments: [],
   }
 }
 
@@ -35,7 +42,9 @@ export function parseProgress(aiResponse: string | null): BookingProgress {
   if (!aiResponse) return emptyProgress()
   try {
     const ctx = JSON.parse(aiResponse)
-    if (ctx.type === 'booking_progress') return ctx as BookingProgress
+    // Fusionar con emptyProgress para que campos nuevos tengan valor por defecto
+    // si el registro fue guardado con una versión anterior del schema.
+    if (ctx.type === 'booking_progress') return { ...emptyProgress(), ...ctx } as BookingProgress
 
     // Migración de formatos anteriores
     if (ctx.type === 'slot_selection') {

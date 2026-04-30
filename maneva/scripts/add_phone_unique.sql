@@ -7,12 +7,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_phone_unique
   WHERE phone IS NOT NULL AND phone != '';
 
 -- 2. Función que busca el id de auth.users por teléfono.
---    Necesaria en handle-whatsapp cuando createUser falla por teléfono ya registrado
---    pero public.users.phone aún no está relleno.
+--    Compara solo los dígitos (ignora +, espacios, guiones) para cubrir los distintos
+--    formatos que GoTrue puede almacenar (+34..., 34..., 0034...).
 CREATE OR REPLACE FUNCTION public.get_auth_user_id_by_phone(p_phone text)
 RETURNS uuid
 LANGUAGE sql
 SECURITY DEFINER
 AS $$
-  SELECT id FROM auth.users WHERE phone = p_phone LIMIT 1;
+  SELECT id FROM auth.users
+  WHERE regexp_replace(phone, '[^0-9]', '', 'g') = regexp_replace(p_phone, '[^0-9]', '', 'g')
+  LIMIT 1;
 $$;
