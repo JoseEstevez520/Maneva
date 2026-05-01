@@ -410,7 +410,7 @@ export default function LocationOnboardingScreen() {
               className="px-4 py-2.5 bg-gold rounded-xl"
               disabled={resolvingCity}
             >
-              <Caption className="font-manrope-extrabold !text-black uppercase tracking-[1.2px] text-[10px]">
+              <Caption className="font-manrope-extrabold text-premium-white uppercase tracking-[1.2px] text-[10px]">
                 Buscar
               </Caption>
             </TouchableOpacity>
@@ -497,9 +497,9 @@ export default function LocationOnboardingScreen() {
           disabled={loadingLocation || resolvingCity}
         >
           {loadingLocation ? (
-            <ActivityIndicator size="small" color={themeColors.premium.black} />
+            <ActivityIndicator size="small" color={themeColors.premium.white} />
           ) : (
-            <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
+            <Caption className="font-manrope-extrabold text-premium-white uppercase tracking-widest text-[11px]">
               Usar mi ubicación actual
             </Caption>
           )}
@@ -531,7 +531,7 @@ export default function LocationOnboardingScreen() {
         </View>
 
         {!!cityToSave && (
-          <View className="mb-4 bg-surface dark:bg-surface-dark-dim border border-border dark:border-border-dark rounded-xl px-4 py-3">
+          <View className="mb-4 bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3">
             <Body className="font-manrope-medium text-foreground dark:text-foreground-dark">
               Ciudad: {cityToSave} · Radio: {radiusKm} km
             </Body>
@@ -555,7 +555,7 @@ export default function LocationOnboardingScreen() {
           {saving ? (
             <ActivityIndicator size="small" color={themeColors.premium.white} />
           ) : (
-            <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
+            <Caption className="font-manrope-extrabold text-premium-white uppercase tracking-widest text-[11px]">
               Continuar
             </Caption>
           )}

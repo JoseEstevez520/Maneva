@@ -23,7 +23,7 @@ const Dot = ({ isActive }: { isActive: boolean }) => {
   const animatedStyle = useAnimatedStyle(() => {
     return {
       width: withSpring(isActive ? 24 : 8),
-      backgroundColor: isActive ? themeColors.premium.black : themeColors.premium.gray.light,
+      backgroundColor: isActive ? themeColors.gold.DEFAULT : themeColors.premium.gray.light,
     };
   });
 
@@ -137,11 +137,11 @@ export default function OnboardingScreen() {
         </View>
 
         <TouchableOpacity
-          className="w-full bg-premium-black h-14 rounded-premium-xl items-center justify-center flex-row shadow-premium-black"
+          className="w-full bg-gold h-14 rounded-premium-xl items-center justify-center flex-row"
           onPress={scrollToNext}
-          activeOpacity={0.8}
+          activeOpacity={0.85}
         >
-          <Text className="text-white font-manrope-semibold text-lg tracking-wide">
+          <Text className="text-premium-white font-manrope-extrabold text-[13px] uppercase tracking-widest">
             {currentIndex === slides.length - 1 ? "Empezar" : "Siguiente"}
           </Text>
         </TouchableOpacity>

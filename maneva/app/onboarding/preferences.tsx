@@ -173,7 +173,7 @@ export default function PreferencesOnboardingScreen() {
           {saving ? (
             <ActivityIndicator size="small" color={themeColors.premium.black} />
           ) : (
-            <Caption className="font-manrope-extrabold !text-black uppercase tracking-widest text-[11px]">
+            <Caption className="font-manrope-extrabold text-premium-white uppercase tracking-widest text-[11px]">
               Continuar
             </Caption>
           )}

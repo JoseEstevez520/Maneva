@@ -122,6 +122,52 @@ function QuickChips({ onSelect }: { onSelect: (text: string) => void }) {
   )
 }
 
+/** Tarjeta de salón sugerido por el bot */
+function SalonCard({ salon }: { salon: import('@/services/ai.service').SalonSuggestion }) {
+  const router = useRouter()
+  const themeColors = useThemeColors()
+
+  return (
+    <TouchableOpacity
+      onPress={() => router.push(`/salon/${salon.id}` as any)}
+      activeOpacity={0.85}
+      className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-2xl overflow-hidden"
+    >
+      {salon.photo_url ? (
+        <Image
+          source={{ uri: salon.photo_url }}
+          className="w-full h-[88px]"
+          resizeMode="cover"
+        />
+      ) : (
+        <View className="w-full h-[88px] bg-[rgba(212,175,55,0.08)] items-center justify-center">
+          <IconScissors size={28} color={themeColors.gold.DEFAULT} strokeWidth={1.5} />
+        </View>
+      )}
+      <View className="px-3 py-2.5 flex-row items-center justify-between">
+        <View className="flex-1 mr-2">
+          <Caption className="font-manrope-extrabold text-[13px] text-foreground dark:text-foreground-dark">
+            {salon.name}
+          </Caption>
+          {salon.city && (
+            <View className="flex-row items-center gap-1 mt-0.5">
+              <IconLocation size={10} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+              <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
+                {salon.city}
+              </Caption>
+            </View>
+          )}
+        </View>
+        <View className="bg-gold rounded-lg px-3 py-1.5">
+          <Caption className="font-manrope-bold text-[11px] text-premium-white">
+            Reservar
+          </Caption>
+        </View>
+      </View>
+    </TouchableOpacity>
+  )
+}
+
 /** Tarjeta de peluquero sugerido por el bot */
 function StylistCard({ stylist }: { stylist: StylistSuggestion }) {
   const router = useRouter()
@@ -130,36 +176,47 @@ function StylistCard({ stylist }: { stylist: StylistSuggestion }) {
   return (
     <TouchableOpacity
       onPress={() => router.push(`/salon/${stylist.location_id}` as any)}
-      activeOpacity={0.8}
-      className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
+      activeOpacity={0.85}
+      className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-2xl overflow-hidden"
     >
-      {stylist.photo_url ? (
-        <Image
-          source={{ uri: stylist.photo_url }}
-          className="w-10 h-10 rounded-full"
-        />
-      ) : (
-        <View className="w-10 h-10 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-          <IconScissors size={16} color={themeColors.gold.DEFAULT} strokeWidth={2} />
-        </View>
-      )}
-      <View className="flex-1">
-        <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
-          {stylist.display_name}
-        </Caption>
-        {stylist.specialty && (
-          <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-            {stylist.specialty}
-          </Caption>
+      <View className="px-3 py-3 flex-row items-center gap-3">
+        {stylist.photo_url ? (
+          <Image
+            source={{ uri: stylist.photo_url }}
+            className="w-11 h-11 rounded-full"
+          />
+        ) : (
+          <View className="w-11 h-11 rounded-full bg-[rgba(212,175,55,0.12)] items-center justify-center">
+            <IconScissors size={18} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+          </View>
         )}
-        <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark">
-          {stylist.salon_name}
-        </Caption>
-      </View>
-      <View className="bg-premium-black dark:bg-foreground-dark rounded-lg px-3 py-1.5">
-        <Caption className="font-manrope-bold text-[11px] text-premium-white dark:text-surface-dark">
-          Reservar
-        </Caption>
+        <View className="flex-1">
+          <Caption className="font-manrope-extrabold text-[13px] text-foreground dark:text-foreground-dark">
+            {stylist.display_name}
+          </Caption>
+          {stylist.specialty && (
+            <View className="flex-row items-center gap-1 mt-0.5">
+              <View className="bg-[rgba(212,175,55,0.15)] rounded-full px-2 py-0.5">
+                <Caption className="font-manrope-semibold text-[10px] text-[#D4AF37]">
+                  {stylist.specialty}
+                </Caption>
+              </View>
+            </View>
+          )}
+          {stylist.salon_name && (
+            <View className="flex-row items-center gap-1 mt-1">
+              <IconLocation size={10} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark">
+                {stylist.salon_name}
+              </Caption>
+            </View>
+          )}
+        </View>
+        <View className="bg-premium-black dark:bg-foreground-dark rounded-lg px-3 py-1.5">
+          <Caption className="font-manrope-bold text-[11px] text-premium-white dark:text-surface-dark">
+            Reservar
+          </Caption>
+        </View>
       </View>
     </TouchableOpacity>
   )
@@ -168,8 +225,6 @@ function StylistCard({ stylist }: { stylist: StylistSuggestion }) {
 /** Burbuja de mensaje — usuario (derecha, negro) o bot (izquierda, gris claro) */
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user'
-  const router = useRouter()
-  const themeColors = useThemeColors()
 
   return (
     <Animated.View
@@ -195,31 +250,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       {message.salons && message.salons.length > 0 && (
         <View className="mt-2 gap-2">
           {message.salons.map((salon) => (
-            <TouchableOpacity
-              key={salon.id}
-              onPress={() => router.push(`/salon/${salon.id}` as any)}
-              activeOpacity={0.8}
-              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
-            >
-              <View className="w-8 h-8 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-                <IconSparkles size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
-              </View>
-              <View className="flex-1">
-                <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
-                  {salon.name}
-                </Caption>
-                {salon.city && (
-                  <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-                    {salon.city}
-                  </Caption>
-                )}
-              </View>
-              <View className="bg-premium-black dark:bg-foreground-dark rounded-lg px-3 py-1.5">
-                <Caption className="font-manrope-bold text-[11px] text-premium-white dark:text-surface-dark">
-                  Reservar
-                </Caption>
-              </View>
-            </TouchableOpacity>
+            <SalonCard key={salon.id} salon={salon} />
           ))}
         </View>
       )}
