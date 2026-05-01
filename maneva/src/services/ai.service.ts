@@ -63,7 +63,8 @@ export async function sendChatMessage(
     throw new Error(`Error del asistente (${response.status})`)
   }
 
-  return response.json() as Promise<ChatResponse>
+  const data: unknown = await response.json()
+  return data as ChatResponse
 }
 
 // ─── Mock para desarrollo ─────────────────────────────────────────────────────
