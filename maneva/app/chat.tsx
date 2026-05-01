@@ -129,7 +129,7 @@ function StylistCard({ stylist }: { stylist: StylistSuggestion }) {
 
   return (
     <TouchableOpacity
-      onPress={() => router.push(`/bookings?salonId=${stylist.salon_id}` as any)}
+      onPress={() => router.push(`/salon/${stylist.location_id}` as any)}
       activeOpacity={0.8}
       className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
     >
@@ -197,7 +197,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           {message.salons.map((salon) => (
             <TouchableOpacity
               key={salon.id}
-              onPress={() => router.push(`/bookings?salonId=${salon.id}` as any)}
+              onPress={() => router.push(`/salon/${salon.id}` as any)}
               activeOpacity={0.8}
               className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
             >
