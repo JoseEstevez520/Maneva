@@ -35,7 +35,7 @@ import {
   IconSparkles,
   IconLocation,
 } from '@/components/ui/icons'
-import { sendChatMessage, type ChatMessage, type SalonSuggestion } from '@/services/ai.service'
+import { sendChatMessage, type SalonSuggestion, type StylistSuggestion } from '@/services/ai.service'
 
 // ─── Tipos locales ─────────────────────────────────────────────────────────────
 
@@ -46,6 +46,7 @@ type Message = {
   role: MessageRole
   content: string
   salons?: SalonSuggestion[]
+  stylists?: StylistSuggestion[]
 }
 
 // TODO: Agente conversacional rico — mensajes tipados
@@ -225,14 +226,8 @@ export default function ChatScreen() {
   const sendAnimatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: sendScale.value }] }))
 
   /** Construye el historial en formato que espera n8n */
-  const buildHistory = useCallback(
-    (currentMessages: Message[]): ChatMessage[] =>
-      currentMessages.map((m) => ({
-        role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.content,
-      })),
-    [],
-  )
+  // Generar un sessionId único para esta conversación
+  const sessionIdRef = useRef(Date.now().toString())
 
   const handleSend = useCallback(
     async (text: string) => {
@@ -257,14 +252,14 @@ export default function ChatScreen() {
       }, 50)
 
       try {
-        const history = buildHistory(messages)
-        const response = await sendChatMessage(trimmed, history)
+        const response = await sendChatMessage(trimmed, sessionIdRef.current)
 
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'bot',
           content: response.reply,
           salons: response.salons,
+          stylists: response.stylists,
         }
 
         setMessages((prev) => [...prev, botMessage])
@@ -282,7 +277,7 @@ export default function ChatScreen() {
         }, 100)
       }
     },
-    [isTyping, messages, buildHistory],
+    [isTyping],
   )
 
   const canSend = input.trim().length > 0 && !isTyping
