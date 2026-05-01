@@ -4,7 +4,7 @@
  * Pantalla del asistente IA. Se presenta como fullScreenModal desde el FAB.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   View,
   TextInput,
@@ -13,6 +13,7 @@ import {
   Platform,
   TouchableOpacity,
   Pressable,
+  Image,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -34,38 +35,11 @@ import {
   IconSend,
   IconSparkles,
   IconLocation,
+  IconScissors,
 } from '@/components/ui/icons'
-import { sendChatMessage, type SalonSuggestion, type StylistSuggestion } from '@/services/ai.service'
-
-// ─── Tipos locales ─────────────────────────────────────────────────────────────
-
-type MessageRole = 'user' | 'bot'
-
-type Message = {
-  id: string
-  role: MessageRole
-  content: string
-  salons?: SalonSuggestion[]
-  stylists?: StylistSuggestion[]
-}
-
-// TODO: Agente conversacional rico — mensajes tipados
-//
-// El objetivo es que el agente no solo responda texto sino que pueda
-// enviar componentes interactivos renderizados dentro del chat.
-// n8n devolvería un array de mensajes tipados por respuesta:
-//
-//   { type: 'text',            content: 'Encontré 3 opciones cerca de ti:' }
-//   { type: 'salon_card',      data: { id, name, rating, price, city, photo } }
-//   { type: 'style_gallery',   data: { title, images: string[] } }
-//   { type: 'slots_picker',    data: { salon_id, slots: [{ date, time }] } }
-//   { type: 'booking_summary', data: { salon, service, datetime, price } }
-//
-// El componente MessageBubble se convertiría en un switch por tipo,
-// renderizando el componente correspondiente en lugar de solo texto.
-// El agente podría mezclar tipos en la misma respuesta (texto + tarjeta).
-// Los slots_picker y booking_summary serían interactivos — el usuario
-// reserva sin salir del chat.
+import { useChat, type ChatMessage } from '@/hooks/useChat'
+import type { StylistSuggestion } from '@/services/ai.service'
+import type { SharedValue } from 'react-native-reanimated'
 
 // ─── Chips de acceso rápido ────────────────────────────────────────────────────
 
@@ -73,7 +47,7 @@ const QUICK_CHIPS = [
   'Buscar salón cerca de mí',
   '¿Qué servicios ofrecéis?',
   'Ver disponibilidad hoy',
-  'Recomendadme un salón',
+  'Recomendadme un peluquero',
 ]
 
 // ─── Componentes internos ──────────────────────────────────────────────────────
@@ -84,7 +58,7 @@ function TypingIndicator() {
   const dot2 = useSharedValue(0)
   const dot3 = useSharedValue(0)
 
-  const bounce = (sv: Animated.SharedValue<number>, delay: number) => {
+  const bounce = (sv: SharedValue<number>, delay: number) => {
     sv.value = withDelay(
       delay,
       withRepeat(
@@ -98,7 +72,6 @@ function TypingIndicator() {
     )
   }
 
-  // Las shared values tienen referencia estable — el array vacío es correcto.
   useEffect(() => {
     bounce(dot1, 0)
     bounce(dot2, 150)
@@ -117,65 +90,6 @@ function TypingIndicator() {
       <Animated.View style={style1} className="w-2 h-2 rounded-full bg-premium-gray" />
       <Animated.View style={style2} className="w-2 h-2 rounded-full bg-premium-gray" />
       <Animated.View style={style3} className="w-2 h-2 rounded-full bg-premium-gray" />
-    </Animated.View>
-  )
-}
-
-/** Burbuja de mensaje — usuario (derecha, negro) o bot (izquierda, gris claro) */
-function MessageBubble({ message }: { message: Message }) {
-  const isUser = message.role === 'user'
-  const router = useRouter()
-  const themeColors = useThemeColors()
-
-  return (
-    <Animated.View
-      entering={isUser ? FadeInUp.duration(250) : FadeInDown.duration(250)}
-      className={`mb-3 max-w-[82%] ${isUser ? 'self-end mr-5' : 'self-start ml-5'}`}
-    >
-      <View
-        className={`px-4 py-3 ${
-          isUser
-            ? 'bg-premium-black rounded-2xl rounded-tr-sm'
-            : 'bg-surface-raised dark:bg-surface-raised-dark rounded-2xl rounded-tl-sm'
-        }`}
-      >
-        <Body
-          className={`font-manrope-medium text-[14px] leading-[20px] ${
-            isUser ? 'text-premium-white' : 'text-foreground dark:text-foreground-dark'
-          }`}
-        >
-          {message.content}
-        </Body>
-      </View>
-
-      {/* Tarjetas de salones sugeridos por el bot */}
-      {message.salons && message.salons.length > 0 && (
-        <View className="mt-2 gap-2">
-          {message.salons.map((salon) => (
-            <TouchableOpacity
-              key={salon.id}
-              onPress={() => router.push(`/salon/${salon.id}`)}
-              activeOpacity={0.8}
-              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
-            >
-              <View className="w-8 h-8 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-                <IconSparkles size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
-              </View>
-              <View className="flex-1">
-                <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
-                  {salon.name}
-                </Caption>
-                {salon.city && (
-                  <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-                    {salon.city}
-                  </Caption>
-                )}
-              </View>
-              <IconLocation size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
     </Animated.View>
   )
 }
@@ -208,6 +122,119 @@ function QuickChips({ onSelect }: { onSelect: (text: string) => void }) {
   )
 }
 
+/** Tarjeta de peluquero sugerido por el bot */
+function StylistCard({ stylist }: { stylist: StylistSuggestion }) {
+  const router = useRouter()
+  const themeColors = useThemeColors()
+
+  return (
+    <TouchableOpacity
+      onPress={() => router.push(`/bookings?salonId=${stylist.salon_id}` as any)}
+      activeOpacity={0.8}
+      className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
+    >
+      {stylist.photo_url ? (
+        <Image
+          source={{ uri: stylist.photo_url }}
+          className="w-10 h-10 rounded-full"
+        />
+      ) : (
+        <View className="w-10 h-10 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
+          <IconScissors size={16} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+        </View>
+      )}
+      <View className="flex-1">
+        <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
+          {stylist.display_name}
+        </Caption>
+        {stylist.specialty && (
+          <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
+            {stylist.specialty}
+          </Caption>
+        )}
+        <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark">
+          {stylist.salon_name}
+        </Caption>
+      </View>
+      <View className="bg-premium-black dark:bg-foreground-dark rounded-lg px-3 py-1.5">
+        <Caption className="font-manrope-bold text-[11px] text-premium-white dark:text-surface-dark">
+          Reservar
+        </Caption>
+      </View>
+    </TouchableOpacity>
+  )
+}
+
+/** Burbuja de mensaje — usuario (derecha, negro) o bot (izquierda, gris claro) */
+function MessageBubble({ message }: { message: ChatMessage }) {
+  const isUser = message.role === 'user'
+  const router = useRouter()
+  const themeColors = useThemeColors()
+
+  return (
+    <Animated.View
+      entering={isUser ? FadeInUp.duration(250) : FadeInDown.duration(250)}
+      className={`mb-3 max-w-[82%] ${isUser ? 'self-end mr-5' : 'self-start ml-5'}`}
+    >
+      <View
+        className={`px-4 py-3 ${
+          isUser
+            ? 'bg-premium-black rounded-2xl rounded-tr-sm'
+            : 'bg-surface-raised dark:bg-surface-raised-dark rounded-2xl rounded-tl-sm'
+        }`}
+      >
+        <Body
+          className={`font-manrope-medium text-[14px] leading-[20px] ${
+            isUser ? 'text-premium-white' : 'text-foreground dark:text-foreground-dark'
+          }`}
+        >
+          {message.content}
+        </Body>
+      </View>
+
+      {message.salons && message.salons.length > 0 && (
+        <View className="mt-2 gap-2">
+          {message.salons.map((salon) => (
+            <TouchableOpacity
+              key={salon.id}
+              onPress={() => router.push(`/bookings?salonId=${salon.id}` as any)}
+              activeOpacity={0.8}
+              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark-strong rounded-xl px-4 py-3 flex-row items-center gap-3"
+            >
+              <View className="w-8 h-8 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
+                <IconSparkles size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
+              </View>
+              <View className="flex-1">
+                <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
+                  {salon.name}
+                </Caption>
+                {salon.city && (
+                  <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
+                    {salon.city}
+                  </Caption>
+                )}
+              </View>
+              <View className="bg-premium-black dark:bg-foreground-dark rounded-lg px-3 py-1.5">
+                <Caption className="font-manrope-bold text-[11px] text-premium-white dark:text-surface-dark">
+                  Reservar
+                </Caption>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {message.stylists && message.stylists.length > 0 && (
+        <View className="mt-2 gap-2">
+          {message.stylists.map((stylist) => (
+            <StylistCard key={stylist.id} stylist={stylist} />
+          ))}
+        </View>
+      )}
+    </Animated.View>
+  )
+}
+
 // Declarado a nivel de módulo para evitar que Reanimated remonte
 // la vista nativa en cada re-render del componente padre.
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
@@ -217,68 +244,21 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 export default function ChatScreen() {
   const themeColors = useThemeColors()
   const router = useRouter()
-  const [messages, setMessages] = useState<Message[]>([])
+  const { messages, isTyping, sendMessage } = useChat()
   const [input, setInput] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
 
   const sendScale = useSharedValue(1)
   const sendAnimatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: sendScale.value }] }))
 
-  /** Construye el historial en formato que espera n8n */
-  // Generar un sessionId único para esta conversación
-  const sessionIdRef = useRef(Date.now().toString())
+  useEffect(() => {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)
+  }, [messages, isTyping])
 
-  const handleSend = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim()
-      if (!trimmed || isTyping) return
-
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        role: 'user',
-        content: trimmed,
-      }
-
-      setMessages((prev) => {
-        const updated = [...prev, userMessage]
-        return updated
-      })
-      setInput('')
-      setIsTyping(true)
-
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true })
-      }, 50)
-
-      try {
-        const response = await sendChatMessage(trimmed, sessionIdRef.current)
-
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'bot',
-          content: response.reply,
-          salons: response.salons,
-          stylists: response.stylists,
-        }
-
-        setMessages((prev) => [...prev, botMessage])
-      } catch {
-        const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'bot',
-          content: 'Lo siento, ha ocurrido un error. Inténtalo de nuevo.',
-        }
-        setMessages((prev) => [...prev, errorMessage])
-      } finally {
-        setIsTyping(false)
-        setTimeout(() => {
-          scrollRef.current?.scrollToEnd({ animated: true })
-        }, 100)
-      }
-    },
-    [isTyping],
-  )
+  const handleSend = (text: string) => {
+    setInput('')
+    sendMessage(text)
+  }
 
   const canSend = input.trim().length > 0 && !isTyping
 
@@ -323,20 +303,18 @@ export default function ChatScreen() {
           className="flex-1"
           contentContainerClassName="pt-6 pb-4"
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
-          {/* Mensaje de bienvenida del bot */}
           {messages.length === 0 && (
             <Animated.View entering={FadeInDown.duration(400).springify()}>
               <View className="self-start ml-5 mb-3 max-w-[82%]">
                 <View className="bg-surface-raised dark:bg-surface-raised-dark px-4 py-3 rounded-2xl rounded-tl-sm">
                   <Body className="font-manrope-medium text-[14px] leading-[20px] text-foreground dark:text-foreground-dark">
                     ¡Hola! Soy el asistente de Maneva. Puedo ayudarte a encontrar salones,
-                    consultar servicios o resolver cualquier duda. ¿En qué te ayudo?
+                    recomendar peluqueros o resolver cualquier duda. ¿En qué te ayudo?
                   </Body>
                 </View>
               </View>
-              <QuickChips onSelect={(chip) => handleSend(chip)} />
+              <QuickChips onSelect={handleSend} />
             </Animated.View>
           )}
 
