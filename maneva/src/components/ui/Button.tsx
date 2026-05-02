@@ -32,7 +32,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const variantStyles: Record<Variant, string> = {
   primary:   "bg-gold border-0",
-  secondary: "bg-surface dark:bg-surface-dark border-4 border-foreground dark:border-foreground-dark shadow-xl",
+  secondary: "bg-surface dark:bg-surface-dark border-4 border-foreground dark:border-foreground-dark shadow-premium-soft",
   ghost:     "bg-transparent border-0",
   danger:    "bg-red-600 border-0",
 };

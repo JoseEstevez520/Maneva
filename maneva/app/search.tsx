@@ -186,7 +186,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top']}>
       {/* ── Header ── */}
-      <View className="bg-surface dark:bg-surface-dark pt-[10px]">
+      <View className="bg-surface dark:bg-surface-dark pt-2.5">
         <View className="flex-row items-center px-5 mb-4 gap-4">
           <View className="flex-1 flex-row items-center bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-3 h-12">
             <IconSearch color={themeColors.premium.black} size={20} strokeWidth={2} style={{ marginRight: 8 }} />
@@ -213,7 +213,7 @@ export default function SearchScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerClassName="px-5 gap-[10px] pb-4"
+          contentContainerClassName="px-5 gap-2.5 pb-4"
         >
           <FilterChip
             label="Valoración"

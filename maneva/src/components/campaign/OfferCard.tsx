@@ -60,14 +60,14 @@ export default function OfferCard({ offer, index }: OfferCardProps) {
     <TouchableOpacity
       onPress={() => router.push(`/offer/${offer.id}`)}
       activeOpacity={0.8}
-      className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-[0_10px_25px_rgba(0,0,0,0.12)] overflow-hidden"
+      className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card overflow-hidden"
     >
       <View className="flex-row items-center p-[18px] gap-4">
         {/* Icon badge */}
         <View
           className={`w-12 h-12 rounded-[14px] items-center justify-center shrink-0 ${
             isGold
-              ? 'bg-gold shadow-[0_6px_12px_rgba(212,175,55,0.45)]'
+              ? 'bg-gold shadow-gold-badge'
               : 'bg-premium-black shadow-[0_4px_8px_rgba(0,0,0,0.2)]'
           }`}
         >

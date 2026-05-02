@@ -66,6 +66,7 @@ export type NextAppointment = {
   status: string
   salon_name: string
   service_name: string | null
+  employee_name: string | null
   location_id: string
   salon_image: string | null
 }
@@ -73,6 +74,7 @@ export type NextAppointment = {
 export async function getNextAppointment(userId: string): Promise<NextAppointment | null> {
   const now = new Date().toISOString()
 
+  // Query 1: appointment + salon + service name
   const { data, error } = await supabase
     .from('appointments')
     .select(`
@@ -85,6 +87,7 @@ export async function getNextAppointment(userId: string): Promise<NextAppointmen
         Image
       ),
       appointment_services (
+        employee_id,
         services (
           name
         )
@@ -108,17 +111,36 @@ export async function getNextAppointment(userId: string): Promise<NextAppointmen
     status: string
     location_id: string
     salon_locations: { name: string; Image: string | null } | null
-    appointment_services: { services: { name: string } | null }[] | null
+    appointment_services: { employee_id: string; services: { name: string } | null }[] | null
   }
 
   const raw = data as unknown as AppointmentQueryRow
+  const firstService = raw.appointment_services?.[0]
+
+  // Query 2: employee name, solo si hay employee_id
+  let employeeName: string | null = null
+  const employeeId = firstService?.employee_id
+  if (employeeId) {
+    const { data: empData } = await supabase
+      .from('employees')
+      .select(`users!employees_user_id_fkey ( first_name, last_name )`)
+      .eq('id', employeeId)
+      .single()
+
+    if (empData) {
+      const u = (empData as unknown as { users: { first_name: string | null; last_name: string | null } | null }).users
+      employeeName = u ? [u.first_name, u.last_name].filter(Boolean).join(' ') || null : null
+    }
+  }
+
   return {
     id: raw.id,
     scheduled_at: raw.scheduled_at,
     status: raw.status,
     location_id: raw.location_id,
     salon_name: raw.salon_locations?.name ?? 'Salón',
-    service_name: raw.appointment_services?.[0]?.services?.name ?? null,
+    service_name: firstService?.services?.name ?? null,
+    employee_name: employeeName,
     salon_image: raw.salon_locations?.Image ?? null,
   }
 }

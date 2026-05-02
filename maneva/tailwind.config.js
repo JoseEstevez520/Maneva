@@ -114,15 +114,46 @@ module.exports = {
         'manrope-extrabold': ['Manrope_800ExtraBold'],
       },
       boxShadow: {
-        'premium-gold': '0 10px 25px -5px rgba(212, 175, 55, 0.4)',
+        // ── Tokens legacy (compatibilidad) ────────────────────────────
+        'premium-gold':  '0 10px 25px -5px rgba(212, 175, 55, 0.4)',
         'premium-black': '0 20px 40px -12px rgba(0, 0, 0, 0.3)',
-        'premium-soft': '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+        'premium-soft':  '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+        // ── Tokens semánticos ──────────────────────────────────────────
+        'card':        '0 10px 25px rgba(0,0,0,0.12)',         // cards de contenido
+        'input':       '0 8px 20px rgba(0,0,0,0.08)',          // search bar, avatar, inputs
+        'sm':          '0 4px 12px rgba(0,0,0,0.08)',          // cards pequeñas
+        'photo':       '0 6px 16px rgba(0,0,0,0.07)',          // grids de fotos
+        'gold':        '0 6px 14px rgba(212,175,55,0.4)',      // botones gold
+        'gold-sm':     '0 4px 12px rgba(212,175,55,0.35)',     // botones gold pequeños
+        'gold-badge':  '0 6px 12px rgba(212,175,55,0.45)',     // badges gold
       },
       borderRadius: {
         'premium-sm': '12px',
         'premium-md': '20px',
         'premium-lg': '28px',
         'premium-xl': '36px',
+      },
+      fontSize: {
+        // ── Etiquetas en mayúsculas (uppercase labels) ─────────────────
+        'label':    '11px',   // headers de sección, badges de estado
+        'label-sm': '10px',   // links de acción, labels de botones en cards
+        // ── Textos de apoyo ────────────────────────────────────────────
+        'caption':  '12px',   // chips de filtro, anotaciones pequeñas
+        'body-sm':  '13px',   // cuerpo pequeño estándar
+        'body':     '14px',   // cuerpo estándar
+        'body-lg':  '15px',   // cuerpo enfatizado, nombres de salón en lista
+        'body-xl':  '16px',   // filas de ajustes
+        // ── Títulos ────────────────────────────────────────────────────
+        'heading-sm': '18px', // títulos de pantalla y modal
+        'heading-md': '20px', // títulos de card (próxima cita)
+        'heading-lg': '28px', // nombre de usuario en perfil
+      },
+      letterSpacing: {
+        // ── Espaciados para texto en mayúsculas ────────────────────────
+        'label':   '3px',    // headers de sección
+        'action':  '2px',    // links de acción
+        'button':  '2.5px',  // labels de botones en cards
+        'badge':   '1.5px',  // fecha, estado de cita
       }
     },
   },

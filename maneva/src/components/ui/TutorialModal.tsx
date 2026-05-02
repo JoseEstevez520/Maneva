@@ -237,15 +237,8 @@ export function TutorialModal({
           onLayout={onCardLayout}
           entering={FadeInDown.duration(600).springify()}
           exiting={FadeOut.duration(180)}
-          style={[
-            styles.popup,
-            {
-              width: CARD_WIDTH,
-              left: popupLeft,
-              top: popupTop,
-            },
-          ]}
-          className="bg-surface dark:bg-surface-dark rounded-[24px] p-5 shadow-2xl items-center relative"
+          style={{ width: CARD_WIDTH, left: popupLeft, top: popupTop }}
+          className="absolute bg-surface dark:bg-surface-dark rounded-[24px] p-5 shadow-premium-soft items-center"
         >
           {placement !== "center" && (
             <View
@@ -327,9 +320,6 @@ export function TutorialModal({
 }
 
 const styles = StyleSheet.create({
-  popup: {
-    position: "absolute",
-  },
   arrow: {
     position: "absolute",
     width: 0,

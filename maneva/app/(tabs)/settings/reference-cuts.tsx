@@ -35,7 +35,7 @@ export default function ReferenceCutsScreen() {
         ) : (
           <View className="px-6 flex-row flex-wrap justify-between gap-y-4">
             {cuts.map((uri) => (
-              <View key={uri} className="w-[48%] rounded-[18px] overflow-hidden bg-surface dark:bg-surface-dark border border-border dark:border-border-dark shadow-[0_6px_16px_rgba(0,0,0,0.07)]">
+              <View key={uri} className="w-[48%] rounded-[18px] overflow-hidden bg-surface dark:bg-surface-dark border border-border dark:border-border-dark shadow-photo">
                 <Image source={{ uri }} className="w-full h-[220px]" resizeMode="cover" />
                 <TouchableOpacity
                   onPress={() => { void remove(uri) }}

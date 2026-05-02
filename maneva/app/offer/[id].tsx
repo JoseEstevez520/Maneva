@@ -123,7 +123,7 @@ export default function OfferDetailScreen() {
           </View>
 
           {/* Salon info card */}
-          <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark shadow-[0_4px_12px_rgba(0,0,0,0.08)] p-4 gap-3">
+          <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark shadow-sm p-4 gap-3">
             <View className="flex-row items-start gap-3">
               <View className="flex-1">
                 <H2 className="font-manrope-bold text-[16px] text-foreground dark:text-foreground-dark mb-1">
@@ -187,7 +187,7 @@ export default function OfferDetailScreen() {
           <View className="gap-3 pt-4">
             {/* Book now button */}
             <TouchableOpacity
-              className="bg-gold rounded-lg py-3.5 items-center shadow-[0_6px_16px_rgba(212,175,55,0.4)]"
+              className="bg-gold rounded-lg py-3.5 items-center shadow-gold"
               activeOpacity={0.85}
             >
               <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-white uppercase">

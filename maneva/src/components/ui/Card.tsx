@@ -15,8 +15,8 @@ type CardProps = {
 export function Card({ onPress, className = '', variant = 'dark', children }: CardProps) {
   const isDark = variant === 'dark'
   const bg = isDark
-    ? 'bg-premium-black shadow-2xl'
-    : 'bg-surface dark:bg-surface-dark shadow-premium border border-border dark:border-border-dark'
+    ? 'bg-premium-black shadow-premium-black'
+    : 'bg-surface dark:bg-surface-dark shadow-card border border-border dark:border-border-dark'
 
   const base = `${bg} rounded-[24px] p-8 ${className}`
 

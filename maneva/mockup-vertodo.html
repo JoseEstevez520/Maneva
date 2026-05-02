@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VER TODO — alternativas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #FAFAFA;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 32px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    h1 {
+      font-size: 11px;
+      letter-spacing: 6px;
+      font-weight: 800;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 300px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .title {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #000;
+    }
+
+    .label {
+      font-size: 9px;
+      color: #9CA3AF;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    /* A: mismo lowercase que las cards */
+    .opt-a {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+    .opt-a .chevron { font-size: 14px; line-height: 1; }
+
+    /* B: pill con borde */
+    .opt-b {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid #E0E0E0;
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+    .opt-b span {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6B7280;
+      letter-spacing: 0.5px;
+    }
+    .opt-b .chevron { font-size: 12px; color: #9CA3AF; }
+
+    /* C: solo icono chevron */
+    .opt-c {
+      font-size: 20px;
+      color: #9CA3AF;
+      line-height: 1;
+    }
+
+    /* D: texto normal con subrayado */
+    .opt-d {
+      font-size: 11px;
+      font-weight: 500;
+      color: #6B7280;
+      border-bottom: 1px solid #D1D5DB;
+      padding-bottom: 1px;
+      letter-spacing: 0.2px;
+    }
+
+    /* E: uppercase pero más pequeño y sin tracking */
+    .opt-e {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9CA3AF;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .row { display: flex; align-items: center; gap: 4px; }
+    .note { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
+
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Section header — alternativas</h1>
+
+  <!-- A -->
+  <div class="group">
+    <div class="label">A · Lowercase + chevron (igual que "Ver salón ›")</div>
+    <div class="section-header">
+      <span class="title">PRÓXIMA CITA</span>
+      <span class="opt-a row">Ver todo <span class="chevron">›</span></span>
+    </div>
+    <div class="note">Coherente con los links de las cards. Conversacional.</div>
+  </div>
+
+  <!-- B -->
+  <div class="group">
+    <div class="label">B · Pill con borde</div>
+    <div class="section-header">
+      <span class="title">PRÓXIMA CITA</span>
+      <div class="opt-b">
+        <span>Ver todo</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="note">La forma de pill hace obvio que es tappable.</div>
+  </div>
+
+  <!-- C -->
+  <div class="group">
+    <div class="label">C · Solo chevron</div>
+    <div class="section-header">
+      <span class="title">PRÓXIMA CITA</span>
+      <span class="opt-c">›</span>
+    </div>
+    <div class="note">Minimalista. Quizás demasiado sutil.</div>
+  </div>
+
+  <!-- D -->
+  <div class="group">
+    <div class="label">D · Texto normal con subrayado</div>
+    <div class="section-header">
+      <span class="title">PRÓXIMA CITA</span>
+      <span class="opt-d">Ver todo</span>
+    </div>
+    <div class="note">Subrayado = link. Clásico y claro.</div>
+  </div>
+
+  <!-- E -->
+  <div class="group">
+    <div class="label">E · Uppercase sin tracking</div>
+    <div class="section-header">
+      <span class="title">PRÓXIMA CITA</span>
+      <span class="opt-e">VER TODO</span>
+    </div>
+    <div class="note">Mismo sistema del título pero gris y más pequeño.</div>
+  </div>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 import React from "react";
 import { IconHome, IconMail, IconSettings, IconSparkles } from "@/components/ui/icons";
 import { useThemeColors } from "@/hooks/useThemeColors";
+import { useUiStore } from "@/store/uiStore";
 import { Tabs, useRouter } from "expo-router";
 import { View, Pressable } from "react-native";
 import Animated, {
@@ -20,6 +21,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 function AIAssistantFAB() {
   const router = useRouter();
   const themeColors = useThemeColors();
+  const isDark = useUiStore(s => s.colorScheme) === 'dark';
   const mountScale = useSharedValue(0);
   const pressScale = useSharedValue(1);
 
@@ -49,16 +51,18 @@ function AIAssistantFAB() {
           width: 56,
           height: 56,
           borderRadius: 28,
-          backgroundColor: themeColors.premium.white,
+          backgroundColor: isDark
+            ? themeColors.premium.surface.soft
+            : themeColors.premium.white,
           borderWidth: 1.5,
           borderColor: themeColors.gold.DEFAULT,
           alignItems: "center",
           justifyContent: "center",
           shadowColor: themeColors.gold.DEFAULT,
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.25,
-          shadowRadius: 8,
-          elevation: 6,
+          shadowOffset: { width: 0, height: isDark ? 0 : 3 },
+          shadowOpacity: isDark ? 0.5 : 0.25,
+          shadowRadius: isDark ? 10 : 8,
+          elevation: isDark ? 0 : 6,
         },
       ]}
     >

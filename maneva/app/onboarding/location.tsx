@@ -381,7 +381,7 @@ export default function LocationOnboardingScreen() {
             Buscar ciudad manualmente
           </Caption>
         </View>
-        <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint px-4 py-3 mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.06)]">
+        <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint px-4 py-3 mb-5 shadow-input">
           <View className="flex-row items-center gap-2">
             <View className="flex-1">
               <TextInput
@@ -421,7 +421,7 @@ export default function LocationOnboardingScreen() {
           <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-2">
             Mapa de zona y radio
           </Caption>
-          <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+          <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint overflow-hidden shadow-input">
             {Platform.OS === "web" ? (
               <View className="h-[260px] items-center justify-center px-5">
                 <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark text-center">

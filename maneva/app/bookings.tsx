@@ -160,7 +160,7 @@ export default function BookingsScreen() {
         >
           {/* Próximas */}
           <View className="px-5 pt-6 gap-3">
-            <Caption className="font-manrope-extrabold text-[10px] tracking-[3px] uppercase text-foreground-muted dark:text-foreground-muted-dark">
+            <Caption className="font-manrope-extrabold text-label tracking-label uppercase text-foreground-muted dark:text-foreground-muted-dark">
               Próximas
             </Caption>
             {upcoming.length === 0 ? (
@@ -179,7 +179,7 @@ export default function BookingsScreen() {
           {/* Historial */}
           {past.length > 0 && (
             <View className="px-5 pt-7 gap-3">
-              <Caption className="font-manrope-extrabold text-[10px] tracking-[3px] uppercase text-foreground-muted dark:text-foreground-muted-dark">
+              <Caption className="font-manrope-extrabold text-label tracking-label uppercase text-foreground-muted dark:text-foreground-muted-dark">
                 Historial
               </Caption>
               {past.map((a) => (

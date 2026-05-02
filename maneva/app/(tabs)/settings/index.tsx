@@ -135,7 +135,7 @@ export default function SettingsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="items-center pt-10 pb-6 px-6 bg-surface dark:bg-surface-dark">
-          <View className="w-[120px] h-[120px] rounded-full border border-gold-border-alt items-center justify-center bg-surface-raised dark:bg-surface-raised-dark shadow-[0_10px_20px_rgba(0,0,0,0.08)]">
+          <View className="w-[120px] h-[120px] rounded-full border border-gold-border-alt items-center justify-center bg-surface-raised dark:bg-surface-raised-dark shadow-input">
             <IconUser size={42} color={themeColors.premium.gray.secondary} strokeWidth={2.2} />
           </View>
           <H2 className="mt-8 px-3 font-manrope-bold text-[28px] leading-[34px] text-center">{fullName}</H2>
