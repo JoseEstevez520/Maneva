@@ -48,7 +48,7 @@ export default function SalonDetailScreen() {
   if (error || !salon)
     return (
       <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center">
-        <ErrorMessage message={error || 'Salón no encontrado'} />
+        <ErrorMessage message={error || 'Salón non atopado'} />
       </SafeAreaView>
     )
 
@@ -70,12 +70,12 @@ export default function SalonDetailScreen() {
     ? salon.salons.description.length > 110
       ? `${salon.salons.description.slice(0, 110)}...`
       : salon.salons.description
-    : 'Descubre un espacio premium con atención personalizada y servicios de alto nivel.'
+    : 'Descubre un espazo premium con atención personalizada e servizos de alto nivel.'
 
   const tabs: { key: SalonTab; label: string }[] = [
-    { key: 'services', label: 'SERVICIOS' },
-    { key: 'team', label: 'NUESTROS ESTILISTAS' },
-    { key: 'reviews', label: 'RESEÑAS' },
+    { key: 'services', label: 'SERVIZOS' },
+    { key: 'team', label: 'OS NOSOS ESTILISTAS' },
+    { key: 'reviews', label: 'OPINIÓNS' },
     { key: 'details', label: 'DETALLES' },
   ]
 
@@ -115,7 +115,7 @@ export default function SalonDetailScreen() {
                     <Caption className="font-manrope-extrabold text-[13px] text-gold-text">{avgRating.toFixed(1)}</Caption>
                   </View>
                   <Caption className="font-manrope-semibold text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
-                    {reviewCount > 0 ? `${reviewCount} opiniones` : 'Sin opiniones todavía'}
+                    {reviewCount > 0 ? `${reviewCount} opinións` : 'Aínda sen opinións'}
                   </Caption>
                 </View>
                 <Caption className="mt-2 font-manrope-medium text-[14px] leading-[20px] text-foreground-muted dark:text-foreground-muted-dark">
@@ -207,7 +207,7 @@ export default function SalonDetailScreen() {
                 {reviews.length === 0 ? (
                   <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark p-5 items-center">
                     <Caption className="font-manrope-medium text-[13px] text-foreground-subtle dark:text-foreground-subtle-dark text-center">
-                      Este salón todavía no tiene reseñas.
+                      Este salón aínda non ten opinións.
                     </Caption>
                   </View>
                 ) : null}
@@ -249,7 +249,7 @@ export default function SalonDetailScreen() {
                 {employees.length === 0 ? (
                   <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark p-5 items-center">
                     <Caption className="font-manrope-medium text-[13px] text-foreground-subtle dark:text-foreground-subtle-dark text-center">
-                      No hay estilistas publicados todavía.
+                      Aínda non hai estilistas publicados.
                     </Caption>
                   </View>
                 ) : null}
@@ -261,17 +261,17 @@ export default function SalonDetailScreen() {
                 <View className="flex-row items-start gap-2">
                   <IconLocation size={14} color={themeColors.gold.DEFAULT} />
                   <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark flex-1">
-                    {salon.address || 'Dirección no disponible'}{salon.city ? `, ${salon.city}` : ''}{salon.postal_code ? `, ${salon.postal_code}` : ''}
+                    {salon.address || 'Enderezo non dispoñible'}{salon.city ? `, ${salon.city}` : ''}{salon.postal_code ? `, ${salon.postal_code}` : ''}
                   </Caption>
                 </View>
                 <View className="flex-row items-center gap-2">
                   <IconPhone size={14} color={themeColors.gold.DEFAULT} />
-                  <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark">{salon.phone || 'Teléfono no disponible'}</Caption>
+                  <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark">{salon.phone || 'Teléfono non dispoñible'}</Caption>
                 </View>
                 <View className="flex-row items-center gap-2">
                   <IconClock size={14} color={themeColors.gold.DEFAULT} />
                   <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark">
-                    Horario no disponible
+                    Horario non dispoñible
                   </Caption>
                 </View>
                 {salon.salons?.description ? (
@@ -291,7 +291,7 @@ export default function SalonDetailScreen() {
           size="xs"
           onPress={() => router.push(`/booking/${id}`)}
         >
-          Pedir cita
+          Reservar cita
         </Button>
       </View>
     </SafeAreaView>

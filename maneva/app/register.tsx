@@ -22,19 +22,19 @@ import { useThemeColors } from "@/hooks/useThemeColors";
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(2, "Debe contener al menos 2 caracteres"),
-    email: z.string().email("Email inválido o incorrecto"),
+    fullName: z.string().min(2, "Debe conter polo menos 2 caracteres"),
+    email: z.string().email("Correo electrónico incorrecto ou non válido"),
     phone: z
       .string()
-      .min(9, "Debe contener al menos 9 dígitos")
-      .regex(/^\+?[0-9\s\-().]{9,20}$/, "Teléfono inválido")
+      .min(9, "Debe conter polo menos 9 díxitos")
+      .regex(/^\+?[0-9\s\-().]{9,20}$/, "Teléfono non válido")
       .optional()
       .or(z.literal("")),
-    password: z.string().min(6, "Debe contener al menos 6 caracteres"),
+    password: z.string().min(6, "Debe conter polo menos 6 caracteres"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
+    message: "Os contrasinais non coinciden",
     path: ["confirmPassword"],
   });
 
@@ -119,10 +119,10 @@ export default function RegisterScreen() {
           className="mb-8"
         >
           <H1 className="font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark mb-1">
-            Crear cuenta
+            Crear conta
           </H1>
           <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
-            Únete a Maneva y descubre tu estilo
+            Únete a Maneva e descobre o teu estilo
           </Body>
         </Animated.View>
 
@@ -133,8 +133,8 @@ export default function RegisterScreen() {
             className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6 gap-3"
           >
             <Caption className="font-manrope-semibold text-amber-800">
-              Ese número ya tiene citas pedidas por WhatsApp. Pulsa el botón
-              para crear tu cuenta y vincular tus citas automáticamente.
+              Ese número xa ten citas pedidas por WhatsApp. Preme o botón
+              para crear a túa conta e vincular as túas citas automaticamente.
             </Caption>
             <Button
               onPress={handleMerge}
@@ -142,7 +142,7 @@ export default function RegisterScreen() {
               size="sm"
               variant="secondary"
             >
-              Crear cuenta y vincular mis citas
+              Crear conta e vincular as miñas citas
             </Button>
           </Animated.View>
         )}
@@ -169,8 +169,8 @@ export default function RegisterScreen() {
             name="fullName"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Nombre completo"
-                placeholder="Juan Pérez"
+                label="Nome completo"
+                placeholder="Xoán Pérez"
                 value={value}
                 onChangeText={onChange}
                 error={errors.fullName?.message}
@@ -186,7 +186,7 @@ export default function RegisterScreen() {
             name="email"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Correo Electrónico"
+                label="Correo electrónico"
                 placeholder="tu@email.com"
                 value={value}
                 onChangeText={onChange}
@@ -223,7 +223,7 @@ export default function RegisterScreen() {
             name="password"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Contraseña"
+                label="Contrasinal"
                 placeholder="••••••••"
                 value={value}
                 onChangeText={onChange}
@@ -238,7 +238,7 @@ export default function RegisterScreen() {
             name="confirmPassword"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Confirmar contraseña"
+                label="Confirmar contrasinal"
                 placeholder="••••••••"
                 value={value}
                 onChangeText={onChange}
@@ -272,7 +272,7 @@ export default function RegisterScreen() {
               loading={loading}
               size="sm"
             >
-              Crear cuenta
+              Crear conta
             </Button>
 
             <View className="flex-row justify-center items-center gap-1">
@@ -285,7 +285,7 @@ export default function RegisterScreen() {
                   textShadowRadius: 2,
                 }}
               >
-                ¿Ya tienes cuenta?
+                Xa tes conta?
               </Body>
               <Link href="/login" asChild>
                 <TouchableOpacity

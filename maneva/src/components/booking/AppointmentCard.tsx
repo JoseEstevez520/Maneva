@@ -3,7 +3,7 @@ import { View, TouchableOpacity } from 'react-native'
 import { H3, Body, Caption } from '@/components/ui/Typography'
 import { Database } from '@/types/database.types'
 import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
 
@@ -15,9 +15,9 @@ export type EnhancedAppointment = Appointment & {
 }
 
 export function AppointmentCard({ appointment, onPress }: { appointment: EnhancedAppointment; onPress?: () => void }) {
-  const dateStr = format(parseISO(appointment.scheduled_at), "dd MMM yyyy 'a las' HH:mm", { locale: es })
-  const salonName = appointment.salon_locations?.name || 'Salón Desconocido'
-  const serviceNames = appointment.appointment_services?.map(s => s.services?.name).filter(Boolean).join(', ') || 'Servicios Varios'
+  const dateStr = format(parseISO(appointment.scheduled_at), "dd MMM yyyy 'ás' HH:mm", { locale: gl })
+  const salonName = appointment.salon_locations?.name || 'Salón descoñecido'
+  const serviceNames = appointment.appointment_services?.map(s => s.services?.name).filter(Boolean).join(', ') || 'Servizos varios'
 
   const statusColor = {
     pending:   'text-yellow-600',

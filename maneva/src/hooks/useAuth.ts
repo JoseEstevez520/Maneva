@@ -15,19 +15,19 @@ function getFriendlyAuthError(error: unknown): string {
   const normalized = raw.toLowerCase();
 
   if (normalized.includes("email rate limit exceeded")) {
-    return "Has intentado registrarte demasiadas veces en poco tiempo. Espera 60 segundos e inténtalo de nuevo.";
+    return "Intentaches rexistrarte demasiadas veces nun tempo curto. Agarda 60 segundos e téntao de novo.";
   }
   if (normalized.includes("user already registered")) {
-    return "Este correo ya está registrado. Prueba a iniciar sesión.";
+    return "Este correo xa está rexistrado. Proba a iniciar sesión.";
   }
   if (
     normalized.includes("invalid otp") ||
     normalized.includes("token has expired")
   ) {
-    return "Código incorrecto o caducado. Solicita uno nuevo.";
+    return "Código incorrecto ou caducado. Solicita un novo.";
   }
 
-  return error instanceof Error ? error.message : "Error";
+  return error instanceof Error ? error.message : "Erro";
 }
 
 export function useAuth() {
@@ -42,7 +42,7 @@ export function useAuth() {
     try {
       await signIn(email, password);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error");
+      setError(e instanceof Error ? e.message : "Erro");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export function useAuth() {
     try {
       await signOut();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error");
+      setError(e instanceof Error ? e.message : "Erro");
     } finally {
       setLoading(false);
     }

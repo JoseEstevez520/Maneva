@@ -22,10 +22,10 @@ export default function InboxScreen() {
           <IconMail size={34} color={themeColors.gold.DEFAULT} strokeWidth={2.2} />
         </View>
         <Body className="font-manrope-extrabold text-[17px] text-foreground dark:text-foreground-dark text-center mb-2">
-          Tu buzón está vacío
+          A túa caixa de entrada está baleira
         </Body>
         <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center leading-relaxed">
-          Aquí aparecerán tus conversaciones y notificaciones
+          Aquí aparecerán as túas conversas e notificacións
         </Caption>
       </Animated.View>
     </ScreenLayout>

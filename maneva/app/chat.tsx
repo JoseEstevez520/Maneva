@@ -44,10 +44,10 @@ import type { SharedValue } from 'react-native-reanimated'
 // ─── Chips de acceso rápido ────────────────────────────────────────────────────
 
 const QUICK_CHIPS = [
-  'Buscar salón cerca de mí',
-  '¿Qué servicios ofrecéis?',
-  'Ver disponibilidad hoy',
-  'Recomendadme un peluquero',
+  'Buscar salón preto de min',
+  'Que servizos ofrecedes?',
+  'Ver dispoñibilidade hoxe',
+  'Recomendádeme un perruqueiro',
 ]
 
 // ─── Componentes internos ──────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ function QuickChips({ onSelect }: { onSelect: (text: string) => void }) {
       className="px-5 mt-4 gap-2"
     >
       <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark mb-1">
-        Puedes preguntarme sobre...
+        Podes preguntarme sobre...
       </Caption>
       <View className="flex-row flex-wrap gap-2">
         {QUICK_CHIPS.map((chip) => (
@@ -340,8 +340,8 @@ export default function ChatScreen() {
               <View className="self-start ml-5 mb-3 max-w-[82%]">
                 <View className="bg-surface-raised dark:bg-surface-raised-dark px-4 py-3 rounded-2xl rounded-tl-sm">
                   <Body className="font-manrope-medium text-[14px] leading-[20px] text-foreground dark:text-foreground-dark">
-                    ¡Hola! Soy el asistente de Maneva. Puedo ayudarte a encontrar salones,
-                    recomendar peluqueros o resolver cualquier duda. ¿En qué te ayudo?
+                    Ola! Son o asistente de Maneva. Podo axudarche a atopar salóns,
+                    recomendar perruqueiros ou resolver calquera dúbida. En que che axudo?
                   </Body>
                 </View>
               </View>
@@ -360,7 +360,7 @@ export default function ChatScreen() {
         <View className="flex-row items-end gap-3 px-5 py-3 border-t border-border dark:border-border-dark">
           <TextInput
             className="flex-1 bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-4 py-3 font-manrope-medium text-[14px] text-foreground dark:text-foreground-dark max-h-[100px]"
-            placeholder="Escribe tu pregunta..."
+            placeholder="Escribe a túa pregunta..."
             placeholderTextColor={themeColors.premium.gray.DEFAULT}
             value={input}
             onChangeText={setInput}

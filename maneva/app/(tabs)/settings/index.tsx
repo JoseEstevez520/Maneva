@@ -92,7 +92,7 @@ export default function SettingsScreen() {
     const firstName = profile?.first_name?.trim() ?? ''
     const lastName = profile?.last_name?.trim() ?? ''
     const joined = [firstName, lastName].filter(Boolean).join(' ')
-    return joined || 'Nombre de Usuario'
+    return joined || 'Nome de usuario'
   }, [profile?.first_name, profile?.last_name])
 
   const simpleModeEnabled = styleProfile?.simple_mode ?? false
@@ -108,7 +108,7 @@ export default function SettingsScreen() {
     try {
       await saveStyleProfile({ simple_mode: nextValue })
     } catch {
-      setDialog({ title: 'Error', message: 'No se pudo actualizar el modo sencillo.', onConfirm: closeDialog })
+      setDialog({ title: 'Erro', message: 'Non se puido actualizar o modo sinxelo.', onConfirm: closeDialog })
     }
   }
 
@@ -118,9 +118,9 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     setDialog({
-      title: 'Cerrar sesión',
-      message: '¿Seguro que quieres cerrar sesión?',
-      confirmLabel: 'Cerrar sesión',
+      title: 'Pechar sesión',
+      message: 'Seguro que queres pechar sesión?',
+      confirmLabel: 'Pechar sesión',
       cancelLabel: 'Cancelar',
       destructive: true,
       onConfirm: () => { closeDialog(); logout() },
@@ -142,23 +142,23 @@ export default function SettingsScreen() {
           <Caption className="mt-2 font-manrope-medium">{user?.email ?? ''}</Caption>
         </View>
 
-        <MenuSection title="Mi Cuenta">
-          <MenuRow label="Citas por terceros" onPress={() => router.push('/(tabs)/settings/bookings-delegation')} />
+        <MenuSection title="A miña conta">
+          <MenuRow label="Citas por terceiros" onPress={() => router.push('/(tabs)/settings/bookings-delegation')} />
           <MenuRow label="Preferencias de cita" onPress={() => router.push('/(tabs)/settings/booking-preferences')} />
           <MenuRow label="Cortes de referencia" onPress={() => router.push('/(tabs)/settings/reference-cuts')} />
         </MenuSection>
 
-        <MenuSection title="Configuración de la app">
-          <MenuRow label="Notificaciones" onPress={() => router.push('/(tabs)/settings/notifications')} />
-          <SwitchRow label="Modo oscuro" value={darkModeEnabled} onValueChange={handleDarkModeChange} />
-          <SwitchRow label="Modo sencillo" value={simpleModeEnabled} onValueChange={handleSimpleModeChange} />
-          <MenuRow label="Ajustes generales" onPress={() => router.push('/(tabs)/settings/general-settings')} />
+        <MenuSection title="Configuración da app">
+          <MenuRow label="Notificacións" onPress={() => router.push('/(tabs)/settings/notifications')} />
+          <SwitchRow label="Modo escuro" value={darkModeEnabled} onValueChange={handleDarkModeChange} />
+          <SwitchRow label="Modo sinxelo" value={simpleModeEnabled} onValueChange={handleSimpleModeChange} />
+          <MenuRow label="Axustes xerais" onPress={() => router.push('/(tabs)/settings/general-settings')} />
         </MenuSection>
 
         <View className="items-center py-10">
           <TouchableOpacity onPress={handleLogout} activeOpacity={0.75}>
             <Caption className="font-manrope-extrabold uppercase tracking-[2.5px] text-[15px] text-red-600">
-              Cerrar sesión
+              Pechar sesión
             </Caption>
           </TouchableOpacity>
         </View>

@@ -40,22 +40,22 @@ const Dot = ({ isActive }: { isActive: boolean }) => {
 const slides = [
   {
     id: "1",
-    title: "Tu peluquería, a un toque",
+    title: "A túa perruquería, a un toque",
     description:
-      "Reserva en segundos con los mejores profesionales de tu zona.",
+      "Reserva en segundos cos mellores profesionais da túa zona.",
     image: require("../../assets/images/onboarding/slide1.png"),
   },
   {
     id: "2",
-    title: "Elige quién te atiende",
-    description: "Conoce a nuestro equipo de estilistas y lee reseñas reales.",
+    title: "Escolle quen te atende",
+    description: "Coñece o noso equipo de estilistas e le opinións reais.",
     image: require("../../assets/images/onboarding/slide2.png"),
   },
   {
     id: "3",
     title: "Ofertas exclusivas",
     description:
-      "Accede a campañas especiales y descuentos solo en tus salones favoritos.",
+      "Accede a campañas especiais e descontos só nos teus salóns favoritos.",
     image: require("../../assets/images/onboarding/slide3.png"),
   },
 ];
@@ -142,7 +142,7 @@ export default function OnboardingScreen() {
           activeOpacity={0.85}
         >
           <Text className="text-premium-white font-manrope-extrabold text-[13px] uppercase tracking-widest">
-            {currentIndex === slides.length - 1 ? "Empezar" : "Siguiente"}
+            {currentIndex === slides.length - 1 ? "Comezar" : "Seguinte"}
           </Text>
         </TouchableOpacity>
       </View>

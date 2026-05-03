@@ -21,19 +21,19 @@ import { useFavoriteStylists } from '@/hooks/useFavoriteStylists'
 import { StylistPickerSheet } from '@/components/ui/StylistPickerSheet'
 
 const SERVICE_OPTIONS = [
-  'Corte y peinado',
+  'Corte e peiteado',
   'Barba',
   'Tinte premium',
   'Balayage',
-  'Color',
+  'Cor',
   'Mechas',
   'Alisado',
-  'Recogido',
-  'Tratamiento capilar',
+  'Recollido',
+  'Tratamento capilar',
 ] as const
 
 const TIME_OPTIONS = [
-  { key: 'morning', label: 'Mañanas', slot: '09:00 - 13:00' },
+  { key: 'morning', label: 'Mañás', slot: '09:00 - 13:00' },
   { key: 'afternoon', label: 'Tardes', slot: '16:00 - 20:00' },
 ] as const
 
@@ -317,7 +317,7 @@ export default function BookingPreferencesScreen() {
       await savePreferredHour(preferredHour)
       await savePreferredTimeSlot(slot)
     } catch {
-      setDialog({ title: 'Error', message: 'No se pudo guardar el horario preferido.', onConfirm: closeDialog })
+      setDialog({ title: 'Erro', message: 'Non se puido gardar o horario preferido.', onConfirm: closeDialog })
     }
   }
 
@@ -326,7 +326,7 @@ export default function BookingPreferencesScreen() {
       setCustomDeleteModeRange('')
       await activateAvailabilityRange(range)
     } catch {
-      setDialog({ title: 'Error', message: 'No se pudo activar el horario personalizado.', onConfirm: closeDialog })
+      setDialog({ title: 'Erro', message: 'Non se puido activar o horario personalizado.', onConfirm: closeDialog })
     }
   }
 
@@ -337,7 +337,7 @@ export default function BookingPreferencesScreen() {
   const handleDeleteCustomSlot = (range: string) => {
     setDialog({
       title: 'Eliminar horario',
-      message: `¿Seguro que quieres eliminar ${range}?`,
+      message: `Seguro que queres eliminar ${range}?`,
       confirmLabel: 'Eliminar',
       cancelLabel: 'Cancelar',
       destructive: true,
@@ -363,7 +363,7 @@ export default function BookingPreferencesScreen() {
       const endMinutes = nearestAvailabilityMinutes(availabilityEndMinutes)
 
       if (endMinutes <= startMinutes) {
-        setDialog({ title: 'Rango inválido', message: 'La hora de fin debe ser posterior a la hora de comienzo.', onConfirm: closeDialog })
+        setDialog({ title: 'Intervalo non válido', message: 'A hora de fin debe ser posterior á hora de comezo.', onConfirm: closeDialog })
         return
       }
 
@@ -372,7 +372,7 @@ export default function BookingPreferencesScreen() {
       setCustomDeleteModeRange('')
       setIsAvailabilityModalOpen(false)
     } catch {
-      setDialog({ title: 'Error', message: 'No se pudo guardar la disponibilidad.', onConfirm: closeDialog })
+      setDialog({ title: 'Erro', message: 'Non se puido gardar a dispoñibilidade.', onConfirm: closeDialog })
     }
   }
 
@@ -417,9 +417,9 @@ export default function BookingPreferencesScreen() {
     try {
       await saveServices(servicesDraft)
       setIsAddServiceOpen(false)
-      setDialog({ title: 'Guardado', message: 'Tus servicios favoritos se han actualizado.', onConfirm: closeDialog })
+      setDialog({ title: 'Gardado', message: 'Os teus servizos favoritos actualizáronse.', onConfirm: closeDialog })
     } catch {
-      setDialog({ title: 'Error', message: 'No se pudieron guardar los servicios favoritos.', onConfirm: closeDialog })
+      setDialog({ title: 'Erro', message: 'Non se puideron gardar os servizos favoritos.', onConfirm: closeDialog })
     } finally {
       setSavingServices(false)
     }
@@ -433,11 +433,11 @@ export default function BookingPreferencesScreen() {
         <View className="px-6 py-8 bg-surface dark:bg-surface-dark">
           <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Preferencias de cita</H2>
           <Caption className="mt-2 font-manrope-semibold text-[14px] tracking-[2.6px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark">
-            Personaliza tu experiencia
+            Personaliza a túa experiencia
           </Caption>
         </View>
 
-        <SectionTitle title="Servicios favoritos" />
+        <SectionTitle title="Servizos favoritos" />
         {servicesDraft.map((service) => (
           <ItemRow
             key={service}
@@ -452,7 +452,7 @@ export default function BookingPreferencesScreen() {
         ))}
         {servicesDraft.length === 0 ? (
           <View className="px-6 py-6 bg-surface dark:bg-surface-dark border-b border-border dark:border-border-dark">
-            <Body className="text-[15px] text-foreground-muted dark:text-foreground-muted-dark">No tienes servicios favoritos todavía.</Body>
+            <Body className="text-[15px] text-foreground-muted dark:text-foreground-muted-dark">Aínda non tes servizos favoritos.</Body>
           </View>
         ) : null}
 
@@ -466,7 +466,7 @@ export default function BookingPreferencesScreen() {
               <IconAdd size={11} color={themeColors.premium.white} strokeWidth={3} />
             </View>
             <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
-              Añadir servicio
+              Engadir servizo
             </Caption>
           </TouchableOpacity>
 
@@ -485,7 +485,7 @@ export default function BookingPreferencesScreen() {
                 ))}
               </View>
               {availableServiceOptions.length === 0 ? (
-                <Body className="text-[14px] text-foreground-muted dark:text-foreground-muted-dark">Ya has seleccionado todas las opciones disponibles.</Body>
+                <Body className="text-[14px] text-foreground-muted dark:text-foreground-muted-dark">Xa seleccionaches todas as opcións dispoñibles.</Body>
               ) : null}
             </View>
           ) : null}
@@ -501,7 +501,7 @@ export default function BookingPreferencesScreen() {
                 className={`self-start rounded-[10px] border border-premium-black px-3 py-2 ${savingServices ? 'opacity-60' : ''}`}
               >
                 <Caption className="font-manrope-extrabold text-[10px] tracking-[1.4px] uppercase text-foreground dark:text-foreground-dark">
-                  {savingServices ? 'Guardando...' : 'Guardar cambios'}
+                  {savingServices ? 'Gardando...' : 'Gardar cambios'}
                 </Caption>
               </TouchableOpacity>
             </View>
@@ -563,8 +563,8 @@ export default function BookingPreferencesScreen() {
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
               <IconAdd size={11} color={themeColors.premium.white} strokeWidth={3} />
             </View>
-            <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
-              Añadir hora personalizada
+              <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
+                Engadir hora personalizada
             </Caption>
           </TouchableOpacity>
         </View>
@@ -584,7 +584,7 @@ export default function BookingPreferencesScreen() {
 
               <View className="px-5 pb-4 items-center">
                 <H2 className="font-manrope-bold text-[28px] leading-[34px] text-foreground dark:text-foreground-dark text-center">
-                  {availabilityPickerStep === 'start' ? 'Hora de inicio' : 'Hora de fin'}
+                  {availabilityPickerStep === 'start' ? 'Hora de comezo' : 'Hora de fin'}
                 </H2>
               </View>
 
@@ -632,7 +632,7 @@ export default function BookingPreferencesScreen() {
                     className="h-12 rounded-full bg-gold items-center justify-center"
                   >
                     <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white dark:text-premium-white">
-                      Guardar hora personalizada
+                      Gardar hora personalizada
                     </Caption>
                   </TouchableOpacity>
                 </View>
@@ -643,7 +643,7 @@ export default function BookingPreferencesScreen() {
 
         <View className="h-5 bg-surface-raised dark:bg-surface-raised-dark" />
 
-        <SectionTitle title="Estilistas de preferencia" />
+        <SectionTitle title="Estilistas preferidos" />
         {stylistsError ? (
           <ErrorMessage message={stylistsError} className="mx-6 mb-2" />
         ) : null}
@@ -689,7 +689,7 @@ export default function BookingPreferencesScreen() {
               <IconAdd size={11} color={themeColors.premium.white} strokeWidth={3} />
             </View>
             <Caption className={`font-manrope-extrabold text-[14px] tracking-[0.8px] ${stylistsLoading ? 'text-premium-divider-disabled' : 'text-gold'}`}>
-              {stylistsLoading ? 'Cargando...' : 'Añadir estilista'}
+              {stylistsLoading ? 'Cargando...' : 'Engadir estilista'}
             </Caption>
           </TouchableOpacity>
         </View>

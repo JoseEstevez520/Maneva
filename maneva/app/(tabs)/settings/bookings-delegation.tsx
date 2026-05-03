@@ -90,7 +90,7 @@ function PersonCard({
             Permiso: {permissionLabel}
           </Body>
           <Body className="mt-1 font-manrope text-[12px] text-foreground-subtle dark:text-foreground-subtle-dark">
-            Desde: {dateLabel}
+            Dende: {dateLabel}
           </Body>
         </View>
 
@@ -115,7 +115,7 @@ function AddPersonTrigger({ onPress }: { onPress: () => void }) {
         <IconAdd size={11} color={themeColors.premium.white} strokeWidth={3} />
       </View>
       <Caption className="font-manrope-extrabold text-[14px] tracking-[0.8px] text-gold">
-        Añadir persona
+        Engadir persoa
       </Caption>
     </TouchableOpacity>
   )
@@ -190,7 +190,7 @@ export default function BookingsDelegationScreen() {
 
   const handleAddManager = async () => {
     if (!phone.trim()) {
-      setDialog({ title: 'Teléfono requerido', message: 'Introduce el teléfono de la persona que ya está registrada.', onConfirm: closeDialog })
+      setDialog({ title: 'Teléfono obrigatorio', message: 'Introduce o teléfono da persoa que xa está rexistrada.', onConfirm: closeDialog })
       return
     }
 
@@ -201,10 +201,10 @@ export default function BookingsDelegationScreen() {
       setRelationLabel('')
       setCanModify(true)
       setIsAddOpen(false)
-      setDialog({ title: 'Listo', message: 'La persona ya puede gestionar tus citas según el permiso otorgado.', onConfirm: closeDialog })
+      setDialog({ title: 'Listo', message: 'A persoa xa pode xestionar as túas citas segundo o permiso concedido.', onConfirm: closeDialog })
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'No se pudo añadir la persona'
-      setDialog({ title: 'Error', message, onConfirm: closeDialog })
+      const message = e instanceof Error ? e.message : 'Non se puido engadir a persoa'
+      setDialog({ title: 'Erro', message, onConfirm: closeDialog })
     } finally {
       setSavingAdd(false)
     }
@@ -220,7 +220,7 @@ export default function BookingsDelegationScreen() {
   const handleRemoveDelegate = (linkedProfileId: string) => {
     setDialog({
       title: 'Eliminar permiso',
-      message: 'Esta persona dejará de gestionar tus citas.',
+      message: 'Esta persoa deixará de xestionar as túas citas.',
       confirmLabel: 'Eliminar',
       cancelLabel: 'Cancelar',
       destructive: true,
@@ -229,8 +229,8 @@ export default function BookingsDelegationScreen() {
         try {
           await removeDelegate(linkedProfileId)
         } catch (e: unknown) {
-          const message = e instanceof Error ? e.message : 'No se pudo eliminar el permiso'
-          setDialog({ title: 'Error', message, onConfirm: closeDialog })
+          const message = e instanceof Error ? e.message : 'Non se puido eliminar o permiso'
+          setDialog({ title: 'Erro', message, onConfirm: closeDialog })
         }
       },
     })
@@ -238,8 +238,8 @@ export default function BookingsDelegationScreen() {
 
   const handleStopManaging = (linkedProfileId: string) => {
     setDialog({
-      title: 'Dejar de gestionar',
-      message: 'Dejarás de gestionar las citas de esta persona.',
+      title: 'Deixar de xestionar',
+      message: 'Deixarás de xestionar as citas desta persoa.',
       confirmLabel: 'Confirmar',
       cancelLabel: 'Cancelar',
       destructive: true,
@@ -248,8 +248,8 @@ export default function BookingsDelegationScreen() {
         try {
           await stopManaging(linkedProfileId)
         } catch (e: unknown) {
-          const message = e instanceof Error ? e.message : 'No se pudo dejar de gestionar'
-          setDialog({ title: 'Error', message, onConfirm: closeDialog })
+          const message = e instanceof Error ? e.message : 'Non se puido deixar de xestionar'
+          setDialog({ title: 'Erro', message, onConfirm: closeDialog })
         }
       },
     })
@@ -272,11 +272,11 @@ export default function BookingsDelegationScreen() {
         {error ? <ErrorMessage message={error} className="mx-6 mt-4" /> : null}
 
         <View className="px-6 py-8 bg-surface dark:bg-surface-dark">
-          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Citas por terceros</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Citas por terceiros</H2>
         </View>
 
         <View className="pt-8">
-          <SectionTitle>Quién puede gestionar mis citas</SectionTitle>
+          <SectionTitle>Quen pode xestionar as miñas citas</SectionTitle>
 
           {delegates.map((delegate) => (
             <PersonCard
@@ -298,7 +298,7 @@ export default function BookingsDelegationScreen() {
             {!hasDelegates ? (
               <View className="px-6 py-5">
                 <Body className="font-manrope text-[15px] text-foreground-muted dark:text-foreground-muted-dark">
-                  Nadie está gestionando tus citas todavía.
+                  Ninguén está xestionando as túas citas aínda.
                 </Body>
               </View>
             ) : null}
@@ -311,21 +311,21 @@ export default function BookingsDelegationScreen() {
             <View className="px-6 pt-5 pb-4 gap-4 bg-surface dark:bg-surface-dark border-b border-border dark:border-border-dark">
               <Input
                 label="Teléfono"
-                placeholder="Ej: +34600111222"
+                placeholder="Ex: +34600111222"
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
               />
               <Input
                 label="Relación (opcional)"
-                placeholder="Ej: Hija, pareja, madre"
+                placeholder="Ex: Filla, parella, nai"
                 value={relationLabel}
                 onChangeText={setRelationLabel}
               />
 
               <View className="flex-row items-center justify-between border border-border dark:border-border-dark rounded-[14px] px-4 py-4">
                 <Body className="font-manrope-medium text-[15px] text-foreground dark:text-foreground-dark">
-                  Permitir modificar citas
+                  Permitir modificar as citas
                 </Body>
                 <Switch
                   value={canModify}
@@ -337,7 +337,7 @@ export default function BookingsDelegationScreen() {
               </View>
 
               <Button onPress={handleAddManager} loading={savingAdd} disabled={submitDisabled} size="xs">
-                Guardar permiso
+                Gardar permiso
               </Button>
 
               <View className="rounded-[18px] bg-surface-overlay dark:bg-surface-overlay-dark px-5 py-5 flex-row items-center gap-3">
@@ -345,7 +345,7 @@ export default function BookingsDelegationScreen() {
                   <Text className="text-[11px] font-bold text-premium-white">i</Text>
                 </View>
                 <Body className="flex-1 font-manrope text-[13px] leading-6 text-foreground-muted dark:text-foreground-muted-dark">
-                  Solo podrás otorgar permisos a usuarios ya registrados en Maneva, buscándolos por su teléfono.
+                  Só poderás conceder permisos a usuarios xa rexistrados en Maneva, buscándoos polo seu teléfono.
                 </Body>
               </View>
             </View>
@@ -355,7 +355,7 @@ export default function BookingsDelegationScreen() {
         <View className="h-4 bg-surface dark:bg-surface-dark-pale" />
 
         <View className="pt-8 pb-6">
-          <SectionTitle>A quién gestiono yo las citas</SectionTitle>
+          <SectionTitle>A quen lles xestiono eu as citas</SectionTitle>
 
           {managedUsers.map((managed) => (
             <PersonCard
@@ -363,10 +363,10 @@ export default function BookingsDelegationScreen() {
               name={fullName(managed.user.first_name, managed.user.last_name)}
               permissionLabel={formatPermissionsLabel(managed.permissions)}
               dateLabel={formatDateLabel(managed.link.created_at)}
-              primaryLabel="Gestionar citas"
+              primaryLabel="Xestionar citas"
               primaryColorClassName="text-gold"
               onPrimaryPress={() => router.push('/(tabs)/bookings')}
-              secondaryLabel="Dejar de gestionar"
+              secondaryLabel="Deixar de xestionar"
               secondaryColorClassName="text-red-600"
               onSecondaryPress={() => handleStopManaging(managed.link.id)}
             />
@@ -375,20 +375,20 @@ export default function BookingsDelegationScreen() {
           {!hasManagedUsers ? (
             <View className="px-6 py-5 border-b border-border dark:border-border-dark bg-surface dark:bg-surface-dark">
               <Body className="font-manrope text-[15px] text-foreground-muted dark:text-foreground-muted-dark">
-                Aún no gestionas las citas de otros usuarios.
+                Aínda non xestionas as citas doutros usuarios.
               </Body>
             </View>
           ) : null}
 
           {/* TODO: enlazar a contenido de ayuda real cuando esté disponible */}
-          <InfoCard title="Cómo añadir administradores" actionLabel="Ver más" onPress={() => {}} />
+          <InfoCard title="Como engadir administradores" actionLabel="Ver máis" onPress={() => {}} />
 
           <View className="mx-6 mt-4 rounded-[18px] bg-surface-overlay dark:bg-surface-overlay-dark px-5 py-5 flex-row items-center gap-3">
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
               <Text className="text-[11px] font-bold text-premium-white">!</Text>
             </View>
             <Body className="flex-1 font-manrope text-[13px] leading-6 text-foreground-muted dark:text-foreground-muted-dark">
-              Las personas con permiso podrán gestionar tus citas según el acceso otorgado. Puedes revocarlo en cualquier momento.
+              As persoas con permiso poderán xestionar as túas citas segundo o acceso concedido. Podes revogalo en calquera momento.
             </Body>
           </View>
         </View>

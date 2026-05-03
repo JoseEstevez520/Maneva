@@ -34,12 +34,12 @@ type SearchSalon = UnifiedSalon & { avgRating: number | null; avgPrice: number |
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560066984-138daaa0a5d5?w=400&h=300&fit=crop&q=80'
 
 const SERVICES = [
-  { id: 'corte', name: 'Corte de pelo' },
+  { id: 'corte', name: 'Corte de cabelo' },
   { id: 'barba', name: 'Barba' },
   { id: 'manicura', name: 'Manicura' },
-  { id: 'peinado', name: 'Peinado' },
+  { id: 'peinado', name: 'Peiteado' },
   { id: 'tinte', name: 'Tinte' },
-  { id: 'tratamiento', name: 'Tratamiento' },
+  { id: 'tratamiento', name: 'Tratamento' },
 ]
 
 const PRICE_RANGES = [
@@ -51,8 +51,8 @@ const PRICE_RANGES = [
 
 const GENDERS = [
   { id: 'unisex', label: 'Unisex' },
-  { id: 'mujer', label: 'Mujer' },
-  { id: 'hombre', label: 'Hombre' },
+  { id: 'mujer', label: 'Muller' },
+  { id: 'hombre', label: 'Home' },
 ]
 
 interface Filters {
@@ -195,7 +195,7 @@ export default function SearchScreen() {
               value={query}
               onChangeText={setQuery}
               autoFocus
-              placeholder="Busca una peluquería"
+              placeholder="Busca unha perruquería"
               placeholderTextColor={themeColors.premium.gray.DEFAULT}
             />
             {query.length > 0 && (
@@ -222,7 +222,7 @@ export default function SearchScreen() {
             onPress={() => setVisibleModal('rating')}
           />
           <FilterChip
-            label="Precio"
+            label="Prezo"
             iconTail="expand_more"
             active={filters.priceRange > 0}
             onPress={() => setVisibleModal('price')}
@@ -230,7 +230,7 @@ export default function SearchScreen() {
           {/* TODO: Habilitar cuando exista la columna `gender_focus` en salon_locations.
               El modal está implementado pero no es accesible hasta entonces. */}
           <FilterChip
-            label="Género"
+            label="Xénero"
             iconTail="expand_more"
             active={filters.gender !== null}
             disabled
@@ -238,7 +238,7 @@ export default function SearchScreen() {
           />
           {filters.selectedServices.length > 0 && (
             <FilterChip
-              label={`${filters.selectedServices.length} servicio${filters.selectedServices.length > 1 ? 's' : ''}`}
+              label={`${filters.selectedServices.length} servizo${filters.selectedServices.length > 1 ? 's' : ''}`}
               active={true}
               disabled
               onPress={clearServiceFilter}
@@ -246,7 +246,7 @@ export default function SearchScreen() {
           )}
           {hasActiveFilters && (
             <FilterChip
-              label="Limpiar"
+              label="Limpar"
               variant="clear"
               onPress={clearAllFilters}
             />
@@ -259,7 +259,7 @@ export default function SearchScreen() {
         {/* ── Buscar por Servicio ── */}
         <View className="mt-8">
           <Caption className="px-5 font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-5">
-            FILTRAR POR SERVICIO
+            FILTRAR POR SERVIZO
           </Caption>
           <ScrollView
             horizontal
@@ -289,7 +289,7 @@ export default function SearchScreen() {
         {filters.selectedServices.length > 0 && (
           <View className="mx-5 mb-4 p-3 bg-[rgba(212,175,55,0.1)] border border-gold rounded-lg">
             <Caption className="font-manrope-medium text-[12px] text-foreground dark:text-foreground-dark">
-              Buscando salones con: {filters.selectedServices
+              Buscando salóns con: {filters.selectedServices
                 .map((id) => SERVICES.find((s) => s.id === id)?.name)
                 .join(', ')}
             </Caption>
@@ -301,10 +301,10 @@ export default function SearchScreen() {
           <View className="px-5 flex-row items-center justify-between mb-5">
             <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark">
               {!hasActiveFilters
-                ? `TODOS LOS SALONES (${filteredSalons.length})`
+                ? `TODOS OS SALÓNS (${filteredSalons.length})`
                 : filters.selectedServices.length > 0
-                ? `SALONES CON ESTOS SERVICIOS (${filteredSalons.length})`
-                : `SALONES QUE COINCIDEN (${filteredSalons.length})`}
+                ? `SALÓNS CON ESTES SERVIZOS (${filteredSalons.length})`
+                : `SALÓNS QUE COINCIDEN (${filteredSalons.length})`}
             </Caption>
           </View>
 
@@ -313,14 +313,14 @@ export default function SearchScreen() {
           ) : filteredSalons.length === 0 ? (
             <View className="px-5">
               <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-2">
-                No se encontraron resultados
+                Non se atoparon resultados
               </Body>
               <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
                 {filters.selectedServices.length > 0
-                  ? 'Intenta con otros servicios'
+                  ? 'Proba con outros servizos'
                   : query.length > 0
-                  ? 'Intenta cambiar el nombre de búsqueda'
-                  : 'Intenta cambiar los filtros'}
+                  ? 'Proba a cambiar o nome da busca'
+                  : 'Proba a cambiar os filtros'}
               </Caption>
             </View>
           ) : (
@@ -502,10 +502,10 @@ function RatingFilterModal({
   React.useEffect(() => { if (visible) setTempRating(minRating) }, [visible, minRating])
 
   const RATING_OPTIONS = [
-    { value: 0, label: 'Todas las valoraciones', stars: 0 },
-    { value: 3, label: '3 estrellas en adelante', stars: 3 },
-    { value: 4, label: '4 estrellas en adelante', stars: 4 },
-    { value: 4.5, label: '4.5 estrellas en adelante', stars: 4.5 },
+    { value: 0, label: 'Todas as valoracións', stars: 0 },
+    { value: 3, label: '3 estrelas en adiante', stars: 3 },
+    { value: 4, label: '4 estrelas en adiante', stars: 4 },
+    { value: 4.5, label: '4,5 estrelas en adiante', stars: 4.5 },
   ]
 
   return (
@@ -605,7 +605,7 @@ function PriceFilterModal({
         <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
           <View className="flex-row justify-between items-center mb-6">
             <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
-              Rango de precio
+              Intervalo de prezo
             </H2>
             <TouchableOpacity onPress={onClose}>
               <IconClose size={20} color={themeColors.premium.black} strokeWidth={2} />

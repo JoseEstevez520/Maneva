@@ -1,3 +1,4 @@
+/// <reference path="../types.d.ts" />
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { parseTwilioWebhook, normalizePhone, twimlResponse, errorResponse } from '../_shared/twilio.ts'
 import { callDeepSeek, ChatMessage, AIResponse } from '../_shared/deepseek.ts'
@@ -34,6 +35,13 @@ type ApptRow = {
   scheduled_at: string
   status: string
   appointment_services: { services: { name: string } | null }[]
+}
+
+type WhatsappMessageRow = {
+  direction: 'inbound' | 'outbound'
+  message: string | null
+  ai_response: string | null
+  created_at: string
 }
 
 function persist(rows: object[]): void {
@@ -110,7 +118,8 @@ Deno.serve(async (req: Request) => {
     console.log(`[user] phone=${phone} userId=${userId ?? 'null'}`)
 
     // .slice() antes de .reverse() para no mutar el array original
-    const chronological = (history ?? []).slice().reverse()
+    const historyRows = (history ?? []) as WhatsappMessageRow[]
+    const chronological = historyRows.slice().reverse()
     const lastOutbound = chronological.filter((m) => m.direction === 'outbound').pop()
     const progress = parseProgress(lastOutbound?.ai_response ?? null)
     console.log(`[progress] slots=${progress.slots.length} serviceIds=${progress.serviceIds.length} checkedDate=${progress.checkedDate}`)
@@ -123,7 +132,7 @@ Deno.serve(async (req: Request) => {
       }))
 
     const systemPrompt = buildSystemPrompt({
-      locationName: location?.name ?? 'la peluquería',
+      locationName: location?.name ?? 'a perruquería',
       services: services ?? [],
       userName: userRow?.first_name ?? null,
       progress,
