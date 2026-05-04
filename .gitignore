@@ -18,3 +18,7 @@ npm-debug.*
 .env
 .env.local
 .env.*.local
+
+# AI Tools / MCP
+.claude/
+.mcp.json
