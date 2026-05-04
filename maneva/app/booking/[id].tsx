@@ -10,7 +10,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { format, addDays, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import { Body, Caption, H1, H2 } from '@/components/ui/Typography'
 import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -27,25 +27,25 @@ import { useThemeColors } from '@/hooks/useThemeColors'
 import { useBookingFlow, BookingStep } from '@/hooks/useAppointments'
 import { AvailableSlot, EmployeeInfo, Service } from '@/services/appointments.service'
 
-// ─── Locale español para react-native-calendars ───────────────────────────────
+// ─── Locale galego para react-native-calendars ───────────────────────────────
 
-LocaleConfig.locales['es'] = {
-  monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
-  monthNamesShort: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
-  dayNames: ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
-  dayNamesShort: ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],
+LocaleConfig.locales['gl'] = {
+  monthNames: ['Xaneiro','Febreiro','Marzo','Abril','Maio','Xuño','Xullo','Agosto','Setembro','Outubro','Novembro','Decembro'],
+  monthNamesShort: ['Xan','Feb','Mar','Abr','Mai','Xuñ','Xul','Ago','Set','Out','Nov','Dec'],
+  dayNames: ['Domingo','Luns','Martes','Mércores','Xoves','Venres','Sábado'],
+  dayNamesShort: ['Dom','Lun','Mar','Mér','Xov','Ven','Sáb'],
 }
-LocaleConfig.defaultLocale = 'es'
+LocaleConfig.defaultLocale = 'gl'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
 const STEP_TITLES: Record<BookingStep, string> = {
-  services: 'Elige tus servicios',
-  employee: 'Elige tu profesional',
-  date: 'Elige una fecha',
-  slot: 'Elige tu horario',
-  confirm: 'Confirma tu reserva',
-  done: '¡Cita confirmada!',
+  services: 'Escolle os teus servizos',
+  employee: 'Escolle o teu profesional',
+  date: 'Escolle unha data',
+  slot: 'Escolle o teu horario',
+  confirm: 'Confirma a túa reserva',
+  done: 'Cita confirmada!',
 }
 
 const STEP_ORDER: BookingStep[] = ['services', 'employee', 'date', 'slot', 'confirm', 'done']
@@ -115,7 +115,7 @@ function ServicesStep({
   if (loading) return <LoadingSpinner />
 
   const grouped = services.reduce<Record<string, Service[]>>((acc, s) => {
-    const cat = s.category ?? 'Otros'
+    const cat = s.category ?? 'Outros'
     if (!acc[cat]) acc[cat] = []
     acc[cat].push(s)
     return acc
@@ -182,7 +182,7 @@ function ServicesStep({
         {selectedIds.length > 0 && (
           <View className="flex-row justify-between items-center mb-1">
             <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
-              {selectedIds.length} servicio{selectedIds.length > 1 ? 's' : ''} seleccionado{selectedIds.length > 1 ? 's' : ''}
+              {selectedIds.length} servizo{selectedIds.length > 1 ? 's' : ''} seleccionado{selectedIds.length > 1 ? 's' : ''}
             </Caption>
             <Caption className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
               Total: {totalPrice}€
@@ -267,7 +267,7 @@ function EmployeeStep({
           showsVerticalScrollIndicator={false}
         >
           <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-5">
-            Ningún profesional puede realizar todos tus servicios. Asigna uno a cada servicio.
+            Ningún profesional pode realizar todos os teus servizos. Asigna un a cada servizo.
           </Body>
 
           {services.map((svc) => {
@@ -281,7 +281,7 @@ function EmployeeStep({
                 <View className="gap-2">
                   {empList.length === 0 ? (
                     <Caption className="font-manrope-medium text-[12px] text-red-400">
-                      No hay profesionales disponibles para este servicio
+                      Non hai profesionais dispoñibles para este servizo
                     </Caption>
                   ) : (
                     empList.map((emp) => {
@@ -334,7 +334,7 @@ function EmployeeStep({
         showsVerticalScrollIndicator={false}
       >
         <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-4">
-          Elige un profesional concreto o deja que el sistema asigne el primero disponible.
+          Escolle un profesional concreto ou deixa que o sistema asigne o primeiro dispoñible.
         </Body>
 
         {/* Sin preferencia */}
@@ -352,10 +352,10 @@ function EmployeeStep({
           </View>
           <View className="flex-1">
             <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
-              Sin preferencia
+              Sen preferencia
             </Body>
             <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark mt-0.5">
-              Primer profesional disponible
+              Primeiro profesional dispoñible
             </Caption>
           </View>
           <SelectionCircle selected={anySelected} />
@@ -484,7 +484,7 @@ function SlotStep({
   if (loading) return <LoadingSpinner />
 
   const dateLabel = selectedDate
-    ? format(parseISO(selectedDate + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: es })
+    ? format(parseISO(selectedDate + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: gl })
     : ''
 
   return (
@@ -499,8 +499,8 @@ function SlotStep({
 
         {slots.length === 0 ? (
           <View className="flex-1 items-center justify-center gap-3">
-            <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-              No hay disponibilidad para este día.{'\n'}Prueba con otra fecha.
+              <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
+                Non hai dispoñibilidade para este día.{'\n'}Proba con outra data.
             </Caption>
           </View>
         ) : (
@@ -547,7 +547,7 @@ function SlotStep({
                       <IconClock size={11} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
                       <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
                         {totalDuration} min
-                        {isMulti ? ` · ${slot.employees.length} profesionales` : ''}
+                        {isMulti ? ` · ${slot.employees.length} profesionais` : ''}
                       </Caption>
                     </View>
                   </View>
@@ -599,7 +599,7 @@ function ConfirmStep({
   error: string | null
 }) {
   const themeColors = useThemeColors()
-  const startLabel = format(parseISO(selectedSlot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
+  const startLabel = format(parseISO(selectedSlot.start), "EEEE d 'de' MMMM 'ás' HH:mm", { locale: gl })
   const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0)
   const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0)
   const employeeNames = selectedSlot.employees
@@ -628,7 +628,7 @@ function ConfirmStep({
         {/* Servicios */}
         <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4 gap-3">
           <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase">
-            Servicios
+            Servizos
           </Caption>
           {selectedServices.map((s) => (
             <View key={s.id} className="flex-row justify-between items-center">
@@ -659,12 +659,12 @@ function ConfirmStep({
         {/* Notas */}
         <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
           <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase mb-3">
-            Notas para el salón (opcional)
+            Notas para o salón (opcional)
           </Caption>
           <TextInput
             value={clientNotes}
             onChangeText={onNotesChange}
-            placeholder="Ej: alérgica al amoniaco, corte específico..."
+            placeholder="Ex: alérxica ao amoníaco, corte específico..."
             placeholderTextColor={themeColors.premium.gray.DEFAULT}
             multiline
             numberOfLines={3}
@@ -683,7 +683,7 @@ function ConfirmStep({
 
       <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
         <Button variant="primary" size="sm" loading={loading} onPress={onConfirm}>
-          Confirmar reserva
+          Confirmar a reserva
         </Button>
       </View>
     </View>
@@ -704,7 +704,7 @@ function DoneStep({
   onGoHome: () => void
 }) {
   const themeColors = useThemeColors()
-  const dateLabel = format(parseISO(slot.start), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
+  const dateLabel = format(parseISO(slot.start), "EEEE d 'de' MMMM 'ás' HH:mm", { locale: gl })
   const totalPrice = services.reduce((sum, s) => sum + s.price, 0)
   const serviceNames = services.map((s) => s.name).join(', ')
   const employeeNames = slot.employees
@@ -722,10 +722,10 @@ function DoneStep({
         {/* Título */}
         <View className="items-center gap-2">
           <H1 className="font-manrope-bold text-[24px] text-foreground dark:text-foreground-dark text-center">
-            ¡Reserva confirmada!
+            Reserva confirmada!
           </H1>
           <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-            Recibirás la confirmación por WhatsApp.
+            Recibirás a confirmación por WhatsApp.
           </Body>
         </View>
 
@@ -777,7 +777,7 @@ function DoneStep({
 
       <View className="pb-6">
         <Button variant="primary" size="sm" onPress={onGoHome}>
-          Volver al inicio
+          Voltar ao inicio
         </Button>
       </View>
     </View>

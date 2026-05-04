@@ -18,15 +18,15 @@ import { useAuthStore } from "@/store/authStore";
 
 const SERVICES = [
   "Corte",
-  "Color",
+  "Cor",
   "Mechas",
   "Barba",
   "Manicura",
   "Pedicura",
-  "Tratamientos",
-  "Uñas",
-  "Peinados",
-  "Extensiones",
+  "Tratamentos",
+  "Unhas",
+  "Peiteados",
+  "Extensións",
 ];
 
 export default function PreferencesOnboardingScreen() {
@@ -53,7 +53,7 @@ export default function PreferencesOnboardingScreen() {
 
   const handleContinue = async () => {
     if (selected.length < 1) {
-      setError("Selecciona al menos un servicio para continuar.");
+      setError("Selecciona polo menos un servizo para continuar.");
       return;
     }
 
@@ -64,7 +64,7 @@ export default function PreferencesOnboardingScreen() {
       const currentUser = user ?? await getCurrentUser();
       if (!currentUser) {
         setError(
-          "Tu sesión no está lista. Vuelve a iniciar sesión e inténtalo de nuevo.",
+          "A túa sesión non está lista. Volve iniciar sesión e téntao de novo.",
         );
         return;
       }
@@ -91,7 +91,7 @@ export default function PreferencesOnboardingScreen() {
       const message =
         e instanceof Error
           ? e.message
-          : "No pudimos guardar tus preferencias. Inténtalo de nuevo.";
+          : "Non puidemos gardar as túas preferencias. Téntao de novo.";
       setError(message);
     } finally {
       setSaving(false);
@@ -120,14 +120,14 @@ export default function PreferencesOnboardingScreen() {
             Preferencias
           </H1>
           <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
-            Elige los servicios que más te interesan para personalizar tu
+            Escolle os servizos que máis che interesan para personalizar o teu
             inicio.
           </Body>
         </View>
 
         <View className="mb-6">
           <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-3">
-            Servicios de interés
+            Servizos de interese
           </Caption>
           <View className="flex-row flex-wrap gap-2">
             {SERVICES.map((service) => {

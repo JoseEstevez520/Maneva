@@ -2,7 +2,7 @@ import React from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
 import { format, parseISO, isSameMonth } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import { CampaignWithSalon } from '@/services/campaigns.service'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { Badge } from '@/components/ui/Badge'
@@ -24,10 +24,10 @@ function getOfferTypeVariant(type: string | null): 'gold' | 'black' | 'success' 
 
 function getOfferTypeLabel(type: string | null): string {
   switch (type?.toLowerCase()) {
-    case 'discount':  return 'Descuento'
+    case 'discount':  return 'Desconto'
     case 'promotion': return 'Promoción'
     case 'bundle':    return 'Combo'
-    case 'limited':   return 'Limitado'
+    case 'limited':   return 'Limitada'
     default:          return 'Oferta'
   }
 }
@@ -35,10 +35,10 @@ function getOfferTypeLabel(type: string | null): string {
 function formatDateRange(startIso: string, endIso: string): string {
   const start = parseISO(startIso)
   const end = parseISO(endIso)
-  const startDay = format(start, 'dd', { locale: es })
-  const startMonth = format(start, 'MMMM', { locale: es })
-  const endDay = format(end, 'dd', { locale: es })
-  const endMonth = format(end, 'MMMM', { locale: es })
+  const startDay = format(start, 'dd', { locale: gl })
+  const startMonth = format(start, 'MMMM', { locale: gl })
+  const endDay = format(end, 'dd', { locale: gl })
+  const endMonth = format(end, 'MMMM', { locale: gl })
 
   if (isSameMonth(start, end)) {
     return `${startDay} - ${endDay} de ${startMonth}`
@@ -85,7 +85,7 @@ export default function OfferCard({ offer, index }: OfferCardProps) {
             {salonName} • {salonCity}
           </Caption>
           <Caption className="font-manrope-medium text-[10px] text-foreground-subtle dark:text-foreground-subtle-dark">
-            Hasta {dateRange}
+            Ata {dateRange}
           </Caption>
           <View className="flex-row gap-2">
             <Badge text={offerType} variant={badgeVariant} size="sm" />

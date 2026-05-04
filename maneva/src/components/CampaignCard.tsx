@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Image } from 'react-native'
 import { useRouter } from 'expo-router'
 import { H2, Body, Caption } from '@/components/ui/Typography'
 import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import { CampaignWithSalon } from '@/services/campaigns.service'
 
 const PLACEHOLDER_IMAGE =
@@ -45,7 +45,7 @@ export function CampaignCard({ campaign }: { campaign: CampaignWithSalon }) {
 
         <View className="flex-row items-center justify-between">
           <Caption className="font-manrope-medium text-[11px]">
-            Válido hasta {format(endDate, 'd MMM', { locale: es })}
+            Válido ata {format(endDate, 'd MMM', { locale: gl })}
           </Caption>
           <Caption className="font-manrope-bold text-[11px] text-gold">
             Ver detalles →

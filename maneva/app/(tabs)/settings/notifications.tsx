@@ -11,9 +11,9 @@ import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet'
 
 const OFFERS_OPTIONS: SelectOption<OffersScope>[] = [
-  { value: 'all', label: 'Todas', description: 'Recibir ofertas de cualquier peluquería' },
-  { value: 'favorites', label: 'Solo favoritas', description: 'Solo de peluquerías que has guardado' },
-  { value: 'none', label: 'Ninguna', description: 'No recibir notificaciones de ofertas' },
+  { value: 'all', label: 'Todas', description: 'Recibir ofertas de calquera perruquería' },
+  { value: 'favorites', label: 'Só favoritas', description: 'Só de perruquerías que gardaches' },
+  { value: 'none', label: 'Ningunha', description: 'Non recibir notificacións de ofertas' },
 ]
 
 export default function NotificationsScreen() {
@@ -30,8 +30,8 @@ export default function NotificationsScreen() {
 
   const offersLabel = useMemo(() => {
     if (offersScope === 'all') return 'Todas'
-    if (offersScope === 'none') return 'Ninguna'
-    return 'Solo de peluquerías favoritas'
+    if (offersScope === 'none') return 'Ningunha'
+    return 'Só de perruquerías favoritas'
   }, [offersScope])
 
   const handleSelectOffersScope = async (scope: OffersScope) => {
@@ -49,7 +49,7 @@ export default function NotificationsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Notificaciones</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Notificacións</H2>
         </View>
 
         {error ? <ErrorMessage message={error} className="mx-6 mb-4 rounded-xl border border-red-200 bg-red-50 p-3" /> : null}
@@ -61,7 +61,7 @@ export default function NotificationsScreen() {
         <TouchableOpacity onPress={() => setOffersSelectorVisible(true)} activeOpacity={0.8} className="px-6 py-5 bg-surface dark:bg-surface-dark border-y border-border dark:border-border-dark">
           <View className="flex-row items-center justify-between">
             <View className="flex-1 pr-3">
-              <Body className="font-manrope-medium text-[17px] text-foreground dark:text-foreground-dark">Notificaciones de ofertas</Body>
+              <Body className="font-manrope-medium text-[17px] text-foreground dark:text-foreground-dark">Notificacións de ofertas</Body>
               <Body className="mt-1 text-[14px] text-foreground-muted dark:text-foreground-muted-dark">{offersLabel}</Body>
             </View>
             <IconChevron size={20} color={themeColors.premium.gray.iconMuted} strokeWidth={2.2} />
@@ -77,7 +77,7 @@ export default function NotificationsScreen() {
             <View className="flex-1">
               <Body className="font-manrope-medium text-[17px] text-foreground dark:text-foreground-dark">A domicilio</Body>
               <Body className="mt-1 leading-7 text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
-                Recibir notificaciones cuando un peluquero realice cortes a domicilio en mi zona
+                Recibir notificacións cando un perruqueiro faga cortes a domicilio na miña zona
               </Body>
             </View>
             <Switch
@@ -93,7 +93,7 @@ export default function NotificationsScreen() {
 
       <SelectSheet
         visible={offersSelectorVisible}
-        title="Notificaciones de ofertas"
+        title="Notificacións de ofertas"
         options={OFFERS_OPTIONS}
         selectedValue={offersScope}
         onSelect={handleSelectOffersScope}

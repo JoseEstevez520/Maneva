@@ -9,7 +9,7 @@ import React from 'react'
 import { View, ScrollView, TouchableOpacity } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { format, parseISO, isSameMonth } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import { ScreenLayout } from '@/components/ui/ScreenLayout'
 import { useCampaignById } from '@/hooks/useCampaigns'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -28,10 +28,10 @@ function formatDateRange(startIso: string, endIso: string): string {
   const start = parseISO(startIso)
   const end = parseISO(endIso)
 
-  const startDay = format(start, 'dd', { locale: es })
-  const startMonth = format(start, 'MMMM', { locale: es })
-  const endDay = format(end, 'dd', { locale: es })
-  const endMonth = format(end, 'MMMM', { locale: es })
+  const startDay = format(start, 'dd', { locale: gl })
+  const startMonth = format(start, 'MMMM', { locale: gl })
+  const endDay = format(end, 'dd', { locale: gl })
+  const endMonth = format(end, 'MMMM', { locale: gl })
 
   if (isSameMonth(start, end)) {
     return `${startDay} - ${endDay} de ${startMonth}`
@@ -45,17 +45,17 @@ function formatDateRange(startIso: string, endIso: string): string {
  */
 function getOfferTypeInfo(type: string | null): { label: string; variant: 'gold' | 'black' | 'success' | 'warning' | 'error' } {
   const typeMap: Record<string, { label: string; variant: 'gold' | 'black' | 'success' | 'warning' | 'error' }> = {
-    discount: { label: 'Descuento', variant: 'gold' },
+    discount: { label: 'Desconto', variant: 'gold' },
     promotion: { label: 'Promoción', variant: 'success' },
-    bundle: { label: 'Combo/Bundle', variant: 'warning' },
-    limited: { label: 'Oferta Limitada', variant: 'error' },
+    bundle: { label: 'Combo/Paquete', variant: 'warning' },
+    limited: { label: 'Oferta limitada', variant: 'error' },
   }
 
   if (type && type.toLowerCase() in typeMap) {
     return typeMap[type.toLowerCase()]
   }
 
-  return { label: 'Oferta Especial', variant: 'black' }
+  return { label: 'Oferta especial', variant: 'black' }
 }
 
 export default function OfferDetailScreen() {
@@ -71,7 +71,7 @@ export default function OfferDetailScreen() {
       <ScreenLayout header="back" onHeaderBack={() => router.back()} edges={['top', 'bottom']}>
         <View className="flex-1 items-center justify-center">
           <Body className="font-manrope-medium text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
-            Oferta no encontrada
+            Oferta non atopada
           </Body>
         </View>
       </ScreenLayout>
@@ -161,11 +161,11 @@ export default function OfferDetailScreen() {
                 strokeWidth={2.5}
               />
               <Caption className="font-manrope-bold text-[11px] text-gold uppercase tracking-[0.5px]">
-                Vigencia de la oferta
+                Vixencia da oferta
               </Caption>
             </View>
             <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
-              Desde el {dateRange}
+              Desde o {dateRange}
             </Body>
           </View>
 
@@ -173,7 +173,7 @@ export default function OfferDetailScreen() {
           {conditionText && (
             <View className="gap-2">
               <Caption className="font-manrope-bold text-[11px] text-foreground dark:text-foreground-dark uppercase tracking-[1px]">
-                Términos y Condiciones
+                Termos e condicións
               </Caption>
               <View className="bg-surface dark:bg-surface-dark rounded-[16px] border border-border dark:border-border-dark p-4">
                 <Body className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark leading-[18px]">
@@ -191,7 +191,7 @@ export default function OfferDetailScreen() {
               activeOpacity={0.85}
             >
               <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-premium-white uppercase">
-                Reservar Ahora
+                Reservar agora
               </Caption>
             </TouchableOpacity>
 
@@ -201,7 +201,7 @@ export default function OfferDetailScreen() {
               activeOpacity={0.7}
             >
               <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark uppercase">
-                Contactar Salón
+                Contactar co salón
               </Caption>
             </TouchableOpacity>
           </View>

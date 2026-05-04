@@ -150,7 +150,7 @@ export async function addProfileManagerByPhone(params: {
   const targetUser = await findUserByPhone(params.phone)
 
   if (!targetUser) {
-    throw new Error('No existe un usuario registrado con ese teléfono.')
+    throw new Error('Non existe un usuario rexistrado con ese teléfono.')
   }
 
   if (targetUser.id === params.primaryUserId) {
@@ -230,7 +230,7 @@ export async function deactivateLinkedProfile(linkedProfileId: string): Promise<
 }
 
 export function formatPermissionsLabel(permissions: LinkedProfilePermissions): string {
-  if (permissions.canCreate && permissions.canModify) return 'Crear y modificar'
+  if (permissions.canCreate && permissions.canModify) return 'Crear e modificar'
   if (permissions.canCreate) return 'Crear'
-  return 'Sin permisos'
+  return 'Sen permisos'
 }

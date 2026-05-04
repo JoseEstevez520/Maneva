@@ -23,7 +23,7 @@ import { useSalons, useFavoriteSalon } from '@/hooks/useSalons'
 import { useActiveCampaigns } from '@/hooks/useCampaigns'
 import { useRouter } from 'expo-router'
 import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import type { CampaignWithSalon } from '@/services/campaigns.service'
 
 // ─── Imagen placeholder (fondo gris) para salones sin cover ───────────────────
@@ -32,7 +32,7 @@ const PLACEHOLDER_IMAGE =
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatAppointmentDate(iso: string): string {
-  return format(parseISO(iso), "dd MMM · HH:mm", { locale: es })
+  return format(parseISO(iso), "dd MMM · HH:mm", { locale: gl })
 }
 
 // ─── Componentes internos ──────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ function SearchBar({ anchorRef }: { anchorRef?: (node: View | null) => void }) {
           />
           <View className="flex-1">
             <Body className="font-manrope-medium text-[14px] text-foreground-muted dark:text-foreground-muted-dark">
-              Busca una peluquería o servicio
+              Busca unha perruquería ou servizo
             </Body>
           </View>
         </TouchableOpacity>
@@ -174,7 +174,7 @@ function NextAppointmentSection() {
       ) : (
         <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card p-5 items-center gap-3.5">
           <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-            No tienes citas próximas
+            Non tes citas próximas
           </Body>
           <TouchableOpacity
             className="bg-gold rounded-lg py-2 px-10 items-center shadow-gold"
@@ -182,7 +182,7 @@ function NextAppointmentSection() {
             onPress={() => router.push('/search')}
           >
             <Caption className="font-manrope-extrabold text-label-sm tracking-button uppercase text-premium-white dark:text-premium-white">
-              RESERVAR AHORA
+              RESERVAR AGORA
             </Caption>
           </TouchableOpacity>
         </View>
@@ -202,7 +202,7 @@ function MySalonSection() {
 
   return (
     <View className="px-5 mt-7">
-      <SectionHeader title="TU SALÓN" />
+      <SectionHeader title="O TEU SALÓN" />
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : salon ? (
@@ -249,7 +249,7 @@ function MySalonSection() {
               className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark leading-[15px]"
               numberOfLines={2}
             >
-              {salon.salons?.description ?? "Tu salón de confianza"}
+              {salon.salons?.description ?? "O teu salón de confianza"}
             </Caption>
 
             {/* Fila 4: link */}
@@ -265,7 +265,7 @@ function MySalonSection() {
       ) : (
         <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card p-5 items-center gap-3.5">
           <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-            Aún no tienes un salón favorito
+            Aínda non tes un salón favorito
           </Body>
         </View>
       )}
@@ -325,7 +325,7 @@ function AvailableTodaySection() {
 
   return (
     <View className="px-5 mt-7">
-      <SectionHeader title="DISPONIBLE HOY" />
+      <SectionHeader title="DISPOÑIBLE HOXE" />
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : (
@@ -336,7 +336,7 @@ function AvailableTodaySection() {
         >
           {salons.length === 0 ? (
             <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center py-4">
-              Sin salones disponibles
+              Non hai salóns dispoñibles
             </Body>
           ) : (
             salons.map((salon) => (
@@ -366,7 +366,7 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   const salonName = offer.salon_locations?.name ?? 'Salón'
   const salonCity = offer.salon_locations?.city ?? 'Madrid'
   const typeLabel = offer.type ? offer.type.toUpperCase() : 'OFERTA'
-  const endFormatted = format(parseISO(offer.end_date), "d MMM", { locale: es })
+  const endFormatted = format(parseISO(offer.end_date), "d MMM", { locale: gl })
   const daysRemaining = Math.ceil(
     (parseISO(offer.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   )
@@ -423,7 +423,7 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
           <View className="flex-row items-center gap-2">
             <IconCalendar size={13} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
             <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-              Válido hasta {endFormatted}
+              Válido ata {endFormatted}
             </Caption>
           </View>
           {/* CTA integrado: no duplica el press de la card, guía visualmente */}
@@ -444,12 +444,12 @@ function SpecialOffersSection() {
 
   return (
     <View className="px-5 mt-7">
-      <SectionHeader title="OFERTAS ESPECIALES" />
+      <SectionHeader title="OFERTAS ESPECIAIS" />
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : campaigns.length === 0 ? (
         <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card p-5 items-center gap-3.5">
-          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">Sin ofertas activas ahora mismo</Body>
+          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">Non hai ofertas activas agora mesmo</Body>
         </View>
       ) : (
         <View className="gap-3.5">

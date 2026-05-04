@@ -205,7 +205,7 @@ export default function LocationOnboardingScreen() {
     try {
       const first = await geocodeCityWithFallback(cityName);
       if (!first) {
-        setError("No encontramos esa ciudad. Prueba con otro nombre.");
+        setError("Non atopamos esa cidade. Proba con outro nome.");
         return;
       }
 
@@ -214,7 +214,7 @@ export default function LocationOnboardingScreen() {
       setSelectedCity(normalizedCity);
       setSearch(normalizedCity);
     } catch {
-      setError("No pudimos buscar esa ciudad ahora mismo.");
+      setError("Non puidemos buscar esa cidade agora mesmo.");
     } finally {
       setResolvingCity(false);
     }
@@ -228,7 +228,7 @@ export default function LocationOnboardingScreen() {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (permission.status !== "granted") {
         setError(
-          "No se concedieron permisos de ubicación. Puedes elegir una ciudad manualmente.",
+          "Non se concederon permisos de localización. Podes escoller unha cidade manualmente.",
         );
         return;
       }
@@ -250,7 +250,7 @@ export default function LocationOnboardingScreen() {
       ]);
 
       if (!city) {
-        setError("No pudimos detectar tu ciudad. Selecciónala manualmente.");
+        setError("Non puidemos detectar a túa cidade. Selecciónaa manualmente.");
         centerMapAt(position.coords.latitude, position.coords.longitude);
         return;
       }
@@ -259,7 +259,7 @@ export default function LocationOnboardingScreen() {
       setSelectedCity(city);
       setSearch(city);
     } catch {
-      setError("No fue posible obtener tu ubicación ahora mismo.");
+      setError("Non foi posible obter a túa localización agora mesmo.");
     } finally {
       setLoadingLocation(false);
     }
@@ -272,7 +272,7 @@ export default function LocationOnboardingScreen() {
   const handleApplyManualCity = () => {
     const query = search.trim();
     if (query.length < 2) {
-      setError("Escribe una ciudad válida para ubicarla en el mapa.");
+      setError("Escribe unha cidade válida para situala no mapa.");
       return;
     }
     centerMapByCityName(query);
@@ -286,7 +286,7 @@ export default function LocationOnboardingScreen() {
       const currentUser = user ?? await getCurrentUser();
       if (!currentUser) {
         setError(
-          "Tu sesión no está lista. Vuelve a iniciar sesión e inténtalo de nuevo.",
+          "A túa sesión non está lista. Volve iniciar sesión e téntao de novo.",
         );
         return;
       }
@@ -300,7 +300,7 @@ export default function LocationOnboardingScreen() {
         );
 
         // No bloquea el flujo: si no se detecta ciudad, usa un fallback razonable.
-        finalCity = detectedCity ?? "Ubicación actual";
+        finalCity = detectedCity ?? "Localización actual";
         if (detectedCity) {
           setSelectedCity(detectedCity);
           setSearch(detectedCity);
@@ -343,7 +343,7 @@ export default function LocationOnboardingScreen() {
       const message =
         e instanceof Error
           ? e.message
-          : "No pudimos guardar tu ciudad. Inténtalo de nuevo.";
+          : "Non puidemos gardar a túa cidade. Téntao de novo.";
       setError(message);
     } finally {
       setSaving(false);
@@ -369,16 +369,16 @@ export default function LocationOnboardingScreen() {
             Configuración
           </Caption>
           <H1 className="font-manrope-extrabold text-3xl text-foreground dark:text-foreground-dark mb-2">
-            Ubicación
+            Localización
           </H1>
           <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
-            Usaremos tu ciudad para mostrarte salones cercanos desde el inicio.
+            Usaremos a túa cidade para amosarche salóns próximos desde o inicio.
           </Body>
         </View>
 
         <View className="mb-2">
           <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-2">
-            Buscar ciudad manualmente
+            Buscar cidade manualmente
           </Caption>
         </View>
         <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint px-4 py-3 mb-5 shadow-input">
@@ -396,7 +396,7 @@ export default function LocationOnboardingScreen() {
                   }
                 }}
                 onSubmitEditing={handleApplyManualCity}
-                placeholder="Ejemplo: Madrid"
+                placeholder="Exemplo: Madrid"
                 placeholderTextColor={themeColors.premium.gray.faint}
                 className="font-manrope text-foreground dark:text-foreground-dark text-base"
                 autoCapitalize="words"
@@ -419,14 +419,14 @@ export default function LocationOnboardingScreen() {
 
         <View className="mb-5">
           <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-2">
-            Mapa de zona y radio
+            Mapa de zona e raio
           </Caption>
           <View className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark-faint overflow-hidden shadow-input">
             {Platform.OS === "web" ? (
               <View className="h-[260px] items-center justify-center px-5">
                 <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark text-center">
-                  El mapa interactivo no está disponible en web. Puedes
-                  seleccionar ciudad manualmente y elegir el radio.
+                  O mapa interactivo non está dispoñible na web. Podes
+                  seleccionar a cidade manualmente e elixir o raio.
                 </Body>
               </View>
             ) : (
@@ -461,7 +461,7 @@ export default function LocationOnboardingScreen() {
             <View className="px-4 py-3 border-t border-border dark:border-border-dark-lighter">
               <View className="flex-row justify-between items-center mb-1">
                 <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[10px] uppercase tracking-[1.4px]">
-                  Radio de búsqueda
+                  Raio de busca
                 </Caption>
                 <Caption className="font-manrope-extrabold text-foreground dark:text-foreground-dark text-[11px]">
                   {radiusKm.toFixed(0)} km
@@ -500,14 +500,14 @@ export default function LocationOnboardingScreen() {
             <ActivityIndicator size="small" color={themeColors.premium.white} />
           ) : (
             <Caption className="font-manrope-extrabold text-premium-white uppercase tracking-widest text-[11px]">
-              Usar mi ubicación actual
+              Usar a miña localización actual
             </Caption>
           )}
         </TouchableOpacity>
 
         <View className="mb-6">
           <Caption className="font-manrope-semibold text-foreground-muted dark:text-foreground-muted-dark text-[11px] uppercase tracking-[1.8px] mb-3">
-            Ciudades populares
+            Cidades populares
           </Caption>
           <View className="flex-row flex-wrap gap-2">
             {POPULAR_CITIES.map((city) => {
@@ -533,7 +533,7 @@ export default function LocationOnboardingScreen() {
         {!!cityToSave && (
           <View className="mb-4 bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3">
             <Body className="font-manrope-medium text-foreground dark:text-foreground-dark">
-              Ciudad: {cityToSave} · Radio: {radiusKm} km
+              Cidade: {cityToSave} · Raio: {radiusKm} km
             </Body>
           </View>
         )}

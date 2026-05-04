@@ -18,8 +18,8 @@ export default function ReferenceCutsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Cortes de Referencia</H2>
-          <Body className="mt-2 text-[15px] text-foreground-muted dark:text-foreground-muted-dark">Gestiona tus estilos favoritos y añade nuevos</Body>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Cortes de referencia</H2>
+          <Body className="mt-2 text-[15px] text-foreground-muted dark:text-foreground-muted-dark">Xestiona os teus estilos favoritos e engade novos</Body>
         </View>
 
         {error ? (
@@ -64,7 +64,7 @@ export default function ReferenceCutsScreen() {
             </View>
           )}
           <Caption className="font-manrope-extrabold text-[16px] tracking-[3px] uppercase text-gold">
-            {uploading ? 'Subiendo...' : 'Añadir imagen'}
+            {uploading ? 'Subindo...' : 'Engadir imaxe'}
           </Caption>
         </TouchableOpacity>
       </ScrollView>

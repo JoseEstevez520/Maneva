@@ -109,7 +109,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                 ) : null}
                 <H2 className="flex-1 font-manrope-bold text-[17px]">
                   {step === 'salons'
-                    ? 'Elige una peluquería'
+                    ? 'Escolle unha perruquería'
                     : selectedSalon?.salons?.name ?? selectedSalon?.name ?? 'Estilistas'}
                 </H2>
                 <TouchableOpacity
@@ -128,7 +128,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                   <TextInput
                     value={search}
                     onChangeText={setSearch}
-                    placeholder="Buscar peluquería..."
+                    placeholder="Buscar perruquería..."
                     placeholderTextColor={themeColors.premium.gray.secondary}
                     className="flex-1 font-manrope text-[15px] text-foreground dark:text-foreground-dark"
                     style={{ fontFamily: 'Manrope_500Medium' }}
@@ -151,11 +151,11 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                     contentContainerStyle={{ paddingBottom: 32 }}
                     ListEmptyComponent={
                       <View className="px-6 py-8 items-center">
-                        <Body className="text-[15px] text-center">No se encontraron peluquerías.</Body>
+                        <Body className="text-[15px] text-center">Non se atoparon perruquerías.</Body>
                       </View>
                     }
                     renderItem={({ item }) => {
-                      const name = item.salons?.name ?? item.name ?? 'Peluquería'
+                      const name = item.salons?.name ?? item.name ?? 'Perruquería'
                       const isFav = favSalonIds.includes(item.id)
                       return (
                         <TouchableOpacity
@@ -184,7 +184,7 @@ export function StylistPickerSheet({ visible, favoriteEmployeeIds, onToggle, onC
                   </View>
                 ) : employees.length === 0 ? (
                   <View className="px-6 py-8 items-center">
-                    <Body className="text-[15px] text-center">No hay estilistas en esta peluquería.</Body>
+                    <Body className="text-[15px] text-center">Non hai estilistas nesta perruquería.</Body>
                   </View>
                 ) : (
                   <FlatList

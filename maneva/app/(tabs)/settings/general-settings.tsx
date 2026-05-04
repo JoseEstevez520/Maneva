@@ -65,7 +65,7 @@ export default function GeneralSettingsScreen() {
 
   const currentLanguage = useMemo(() => {
     const current = languages.find((language) => language.id === profile?.language_id)
-    return current?.name ?? 'Castellano'
+    return current?.name ?? 'Galego'
   }, [languages, profile?.language_id])
 
   const userInitials = useMemo(() => {
@@ -85,9 +85,9 @@ export default function GeneralSettingsScreen() {
       await saveStyleProfile({
         avatar_url: avatarUrl.trim() || null,
       })
-      setDialog({ title: 'Guardado', message: 'Los datos del usuario se han actualizado.', onConfirm: closeDialog })
+      setDialog({ title: 'Gardado', message: 'Os datos do usuario actualizáronse.', onConfirm: closeDialog })
     } catch {
-      setDialog({ title: 'Error', message: 'No se pudieron guardar los datos del usuario.', onConfirm: closeDialog })
+      setDialog({ title: 'Erro', message: 'Non se puideron gardar os datos do usuario.', onConfirm: closeDialog })
     }
   }
 
@@ -99,13 +99,13 @@ export default function GeneralSettingsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 56 }}>
         <View className="px-6 py-8">
-          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Ajustes generales</H2>
+          <H2 className="font-manrope-bold text-[30px] leading-[36px] text-foreground dark:text-foreground-dark">Axustes xerais</H2>
         </View>
 
         <View className="bg-surface dark:bg-surface-dark border-y border-border dark:border-border-dark">
           <View className="px-6 py-5">
             <Caption className="font-manrope-extrabold text-[11px] tracking-[3.2px] uppercase text-foreground-subtle dark:text-foreground-subtle-dark">
-              Tus datos
+              Os teus datos
             </Caption>
           </View>
 
@@ -124,18 +124,18 @@ export default function GeneralSettingsScreen() {
             </View>
 
             <Input
-              label="Nombre"
+              label="Nome"
               value={firstName}
               onChangeText={setFirstName}
-              placeholder="Tu nombre"
+              placeholder="O teu nome"
               autoCapitalize="words"
             />
 
             <Input
-              label="Apellidos"
+              label="Apelidos"
               value={lastName}
               onChangeText={setLastName}
-              placeholder="Tus apellidos"
+              placeholder="Os teus apelidos"
               autoCapitalize="words"
             />
 
@@ -143,7 +143,7 @@ export default function GeneralSettingsScreen() {
               label="Foto de perfil"
               value={avatarUrl}
               onChangeText={setAvatarUrl}
-              placeholder="Pega la URL de tu foto"
+              placeholder="Pega a URL da túa foto"
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="url"
@@ -158,7 +158,7 @@ export default function GeneralSettingsScreen() {
               className={`h-12 rounded-full bg-gold items-center justify-center ${profileLoading ? 'opacity-60' : ''}`}
             >
               <Caption className="font-manrope-extrabold text-[13px] tracking-[2px] uppercase text-premium-white dark:text-premium-white">
-                {profileLoading ? 'Guardando...' : 'Guardar cambios'}
+                {profileLoading ? 'Gardando...' : 'Gardar cambios'}
               </Caption>
             </TouchableOpacity>
           </View>
@@ -167,10 +167,10 @@ export default function GeneralSettingsScreen() {
         {/* TODO: abrir selector de idioma con persistencia completa */}
         <Row title="Idioma" subtitle={currentLanguage} />
         {/* TODO: enlazar contenido legal y seguridad reales */}
-        <Row title="Privacidad y Seguridad" />
-        <Row title="Términos de Servicio" />
-        <Row title="Política de Privacidad" onPress={() => router.push('/(tabs)/settings/privacy-policy')} />
-        <Row title="Versión de la app" subtitle={`v${version}`} showChevron={false} />
+        <Row title="Privacidade e seguridade" />
+        <Row title="Termos do servizo" />
+        <Row title="Política de privacidade" onPress={() => router.push('/(tabs)/settings/privacy-policy')} />
+        <Row title="Versión da app" subtitle={`v${version}`} showChevron={false} />
       </ScrollView>
 
       {dialog && (

@@ -24,15 +24,15 @@ import { useThemeColors } from "@/hooks/useThemeColors";
 // ── Schemas ──────────────────────────────────────────────────────────────────
 
 const loginSchema = z.object({
-  email: z.string().email("Email inválido o incorrecto"),
-  password: z.string().min(6, "Debe contener al menos 6 caracteres"),
+  email: z.string().email("Correo electrónico incorrecto ou non válido"),
+  password: z.string().min(6, "Debe conter polo menos 6 caracteres"),
 });
 
 const phoneSchema = z.object({
   phone: z
     .string()
-    .min(9, "Debe contener al menos 9 dígitos")
-    .regex(/^\+?[0-9\s\-().]{9,20}$/, "Teléfono inválido"),
+    .min(9, "Debe conter polo menos 9 díxitos")
+    .regex(/^\+?[0-9\s\-().]{9,20}$/, "Teléfono non válido"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -68,9 +68,9 @@ export default function LoginScreen() {
 
   const handleForgotPassword = () => {
     setDialog({
-      title: "Recuperar contraseña",
+      title: "Recuperar contrasinal",
       message:
-        "Funcionalidad de recuperación próximamente. Por favor, contacta con soporte para restablecer tu acceso.",
+        "A funcionalidade de recuperación estará dispoñible proximamente. Por favor, contacta con soporte para restablecer o teu acceso.",
       onConfirm: closeDialog,
     });
   };
@@ -158,7 +158,7 @@ export default function LoginScreen() {
             Iniciar sesión
           </H1>
           <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
-            Accede a tu cuenta y sigue disfrutando
+            Accede á túa conta e segue desfrutando
           </Body>
         </Animated.View>
 
@@ -214,7 +214,7 @@ export default function LoginScreen() {
               name="email"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  label="Correo Electrónico"
+                  label="Correo electrónico"
                   placeholder="tu@email.com"
                   value={value}
                   onChangeText={onChange}
@@ -234,7 +234,7 @@ export default function LoginScreen() {
                 name="password"
                 render={({ field: { onChange, value } }) => (
                   <Input
-                    label="Contraseña"
+                    label="Contrasinal"
                     placeholder="••••••••"
                     value={value}
                     onChangeText={onChange}
@@ -249,7 +249,7 @@ export default function LoginScreen() {
                 activeOpacity={0.7}
               >
                 <Caption className="font-manrope-semibold text-gold tracking-wide">
-                  ¿Olvidaste tu contraseña?
+                  Esqueciches o teu contrasinal?
                 </Caption>
               </TouchableOpacity>
             </View>
@@ -274,7 +274,7 @@ export default function LoginScreen() {
             className="gap-5"
           >
             <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
-              Recibirás un SMS con un código de verificación.
+              Recibirás un SMS cun código de verificación.
             </Body>
 
             <Controller
@@ -387,7 +387,7 @@ function RegisterLink() {
   return (
     <View className="flex-row justify-center items-center">
       <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark">
-        ¿Aún no tienes cuenta?{" "}
+        Aínda non tes conta?{" "}
       </Body>
       <Link href="/register" asChild>
         <TouchableOpacity
@@ -395,7 +395,7 @@ function RegisterLink() {
           className="pb-1 border-b border-premium-black"
         >
           <Caption className="font-manrope-extrabold text-foreground dark:text-foreground-dark uppercase tracking-wider text-[11px]">
-            Regístrate aquí
+            Rexístrate aquí
           </Caption>
         </TouchableOpacity>
       </Link>

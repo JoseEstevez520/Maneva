@@ -95,7 +95,7 @@ export function useChat() {
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'bot',
-          content: 'Lo siento, ha ocurrido un error. Inténtalo de nuevo.',
+          content: 'Sentímolo, produciuse un erro. Téntao de novo.',
         }
         setMessages((prev) => [...prev, errorMessage])
       } finally {

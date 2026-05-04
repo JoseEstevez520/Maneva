@@ -22,7 +22,7 @@ export default function WelcomeScreen() {
           MANEVA
         </H1>
         <Body className="font-manrope text-foreground-muted dark:text-foreground-muted-dark text-center text-base">
-          Tu peluquería premium, a un toque
+          A túa perruquería premium, a un toque
         </Body>
       </Animated.View>
 
@@ -50,7 +50,7 @@ export default function WelcomeScreen() {
           className="w-full bg-surface dark:bg-surface-dark border-2 border-premium-black rounded-2xl py-4 items-center"
         >
           <Caption className="font-manrope-extrabold !text-foreground dark:text-foreground-dark uppercase tracking-widest text-sm">
-            Crear cuenta
+            Crear conta
           </Caption>
         </TouchableOpacity>
       </Animated.View>

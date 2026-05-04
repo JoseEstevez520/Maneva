@@ -32,33 +32,33 @@ const TUTORIAL_STEPS = [
   {
     anchorKey: "search",
     preferredPlacement: "below",
-    title: "Buscador Inteligente",
+    title: "Buscador intelixente",
     description:
-      "Encuentra tus salones preferidos o explora nuevos servicios al instante desde la barra superior.",
+      "Atopa os teus salóns preferidos ou explora novos servizos ao instante desde a barra superior.",
     Icon: IconSearch,
   },
   {
     anchorKey: "nextAppointment",
     preferredPlacement: "below",
-    title: "Tus Citas",
+    title: "As túas citas",
     description:
-      "Controla tus próximas citas confirmadas para que nunca te pierdas un servicio.",
+      "Controla as túas próximas citas confirmadas para que non perdas nunca un servizo.",
     Icon: IconCalendar,
   },
   {
     anchorKey: "mySalon",
     preferredPlacement: "above",
-    title: "Tu Salón Favorito",
+    title: "O teu salón favorito",
     description:
-      "Si ya tienes tu sitio de confianza, guárdalo para acceder en un solo toque.",
+      "Se xa tes o teu sitio de confianza, gárdao para acceder cun só toque.",
     Icon: IconStar,
   },
   {
     anchorKey: "specialOffers",
     preferredPlacement: "above",
-    title: "Ofertas Especiales",
+    title: "Ofertas especiais",
     description:
-      "Benefíciate de los mejores descuentos pensados exclusivamente para ti y paga menos.",
+      "Benefíciate dos mellores descontos pensados exclusivamente para ti e paga menos.",
     Icon: IconScissors,
   },
 ] as const;

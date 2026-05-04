@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import { Body, Caption, H2 } from '@/components/ui/Typography'
 import { IconBack, IconCalendar, IconTag, IconUser } from '@/components/ui/icons'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -21,7 +21,7 @@ type AppointmentWithJoins = Appointment & {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: 'Pendiente',
+  pending: 'Pendente',
   confirmed: 'Confirmada',
   cancelled: 'Cancelada',
   done: 'Completada',
@@ -44,14 +44,14 @@ function AppointmentRow({
   const dateLabel = format(
     parseISO(appointment.scheduled_at),
     "EEE d MMM · HH:mm",
-    { locale: es },
+    { locale: gl },
   )
   const salonName = appointment.salon_locations?.name ?? 'Salón'
   const serviceName =
     appointment.appointment_services
       ?.map((s) => s.services?.name)
       .filter(Boolean)
-      .join(', ') ?? 'Servicio'
+      .join(', ') ?? 'Servizo'
 
   const themeColors = useThemeColors()
   const canCancel = appointment.status === 'pending' || appointment.status === 'confirmed'
@@ -102,7 +102,7 @@ function AppointmentRow({
           className="border border-border dark:border-border-dark rounded-[20px] py-2.5 items-center mt-1"
         >
           <Caption numberOfLines={1} className="font-manrope-extrabold text-[10px] tracking-[1.5px] uppercase text-error-dark">
-            Cancelar cita
+            Cancelar a cita
           </Caption>
         </TouchableOpacity>
       )}
@@ -146,7 +146,7 @@ export default function BookingsScreen() {
         >
           <IconBack size={18} color={themeColors.premium.black} strokeWidth={2} />
         </TouchableOpacity>
-        <H2 className="font-manrope-bold text-[18px] text-foreground dark:text-foreground-dark">Mis citas</H2>
+        <H2 className="font-manrope-bold text-[18px] text-foreground dark:text-foreground-dark">As miñas citas</H2>
       </View>
 
       {loading && !data.length ? (
@@ -161,12 +161,12 @@ export default function BookingsScreen() {
           {/* Próximas */}
           <View className="px-5 pt-6 gap-3">
             <Caption className="font-manrope-extrabold text-label tracking-label uppercase text-foreground-muted dark:text-foreground-muted-dark">
-              Próximas
+              Vindeiras
             </Caption>
             {upcoming.length === 0 ? (
               <View className="bg-surface dark:bg-surface-dark rounded-[20px] border border-border dark:border-border-dark p-5 items-center">
                 <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-                  No tienes citas próximas
+                  Non tes citas próximas
                 </Body>
               </View>
             ) : (
@@ -192,10 +192,10 @@ export default function BookingsScreen() {
 
       <ConfirmDialog
         visible={cancelTargetId !== null}
-        title="Cancelar cita"
-        message="¿Seguro que quieres cancelar esta cita? Esta acción no se puede deshacer."
-        confirmLabel="Sí, cancelar"
-        cancelLabel="Volver"
+        title="Cancelar a cita"
+        message="Seguro que queres cancelar esta cita? Esta acción non se pode desfacer."
+        confirmLabel="Si, cancelar"
+        cancelLabel="Voltar"
         destructive
         onConfirm={handleCancelConfirm}
         onCancel={() => setCancelTargetId(null)}
@@ -203,8 +203,8 @@ export default function BookingsScreen() {
 
       <ConfirmDialog
         visible={cancelError}
-        title="Error al cancelar"
-        message="No se pudo cancelar la cita. Inténtalo de nuevo."
+        title="Erro ao cancelar"
+        message="Non se puido cancelar a cita. Téntao de novo."
         confirmLabel="Entendido"
         cancelLabel=""
         onConfirm={() => setCancelError(false)}

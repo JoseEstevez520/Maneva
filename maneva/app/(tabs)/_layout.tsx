@@ -103,7 +103,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="inbox"
           options={{
-            title: "Buzón",
+            title: "Caixa de entrada",
             tabBarIcon: ({ color, size }) => (
               <IconMail color={color} size={size} strokeWidth={2} />
             ),
@@ -112,7 +112,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="settings"
           options={{
-            title: "Ajustes",
+            title: "Axustes",
             tabBarIcon: ({ color, size }) => (
               <IconSettings color={color} size={size} strokeWidth={2} />
             ),

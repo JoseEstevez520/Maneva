@@ -8,7 +8,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { gl } from 'date-fns/locale'
 import {
   IconBack,
   IconCalendar,
@@ -49,7 +49,7 @@ export default function CampaignDetailScreen() {
   if (!campaign) {
     return (
       <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark items-center justify-center">
-        <Body className="text-foreground-muted dark:text-foreground-muted-dark">Campaña no encontrada</Body>
+        <Body className="text-foreground-muted dark:text-foreground-muted-dark">Campaña non atopada</Body>
       </SafeAreaView>
     )
   }
@@ -58,8 +58,8 @@ export default function CampaignDetailScreen() {
   const salonCity = campaign.salon_locations?.city ?? 'Madrid'
   const salonAddress = campaign.salon_locations?.address
   const salonPhone = campaign.salon_locations?.phone
-  const startFormatted = format(parseISO(campaign.start_date), "d 'de' MMMM yyyy", { locale: es })
-  const endFormatted = format(parseISO(campaign.end_date), "d 'de' MMMM yyyy", { locale: es })
+  const startFormatted = format(parseISO(campaign.start_date), "d 'de' MMMM yyyy", { locale: gl })
+  const endFormatted = format(parseISO(campaign.end_date), "d 'de' MMMM yyyy", { locale: gl })
   const typeLabel = campaign.type ? campaign.type.toUpperCase() : 'OFERTA'
   const isActive = new Date() <= parseISO(campaign.end_date)
 
@@ -109,13 +109,13 @@ export default function CampaignDetailScreen() {
           {isActive ? (
             <View className="inline-flex bg-[rgba(76,175,80,0.1)] border border-success-campaign px-3 py-1 rounded-full w-fit">
               <Caption className="font-manrope-extrabold text-[11px] text-success-campaign">
-                VÁLIDA AHORA
+                VÁLIDA AGORA
               </Caption>
             </View>
           ) : (
             <View className="inline-flex bg-[rgba(244,67,54,0.1)] border border-error-campaign px-3 py-1 rounded-full w-fit">
               <Caption className="font-manrope-extrabold text-[11px] text-error-campaign">
-                EXPIRADA
+                CADUCADA
               </Caption>
             </View>
           )}
@@ -136,7 +136,7 @@ export default function CampaignDetailScreen() {
             <View className="flex-row items-center gap-2">
               <IconCalendar size={16} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
               <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
-                Hasta {endFormatted}
+                Ata {endFormatted}
               </Body>
             </View>
           </View>
@@ -145,7 +145,7 @@ export default function CampaignDetailScreen() {
         {/* Ubicación del Salón */}
         <View className="px-5 py-6 border-b border-border dark:border-border-dark">
           <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-4">
-            UBICACIÓN
+            LOCALIZACIÓN
           </Caption>
           <View className="p-4 bg-background dark:bg-background-dark rounded-lg gap-3">
             <View>
@@ -177,7 +177,7 @@ export default function CampaignDetailScreen() {
               className="mt-2 py-2 border-t border-border dark:border-border-dark-strong"
             >
               <Body className="font-manrope-bold text-[13px] text-gold">
-                Ver perfil del salón →
+                Ver perfil do salón →
               </Body>
             </TouchableOpacity>
           </View>
@@ -187,7 +187,7 @@ export default function CampaignDetailScreen() {
         {campaign.condition && typeof campaign.condition === 'object' && campaign.condition.description && (
           <View className="px-5 py-6">
             <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-4">
-              DETALLES DE LA OFERTA
+              DETALLES DA OFERTA
             </Caption>
             <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark leading-5">
               {campaign.condition.description}
@@ -206,7 +206,7 @@ export default function CampaignDetailScreen() {
             }}
           >
             <Body className="font-manrope-extrabold text-[15px] text-foreground dark:text-foreground-dark">
-              Ir al salón y reservar
+              Ir ao salón e reservar
             </Body>
           </TouchableOpacity>
         </View>
