@@ -28,10 +28,19 @@ export type ChatResponse = {
   stylists: StylistSuggestion[]
 }
 
+/** Contexto del usuario enviado en cada mensaje para personalizar la respuesta del asistente. */
+export type UserContext = {
+  first_name?: string
+  city?: string
+  service_interests?: string[]
+  hair_type?: string
+}
+
 type ChatPayload = {
   session_id: string
   message: string
   user_id: string
+  context?: UserContext
 }
 
 // ─── Función principal ─────────────────────────────────────────────────────────
@@ -39,6 +48,8 @@ type ChatPayload = {
 export async function sendChatMessage(
   message: string,
   sessionId: string,
+  userId: string,
+  context?: UserContext,
 ): Promise<ChatResponse> {
   const webhookUrl = process.env.EXPO_PUBLIC_N8N_WEBHOOK_URL
 
@@ -50,7 +61,8 @@ export async function sendChatMessage(
   const payload: ChatPayload = {
     session_id: sessionId,
     message,
-    user_id: sessionId,
+    user_id: userId,
+    ...(context && { context }),
   }
 
   const response = await fetch(webhookUrl, {
