@@ -42,13 +42,13 @@ LocaleConfig.defaultLocale = 'gl'
 const STEP_TITLES: Record<BookingStep, string> = {
   services: 'Escolle os teus servizos',
   employee: 'Escolle o teu profesional',
-  date: 'Escolle unha data',
-  slot: 'Escolle o teu horario',
+  date: 'Escolle data e horario',
+  slot: 'Escolle data e horario',
   confirm: 'Confirma a túa reserva',
   done: 'Cita confirmada!',
 }
 
-const STEP_ORDER: BookingStep[] = ['services', 'employee', 'date', 'slot', 'confirm', 'done']
+const STEP_ORDER: BookingStep[] = ['services', 'employee', 'date', 'confirm', 'done']
 
 // ─── Header ────────────────────────────────────────────────────────────────────
 
@@ -127,27 +127,27 @@ function ServicesStep({
 
   return (
     <View className="flex-1">
-      <ScrollView contentContainerClassName="px-5 pt-5 pb-32" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerClassName="px-5 pt-5 pb-36" showsVerticalScrollIndicator={false}>
         {Object.entries(grouped).map(([category, items]) => (
-          <View key={category} className="mb-6">
+          <View key={category} className="mb-7">
             <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase mb-3">
               {category}
             </Caption>
-            <View className="gap-2">
+            <View className="gap-2.5">
               {items.map((service) => {
                 const selected = selectedIds.includes(service.id)
                 return (
                   <TouchableOpacity
                     key={service.id}
                     onPress={() => onToggle(service.id)}
-                    activeOpacity={0.7}
-                    className={`flex-row items-center p-4 rounded-2xl border ${
+                    activeOpacity={0.75}
+                    className={`flex-row items-center px-4 py-4 rounded-2xl border ${
                       selected
-                        ? 'bg-[rgba(212,175,55,0.08)] border-gold'
+                        ? 'bg-surface-raised dark:bg-surface-raised-dark border-foreground dark:border-foreground-dark'
                         : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
                     }`}
                   >
-                    <View className="flex-1 gap-1">
+                    <View className="flex-1 gap-1.5 pr-3">
                       <Body className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
                         {service.name}
                       </Body>
@@ -158,14 +158,16 @@ function ServicesStep({
                             {service.duration_minutes} min
                           </Caption>
                         </View>
-                        <Caption className="font-manrope-bold text-[13px] text-gold">
+                        <Caption className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">
                           {service.price}€
                         </Caption>
                       </View>
                     </View>
                     <View
-                      className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                        selected ? 'bg-gold border-gold' : 'border-border dark:border-border-dark-disabled'
+                      className={`w-6 h-6 rounded-full items-center justify-center ${
+                        selected
+                          ? 'bg-foreground dark:bg-foreground-dark'
+                          : 'border-2 border-border dark:border-border-strong-dark'
                       }`}
                     >
                       {selected && <IconCheck size={13} color={themeColors.premium.white} strokeWidth={2.5} />}
@@ -178,20 +180,35 @@ function ServicesStep({
         ))}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4 gap-2">
+      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
         {selectedIds.length > 0 && (
-          <View className="flex-row justify-between items-center mb-1">
+          <View className="flex-row justify-between items-center mb-3">
             <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
               {selectedIds.length} servizo{selectedIds.length > 1 ? 's' : ''} seleccionado{selectedIds.length > 1 ? 's' : ''}
             </Caption>
-            <Caption className="font-manrope-bold text-[14px] text-foreground dark:text-foreground-dark">
-              Total: {totalPrice}€
+            <Caption className="font-manrope-extrabold text-[14px] text-foreground dark:text-foreground-dark">
+              {totalPrice}€
             </Caption>
           </View>
         )}
-        <Button variant="primary" size="sm" disabled={selectedIds.length === 0} onPress={onNext}>
-          Continuar
-        </Button>
+        <TouchableOpacity
+          onPress={onNext}
+          disabled={selectedIds.length === 0}
+          activeOpacity={0.88}
+          className={`rounded-2xl py-4 items-center ${
+            selectedIds.length === 0
+              ? 'bg-surface-raised dark:bg-surface-raised-dark'
+              : 'bg-foreground dark:bg-foreground-dark'
+          }`}
+        >
+          <Caption className={`font-manrope-extrabold text-[12px] tracking-[2.5px] uppercase ${
+            selectedIds.length === 0
+              ? 'text-foreground-muted dark:text-foreground-muted-dark'
+              : 'text-premium-white dark:text-surface-dark'
+          }`}>
+            Continuar
+          </Caption>
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -219,11 +236,13 @@ function SelectionCircle({ selected }: { selected: boolean }) {
   const themeColors = useThemeColors()
   return (
     <View
-      className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-        selected ? 'bg-gold border-gold' : 'border-border dark:border-border-dark-disabled'
+      className={`w-6 h-6 rounded-full items-center justify-center ${
+        selected
+          ? 'bg-foreground dark:bg-foreground-dark'
+          : 'border-2 border-border dark:border-border-strong-dark'
       }`}
     >
-      {selected && <IconCheck size={13} color="#000" strokeWidth={2.5} />}
+      {selected && <IconCheck size={13} color={themeColors.premium.white} strokeWidth={2.5} />}
     </View>
   )
 }
@@ -291,10 +310,10 @@ function EmployeeStep({
                         <TouchableOpacity
                           key={emp.id}
                           onPress={() => onAssignServiceEmployee(svc.id, emp.id)}
-                          activeOpacity={0.7}
+                          activeOpacity={0.75}
                           className={`flex-row items-center p-4 rounded-2xl border ${
                             selected
-                              ? 'bg-[rgba(212,175,55,0.08)] border-gold'
+                              ? 'bg-surface-raised dark:bg-surface-raised-dark border-foreground dark:border-foreground-dark'
                               : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
                           }`}
                         >
@@ -316,9 +335,16 @@ function EmployeeStep({
         </ScrollView>
 
         <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
-          <Button variant="primary" size="sm" disabled={!allServicesAssigned} onPress={onContinue}>
-            Continuar
-          </Button>
+          <TouchableOpacity
+            onPress={onContinue}
+            disabled={!allServicesAssigned}
+            activeOpacity={0.88}
+            className={`rounded-2xl py-4 items-center ${!allServicesAssigned ? 'bg-surface-raised dark:bg-surface-raised-dark' : 'bg-foreground dark:bg-foreground-dark'}`}
+          >
+            <Caption className={`font-manrope-extrabold text-[12px] tracking-[2.5px] uppercase ${!allServicesAssigned ? 'text-foreground-muted dark:text-foreground-muted-dark' : 'text-premium-white dark:text-surface-dark'}`}>
+              Continuar
+            </Caption>
+          </TouchableOpacity>
         </View>
       </View>
     )
@@ -340,10 +366,10 @@ function EmployeeStep({
         {/* Sin preferencia */}
         <TouchableOpacity
           onPress={() => onPickEmployee(null)}
-          activeOpacity={0.7}
+          activeOpacity={0.75}
           className={`flex-row items-center p-4 rounded-2xl border mb-2 ${
             anySelected
-              ? 'bg-[rgba(212,175,55,0.08)] border-gold'
+              ? 'bg-surface-raised dark:bg-surface-raised-dark border-foreground dark:border-foreground-dark'
               : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
           }`}
         >
@@ -369,10 +395,10 @@ function EmployeeStep({
             <TouchableOpacity
               key={emp.id}
               onPress={() => onPickEmployee(emp.id)}
-              activeOpacity={0.7}
+              activeOpacity={0.75}
               className={`flex-row items-center p-4 rounded-2xl border mb-2 ${
                 selected
-                  ? 'bg-[rgba(212,175,55,0.08)] border-gold'
+                  ? 'bg-surface-raised dark:bg-surface-raised-dark border-foreground dark:border-foreground-dark'
                   : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
               }`}
             >
@@ -394,186 +420,188 @@ function EmployeeStep({
       </ScrollView>
 
       <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
-        <Button variant="primary" size="sm" onPress={onContinue}>
-          Continuar
-        </Button>
+        <TouchableOpacity
+          onPress={onContinue}
+          activeOpacity={0.88}
+          className="bg-foreground dark:bg-foreground-dark rounded-2xl py-4 items-center"
+        >
+          <Caption className="font-manrope-extrabold text-[12px] tracking-[2.5px] uppercase text-premium-white dark:text-surface-dark">
+            Continuar
+          </Caption>
+        </TouchableOpacity>
       </View>
     </View>
   )
 }
 
-// ─── Paso 3: Fecha ─────────────────────────────────────────────────────────────
+// ─── Paso 3: Data + Horario (combinado) ───────────────────────────────────────
 
 const MIN_DATE = format(new Date(), 'yyyy-MM-dd')
 const MAX_DATE = format(addDays(new Date(), 60), 'yyyy-MM-dd')
 
-function DateStep({
+function DateSlotStep({
   selectedDate,
-  onSelect,
-  onContinue,
-}: {
-  selectedDate: string | null
-  onSelect: (date: string) => void
-  onContinue: () => void
-}) {
-  const themeColors = useThemeColors()
-  const markedDates = selectedDate
-    ? { [selectedDate]: { selected: true, selectedColor: themeColors.gold.DEFAULT, selectedTextColor: themeColors.premium.white } }
-    : {}
-
-  return (
-    <View className="flex-1">
-      <View className="flex-1 px-4 pt-4">
-        <Calendar
-          onDayPress={(day) => onSelect(day.dateString)}
-          markedDates={markedDates}
-          minDate={MIN_DATE}
-          maxDate={MAX_DATE}
-          enableSwipeMonths
-          theme={{
-            backgroundColor: 'transparent',
-            calendarBackground: 'transparent',
-            textSectionTitleColor: themeColors.premium.gray.DEFAULT,
-            selectedDayBackgroundColor: themeColors.gold.DEFAULT,
-            selectedDayTextColor: themeColors.premium.white,
-            todayTextColor: themeColors.gold.DEFAULT,
-            dayTextColor: themeColors.premium.black,
-            textDisabledColor: themeColors.premium.divider.disabled,
-            dotColor: themeColors.gold.DEFAULT,
-            arrowColor: themeColors.gold.DEFAULT,
-            monthTextColor: themeColors.premium.black,
-            textMonthFontFamily: 'Manrope_700Bold',
-            textMonthFontSize: 16,
-            textDayFontFamily: 'Manrope_500Medium',
-            textDayFontSize: 14,
-            textDayHeaderFontFamily: 'Manrope_800ExtraBold',
-            textDayHeaderFontSize: 11,
-          }}
-        />
-      </View>
-
-      <View className="bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
-        <Button variant="primary" size="sm" disabled={!selectedDate} onPress={onContinue}>
-          Continuar
-        </Button>
-      </View>
-    </View>
-  )
-}
-
-// ─── Paso 4: Slots ─────────────────────────────────────────────────────────────
-
-function SlotStep({
   slots,
-  loading,
-  selectedDate,
+  slotsLoading,
   selectedSlot,
   totalDuration,
-  onSelect,
+  onPickDate,
+  onPickSlot,
   onContinue,
 }: {
-  slots: AvailableSlot[]
-  loading: boolean
   selectedDate: string | null
+  slots: AvailableSlot[]
+  slotsLoading: boolean
   selectedSlot: AvailableSlot | null
   totalDuration: number
-  onSelect: (slot: AvailableSlot) => void
+  onPickDate: (date: string) => void
+  onPickSlot: (slot: AvailableSlot) => void
   onContinue: () => void
 }) {
   const themeColors = useThemeColors()
-  if (loading) return <LoadingSpinner />
+
+  const markedDates = selectedDate
+    ? { [selectedDate]: { selected: true, selectedColor: themeColors.premium.black, selectedTextColor: themeColors.premium.white } }
+    : {}
 
   const dateLabel = selectedDate
     ? format(parseISO(selectedDate + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: gl })
-    : ''
+    : null
 
   return (
     <View className="flex-1">
-      <View className="flex-1 px-5 pt-5">
-        <View className="flex-row items-center gap-2 mb-5">
-          <IconCalendar size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
-          <Caption className="font-manrope-bold text-[12px] text-foreground-muted dark:text-foreground-muted-dark capitalize">
-            {dateLabel}
-          </Caption>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-36">
+        {/* Calendario */}
+        <View className="px-3 pt-2">
+          <Calendar
+            onDayPress={(day) => onPickDate(day.dateString)}
+            markedDates={markedDates}
+            minDate={MIN_DATE}
+            maxDate={MAX_DATE}
+            enableSwipeMonths
+            theme={{
+              backgroundColor: 'transparent',
+              calendarBackground: 'transparent',
+              textSectionTitleColor: themeColors.premium.gray.DEFAULT,
+              selectedDayBackgroundColor: themeColors.premium.black,
+              selectedDayTextColor: themeColors.premium.white,
+              todayTextColor: themeColors.gold.DEFAULT,
+              dayTextColor: themeColors.premium.black,
+              textDisabledColor: themeColors.premium.divider.disabled,
+              dotColor: themeColors.gold.DEFAULT,
+              arrowColor: themeColors.premium.black,
+              monthTextColor: themeColors.premium.black,
+              textMonthFontFamily: 'Manrope_700Bold',
+              textMonthFontSize: 16,
+              textDayFontFamily: 'Manrope_500Medium',
+              textDayFontSize: 14,
+              textDayHeaderFontFamily: 'Manrope_800ExtraBold',
+              textDayHeaderFontSize: 11,
+            }}
+          />
         </View>
 
-        {slots.length === 0 ? (
-          <View className="flex-1 items-center justify-center gap-3">
-              <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-                Non hai dispoñibilidade para este día.{'\n'}Proba con outra data.
-            </Caption>
+        {/* Slots */}
+        {selectedDate && (
+          <View className="px-5 mt-2">
+            <View className="flex-row items-center gap-2 mb-4 pb-4 border-b border-border dark:border-border-dark">
+              <Caption className="font-manrope-extrabold text-[13px] text-foreground dark:text-foreground-dark capitalize">
+                {dateLabel}
+              </Caption>
+            </View>
+
+            {slotsLoading ? (
+              <LoadingSpinner />
+            ) : slots.length === 0 ? (
+              <View className="py-6 items-center">
+                <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
+                  Non hai dispoñibilidade para este día.{'\n'}Proba con outra data.
+                </Caption>
+              </View>
+            ) : (() => {
+                const periods: { label: string; min: number; max: number }[] = [
+                  { label: 'Mañá', min: 0, max: 13 * 60 },
+                  { label: 'Tarde', min: 13 * 60, max: 19 * 60 },
+                  { label: 'Noite', min: 19 * 60, max: 24 * 60 },
+                ]
+
+                return (
+                  <View className="gap-5">
+                    {periods.map(({ label, min, max }) => {
+                      const periodSlots = slots.filter((s) => {
+                        const h = parseISO(s.start)
+                        const mins = h.getHours() * 60 + h.getMinutes()
+                        return mins >= min && mins < max
+                      })
+                      if (periodSlots.length === 0) return null
+
+                      return (
+                        <View key={label}>
+                          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] uppercase text-foreground-muted dark:text-foreground-muted-dark mb-3">
+                            {label}
+                          </Caption>
+                          <View className="flex-row flex-wrap gap-2.5">
+                            {periodSlots.map((slot) => {
+                              const startLabel = format(parseISO(slot.start), 'HH:mm')
+                              const endLabel = format(parseISO(slot.end), 'HH:mm')
+                              const isSelected =
+                                selectedSlot?.start === slot.start &&
+                                selectedSlot?.employees[0]?.id === slot.employees[0]?.id
+
+                              return (
+                                <TouchableOpacity
+                                  key={`${slot.start}-${slot.employees.map((e) => e.id).join('-')}`}
+                                  onPress={() => onPickSlot(slot)}
+                                  activeOpacity={0.75}
+                                  className={`rounded-2xl border px-4 py-3 items-center w-[30%] ${
+                                    isSelected
+                                      ? 'bg-foreground dark:bg-foreground-dark border-foreground dark:border-foreground-dark'
+                                      : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
+                                  }`}
+                                >
+                                  <Body className={`font-manrope-extrabold text-[15px] ${
+                                    isSelected ? 'text-premium-white dark:text-surface-dark' : 'text-foreground dark:text-foreground-dark'
+                                  }`}>
+                                    {startLabel}
+                                  </Body>
+                                  <Caption className={`font-manrope-medium text-[10px] mt-0.5 ${
+                                    isSelected ? 'text-premium-white/70' : 'text-foreground-muted dark:text-foreground-muted-dark'
+                                  }`}>
+                                    ata {endLabel}
+                                  </Caption>
+                                </TouchableOpacity>
+                              )
+                            })}
+                          </View>
+                        </View>
+                      )
+                    })}
+                  </View>
+                )
+              })()}
           </View>
-        ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-4 gap-3">
-            {slots.map((slot) => {
-              const timeLabel = format(parseISO(slot.start), 'HH:mm')
-              const endLabel = format(parseISO(slot.end), 'HH:mm')
-              const isSelected =
-                selectedSlot?.start === slot.start &&
-                selectedSlot?.employees[0]?.id === slot.employees[0]?.id
-              const employeeNames = slot.employees
-                .map((e) => e.firstName ?? 'Profesional')
-                .join(' + ')
-              const isMulti = slot.employees.length > 1
-
-              return (
-                <TouchableOpacity
-                  key={`${slot.start}-${slot.employees.map((e) => e.id).join('-')}`}
-                  onPress={() => onSelect(slot)}
-                  activeOpacity={0.7}
-                  className={`flex-row items-center p-4 rounded-2xl border ${
-                    isSelected ? 'bg-[rgba(212,175,55,0.08)] border-gold' : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
-                  }`}
-                >
-                  {/* Hora */}
-                  <View className="bg-[rgba(212,175,55,0.1)] rounded-xl px-3 py-2 mr-4 items-center">
-                    <Body className="font-manrope-bold text-[16px] text-foreground dark:text-foreground-dark">
-                      {timeLabel}
-                    </Body>
-                    <Caption className="font-manrope-medium text-[10px] text-foreground-muted dark:text-foreground-muted-dark">
-                      {endLabel}
-                    </Caption>
-                  </View>
-
-                  {/* Profesional(es) y duración */}
-                  <View className="flex-1 gap-1">
-                    <View className="flex-row items-center gap-1.5">
-                      <IconUser size={12} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
-                      <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark flex-1">
-                        {employeeNames}
-                      </Body>
-                    </View>
-                    <View className="flex-row items-center gap-1.5">
-                      <IconClock size={11} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
-                      <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-                        {totalDuration} min
-                        {isMulti ? ` · ${slot.employees.length} profesionais` : ''}
-                      </Caption>
-                    </View>
-                  </View>
-
-                  <IconBack
-                    size={16}
-                    color={themeColors.premium.gray.DEFAULT}
-                    strokeWidth={2}
-                    style={{ transform: [{ rotate: '180deg' }] }}
-                  />
-                </TouchableOpacity>
-              )
-            })}
-          </ScrollView>
         )}
-      </View>
+      </ScrollView>
 
-      <View className="bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={!selectedSlot}
+      <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
+        <TouchableOpacity
           onPress={onContinue}
+          disabled={!selectedSlot}
+          activeOpacity={0.88}
+          className={`rounded-2xl py-4 items-center ${
+            !selectedSlot
+              ? 'bg-surface-raised dark:bg-surface-raised-dark'
+              : 'bg-foreground dark:bg-foreground-dark'
+          }`}
         >
-          Continuar
-        </Button>
+          <Caption className={`font-manrope-extrabold text-[12px] tracking-[2.5px] uppercase ${
+            !selectedSlot
+              ? 'text-foreground-muted dark:text-foreground-muted-dark'
+              : 'text-premium-white dark:text-surface-dark'
+          }`}>
+            Continuar
+          </Caption>
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -608,57 +636,60 @@ function ConfirmStep({
 
   return (
     <View className="flex-1">
-      <ScrollView contentContainerClassName="px-5 pt-5 pb-32" showsVerticalScrollIndicator={false}>
-        {/* Fecha y empleado(s) */}
-        <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4 gap-3">
-          <View className="flex-row items-center gap-2">
-            <IconCalendar size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
-            <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark capitalize flex-1">
-              {startLabel}
-            </Body>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <IconUser size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
-            <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark">
+      <ScrollView contentContainerClassName="px-5 pt-8 pb-36" showsVerticalScrollIndicator={false}>
+
+        {/* Fecha — protagonista */}
+        <View className="mb-10">
+          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] uppercase text-foreground-muted dark:text-foreground-muted-dark mb-3">
+            A túa cita
+          </Caption>
+          <H1 className="font-manrope-extrabold text-[24px] leading-[32px] text-foreground dark:text-foreground-dark capitalize">
+            {startLabel}
+          </H1>
+          <View className="flex-row items-center gap-1.5 mt-3">
+            <IconUser size={12} color="#6B7280" strokeWidth={2} />
+            <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
               {employeeNames}
-            </Body>
+            </Caption>
           </View>
         </View>
 
-        {/* Servicios */}
-        <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4 gap-3">
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase">
+        {/* Servicios — filas simples */}
+        <View className="mb-10">
+          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] uppercase text-foreground-muted dark:text-foreground-muted-dark mb-4">
             Servizos
           </Caption>
-          {selectedServices.map((s) => (
-            <View key={s.id} className="flex-row justify-between items-center">
-              <View className="flex-row items-center gap-2 flex-1">
-                <IconCheck size={12} color={themeColors.gold.DEFAULT} strokeWidth={2.5} />
-                <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
-                  {s.name}
-                </Body>
-              </View>
+          {selectedServices.map((s, index) => (
+            <View
+              key={s.id}
+              className={`flex-row justify-between items-center py-4 ${
+                index < selectedServices.length - 1 ? 'border-b border-border dark:border-border-dark' : ''
+              }`}
+            >
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1 pr-4">
+                {s.name}
+              </Body>
               <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">
                 {s.price}€
               </Body>
             </View>
           ))}
-          <View className="border-t border-border dark:border-border-dark pt-3 flex-row justify-between items-center">
+          <View className="flex-row justify-between items-center pt-4 mt-2 border-t border-border dark:border-border-dark">
             <View className="flex-row items-center gap-1.5">
-              <IconClock size={12} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+              <IconClock size={11} color="#6B7280" strokeWidth={2} />
               <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
                 {totalDuration} min en total
               </Caption>
             </View>
-            <Body className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark">
+            <Body className="font-manrope-extrabold text-[15px] text-foreground dark:text-foreground-dark">
               {totalPrice}€
             </Body>
           </View>
         </View>
 
         {/* Notas */}
-        <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 mb-4">
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] text-foreground-muted dark:text-foreground-muted-dark uppercase mb-3">
+        <View className="mb-4">
+          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] uppercase text-foreground-muted dark:text-foreground-muted-dark mb-4">
             Notas para o salón (opcional)
           </Caption>
           <TextInput
@@ -668,12 +699,13 @@ function ConfirmStep({
             placeholderTextColor={themeColors.premium.gray.DEFAULT}
             multiline
             numberOfLines={3}
+            className="bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-4 py-4"
             style={{
               fontFamily: 'Manrope_500Medium',
               fontSize: 13,
               color: themeColors.premium.black,
               textAlignVertical: 'top',
-              minHeight: 72,
+              minHeight: 90,
             }}
           />
         </View>
@@ -682,9 +714,16 @@ function ConfirmStep({
       </ScrollView>
 
       <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-5 py-4">
-        <Button variant="primary" size="sm" loading={loading} onPress={onConfirm}>
-          Confirmar a reserva
-        </Button>
+        <TouchableOpacity
+          onPress={onConfirm}
+          disabled={loading}
+          activeOpacity={0.88}
+          className="bg-foreground dark:bg-foreground-dark rounded-2xl py-4 items-center"
+        >
+          <Caption className="font-manrope-extrabold text-[12px] tracking-[2.5px] uppercase text-premium-white dark:text-surface-dark">
+            {loading ? 'Confirmando...' : 'Confirmar reserva'}
+          </Caption>
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -808,9 +847,32 @@ export default function BookingScreen() {
     router.replace('/(tabs)')
   }
 
+  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0)
+  const showContextStrip = flow.step !== 'services' && flow.step !== 'done' && selectedServices.length > 0
+
   return (
     <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top', 'bottom']}>
       <BookingHeader step={flow.step} onBack={handleBack} />
+
+      {/* Franja de contexto persistente */}
+      {showContextStrip && (
+        <View className="flex-row items-center px-5 py-2.5 border-b border-border dark:border-border-dark gap-2 flex-wrap">
+          <Caption className="font-manrope-medium text-[12px] text-foreground dark:text-foreground-dark flex-1" numberOfLines={1}>
+            {selectedServices.map(s => s.name).join(' · ')}
+          </Caption>
+          <View className="flex-row items-center gap-2">
+            <View className="flex-row items-center gap-1">
+              <IconClock size={11} color="#6B7280" strokeWidth={2} />
+              <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
+                {totalDuration} min
+              </Caption>
+            </View>
+            <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
+              {totalPrice}€
+            </Caption>
+          </View>
+        </View>
+      )}
 
       {flow.step === 'services' && (
         <ServicesStep
@@ -839,22 +901,15 @@ export default function BookingScreen() {
         />
       )}
 
-      {flow.step === 'date' && (
-        <DateStep
+      {(flow.step === 'date' || flow.step === 'slot') && (
+        <DateSlotStep
           selectedDate={flow.selectedDate}
-          onSelect={flow.pickDate}
-          onContinue={() => flow.setStep('slot')}
-        />
-      )}
-
-      {flow.step === 'slot' && (
-        <SlotStep
           slots={flow.slots}
-          loading={flow.slotsLoading}
-          selectedDate={flow.selectedDate}
+          slotsLoading={flow.slotsLoading}
           selectedSlot={flow.selectedSlot}
           totalDuration={totalDuration}
-          onSelect={flow.pickSlot}
+          onPickDate={flow.pickDate}
+          onPickSlot={flow.pickSlot}
           onContinue={() => flow.setStep('confirm')}
         />
       )}
