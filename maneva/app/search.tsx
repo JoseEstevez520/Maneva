@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   View,
   TextInput,
@@ -7,20 +7,19 @@ import {
   Image,
   Modal,
   Pressable,
+  ActivityIndicator,
 } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated'
+import * as Location from 'expo-location'
 import { useRouter } from 'expo-router'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import MapView, { Circle, Marker } from 'react-native-maps'
 import {
   IconSearch,
   IconClose,
   IconExpandMore,
   IconArrowUpRight,
   IconStar,
+  IconNearMe,
 } from '@/components/ui/icons'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSalonsWithRating } from '@/hooks/useSalons'
@@ -28,6 +27,7 @@ import { useLocation } from '@/hooks/useLocation'
 import { H1, H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import type { UnifiedSalon } from '@/services/salons.service'
+import { getSalonIdsAvailableToday } from '@/services/salons.service'
 
 type SearchSalon = UnifiedSalon & { avgRating: number | null; avgPrice: number | null; distance: number }
 
@@ -42,25 +42,18 @@ const SERVICES = [
   { id: 'tratamiento', name: 'Tratamento' },
 ]
 
-const PRICE_RANGES = [
-  { id: 0, label: 'Todas', min: 0, max: Infinity },
-  { id: 1, label: '€ (0-20€)', min: 0, max: 20 },
-  { id: 2, label: '€€ (20-50€)', min: 20, max: 50 },
-  { id: 3, label: '€€€ (50€+)', min: 50, max: Infinity },
-]
-
-const GENDERS = [
-  { id: 'unisex', label: 'Unisex' },
-  { id: 'mujer', label: 'Muller' },
-  { id: 'hombre', label: 'Home' },
-]
+const PRICE_MIN = 0
+const PRICE_MAX = 150
+const DISTANCE_MAX = 50
 
 interface Filters {
   minRating: number
   selectedServices: string[]
-  priceRange: number
-  gender: string | null
+  priceMin: number
+  priceMax: number
   maxDistance: number
+  availableToday: boolean
+  distanceCenter: { latitude: number; longitude: number } | null
 }
 
 export default function SearchScreen() {
@@ -71,32 +64,48 @@ export default function SearchScreen() {
   const [filters, setFilters] = useState<Filters>({
     minRating: 0,
     selectedServices: [],
-    priceRange: 0,
-    gender: null,
-    maxDistance: 50,
+    priceMin: PRICE_MIN,
+    priceMax: PRICE_MAX,
+    maxDistance: DISTANCE_MAX,
+    availableToday: false,
+    distanceCenter: null,
   })
-  const [visibleModal, setVisibleModal] = useState<'rating' | 'price' | 'gender' | null>(null)
+  const [visibleModal, setVisibleModal] = useState<'service' | 'rating' | 'price' | 'distance' | null>(null)
+  const [availableTodayIds, setAvailableTodayIds] = useState<string[] | null>(null)
 
   const { data: salons, loading } = useSalonsWithRating()
 
-  // Un filtro se considera activo cuando tiene un valor distinto al estado inicial.
-  // El género no se incluye aún porque requiere la columna `gender_focus` en salon_locations.
-  // selectedServices se incluye para que el chip "Limpiar" aparezca cuando hay servicios seleccionados.
+  useEffect(() => {
+    if (!filters.availableToday) return
+    getSalonIdsAvailableToday()
+      .then(setAvailableTodayIds)
+      .catch(() => setAvailableTodayIds([]))
+  }, [filters.availableToday])
+
+  const hasPriceFilter = filters.priceMin > PRICE_MIN || filters.priceMax < PRICE_MAX
+  const hasDistanceFilter = filters.maxDistance < DISTANCE_MAX || filters.distanceCenter !== null
+
   const hasActiveFilters =
     filters.minRating > 0 ||
-    filters.priceRange > 0 ||
+    hasPriceFilter ||
+    hasDistanceFilter ||
+    filters.availableToday ||
     filters.selectedServices.length > 0 ||
     query.length > 0
 
-  // Calcular distancia en km
-  const calculateDistance = (lat: number | null, lon: number | null) => {
-    if (!coords || !lat || !lon) return 0
+  // Calcular distancia en km desde un punto de referencia
+  const calculateDistance = (
+    lat: number | null,
+    lon: number | null,
+    ref: { latitude: number; longitude: number } | null
+  ) => {
+    if (!ref || !lat || !lon) return 0
     const R = 6371
-    const dLat = ((lat - coords.latitude) * Math.PI) / 180
-    const dLon = ((lon - coords.longitude) * Math.PI) / 180
+    const dLat = ((lat - ref.latitude) * Math.PI) / 180
+    const dLon = ((lon - ref.longitude) * Math.PI) / 180
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((coords.latitude * Math.PI) / 180) *
+      Math.cos((ref.latitude * Math.PI) / 180) *
         Math.cos((lat * Math.PI) / 180) *
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2)
@@ -106,9 +115,10 @@ export default function SearchScreen() {
 
   // Búsqueda y filtrado de salones
   const filteredSalons = useMemo(() => {
+    const refCoords = filters.distanceCenter ?? coords
     let result = salons.map((salon) => ({
       ...salon,
-      distance: calculateDistance(salon.latitude ?? null, salon.longitude ?? null),
+      distance: calculateDistance(salon.latitude ?? null, salon.longitude ?? null, refCoords),
     }))
 
     // Si no hay filtros, mostrar todos los salones ordenados por rating
@@ -130,56 +140,35 @@ export default function SearchScreen() {
       result = result.filter((salon) => (salon.avgRating ?? 0) >= filters.minRating)
     }
 
-    // Filtro por rango de precio.
-    // `avgPrice` se calcula en el servicio como la media de los precios de los servicios
-    // de cada sede. Los salones sin servicios registrados (avgPrice === null) se excluyen
-    // cuando hay un filtro de precio activo, ya que no hay forma de clasificarlos.
-    if (filters.priceRange > 0) {
-      const { min, max } = PRICE_RANGES[filters.priceRange]
+    if (hasPriceFilter) {
       result = result.filter((salon) => {
         if (salon.avgPrice === null) return false
-        return salon.avgPrice >= min && salon.avgPrice <= max
+        return salon.avgPrice >= filters.priceMin && salon.avgPrice <= filters.priceMax
       })
     }
 
-    // TODO: Filtro por género — requiere la columna `gender_focus` (text) en la tabla
-    // `salon_locations` con los valores posibles: 'unisex' | 'mujer' | 'hombre'.
-    // Cuando exista, añadir: result = result.filter((s) => s.gender_focus === filters.gender)
+    if (hasDistanceFilter && coords) {
+      result = result.filter((salon) => salon.distance <= filters.maxDistance)
+    }
 
-    // TODO: Filtro por servicios — requiere ampliar la query para comparar los nombres
-    // de los servicios del salón contra los IDs seleccionados en `filters.selectedServices`.
+    if (filters.availableToday && availableTodayIds !== null) {
+      result = result.filter((salon) => availableTodayIds.includes(salon.id))
+    }
 
     return result.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
-  }, [salons, query, filters, hasActiveFilters, coords])
-
-  const toggleService = (serviceId: string) => {
-    setFilters((prev) => {
-      const newServices = prev.selectedServices.includes(serviceId)
-        ? prev.selectedServices.filter((s) => s !== serviceId)
-        : [...prev.selectedServices, serviceId]
-
-      return {
-        ...prev,
-        selectedServices: newServices,
-      }
-    })
-  }
-
-  const clearServiceFilter = () => {
-    setFilters((prev) => ({
-      ...prev,
-      selectedServices: [],
-    }))
-  }
+  }, [salons, query, filters, hasActiveFilters, hasDistanceFilter, hasPriceFilter, coords, availableTodayIds])
 
   const clearAllFilters = () => {
     setQuery('')
+    setAvailableTodayIds(null)
     setFilters({
       minRating: 0,
       selectedServices: [],
-      priceRange: 0,
-      gender: null,
-      maxDistance: 50,
+      priceMin: PRICE_MIN,
+      priceMax: PRICE_MAX,
+      maxDistance: DISTANCE_MAX,
+      availableToday: false,
+      distanceCenter: null,
     })
   }
 
@@ -188,7 +177,7 @@ export default function SearchScreen() {
       {/* ── Header ── */}
       <View className="bg-surface dark:bg-surface-dark pt-2.5">
         <View className="flex-row items-center px-5 mb-4 gap-4">
-          <View className="flex-1 flex-row items-center bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-3 h-12">
+          <View className="flex-1 flex-row items-center bg-surface-raised dark:bg-surface-raised-dark rounded-full px-3 h-12">
             <IconSearch color={themeColors.premium.black} size={20} strokeWidth={2} style={{ marginRight: 8 }} />
             <TextInput
               className="flex-1 font-manrope-medium text-[14px] text-foreground dark:text-foreground-dark py-0 h-full"
@@ -216,34 +205,37 @@ export default function SearchScreen() {
           contentContainerClassName="px-5 gap-2.5 pb-4"
         >
           <FilterChip
+            label="Hoxe"
+            active={filters.availableToday}
+            onPress={() => setFilters((prev) => ({
+              ...prev,
+              availableToday: !prev.availableToday,
+            }))}
+          />
+          <FilterChip
+            label={hasDistanceFilter ? `< ${filters.maxDistance} km` : 'Distancia'}
+            iconTail="expand_more"
+            active={hasDistanceFilter}
+            onPress={() => setVisibleModal('distance')}
+          />
+          <FilterChip
+            label="Servizo"
+            iconTail="expand_more"
+            active={filters.selectedServices.length > 0}
+            onPress={() => setVisibleModal('service')}
+          />
+          <FilterChip
             label="Valoración"
             iconTail="expand_more"
             active={filters.minRating > 0}
             onPress={() => setVisibleModal('rating')}
           />
           <FilterChip
-            label="Prezo"
+            label={hasPriceFilter ? `${filters.priceMin}€ – ${filters.priceMax}€` : 'Prezo'}
             iconTail="expand_more"
-            active={filters.priceRange > 0}
+            active={hasPriceFilter}
             onPress={() => setVisibleModal('price')}
           />
-          {/* TODO: Habilitar cuando exista la columna `gender_focus` en salon_locations.
-              El modal está implementado pero no es accesible hasta entonces. */}
-          <FilterChip
-            label="Xénero"
-            iconTail="expand_more"
-            active={filters.gender !== null}
-            disabled
-            onPress={() => setVisibleModal('gender')}
-          />
-          {filters.selectedServices.length > 0 && (
-            <FilterChip
-              label={`${filters.selectedServices.length} servizo${filters.selectedServices.length > 1 ? 's' : ''}`}
-              active={true}
-              disabled
-              onPress={clearServiceFilter}
-            />
-          )}
           {hasActiveFilters && (
             <FilterChip
               label="Limpar"
@@ -256,46 +248,6 @@ export default function SearchScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-10">
-        {/* ── Buscar por Servicio ── */}
-        <View className="mt-8">
-          <Caption className="px-5 font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark mb-5">
-            FILTRAR POR SERVIZO
-          </Caption>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="px-5 gap-3 pb-4"
-          >
-            {SERVICES.map((service) => (
-              <TouchableOpacity
-                key={service.id}
-                className={`px-5 py-3 rounded-full border ${
-                  filters.selectedServices.includes(service.id)
-                    ? 'border-gold bg-[rgba(212,175,55,0.1)]'
-                    : 'border-border dark:border-border-dark bg-surface dark:bg-surface-dark'
-                }`}
-                activeOpacity={0.7}
-                onPress={() => toggleService(service.id)}
-              >
-                <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">
-                  {service.name}
-                </Body>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* ── Modo de búsqueda activo ── */}
-        {filters.selectedServices.length > 0 && (
-          <View className="mx-5 mb-4 p-3 bg-[rgba(212,175,55,0.1)] border border-gold rounded-lg">
-            <Caption className="font-manrope-medium text-[12px] text-foreground dark:text-foreground-dark">
-              Buscando salóns con: {filters.selectedServices
-                .map((id) => SERVICES.find((s) => s.id === id)?.name)
-                .join(', ')}
-            </Caption>
-          </View>
-        )}
-
         {/* ── Salones ── */}
         <View className="mt-4">
           <View className="px-5 flex-row items-center justify-between mb-5">
@@ -333,6 +285,17 @@ export default function SearchScreen() {
         </View>
       </ScrollView>
 
+      {/* ── Modal de Servizo ── */}
+      <ServiceFilterModal
+        visible={visibleModal === 'service'}
+        selectedServices={filters.selectedServices}
+        onClose={() => setVisibleModal(null)}
+        onApply={(selectedServices) => {
+          setFilters((prev) => ({ ...prev, selectedServices }))
+          setVisibleModal(null)
+        }}
+      />
+
       {/* ── Modal de Valoración ── */}
       <RatingFilterModal
         visible={visibleModal === 'rating'}
@@ -347,21 +310,24 @@ export default function SearchScreen() {
       {/* ── Modal de Precio ── */}
       <PriceFilterModal
         visible={visibleModal === 'price'}
-        priceRange={filters.priceRange}
+        priceMin={filters.priceMin}
+        priceMax={filters.priceMax}
         onClose={() => setVisibleModal(null)}
-        onApply={(priceRange) => {
-          setFilters((prev) => ({ ...prev, priceRange }))
+        onApply={(min, max) => {
+          setFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }))
           setVisibleModal(null)
         }}
       />
 
-      {/* ── Modal de Género ── */}
-      <GenderFilterModal
-        visible={visibleModal === 'gender'}
-        gender={filters.gender}
+      {/* ── Modal de Distancia ── */}
+      <DistanceFilterModal
+        visible={visibleModal === 'distance'}
+        maxDistance={filters.maxDistance}
+        center={filters.distanceCenter}
+        userCoords={coords}
         onClose={() => setVisibleModal(null)}
-        onApply={(gender) => {
-          setFilters((prev) => ({ ...prev, gender }))
+        onApply={(max, center) => {
+          setFilters((prev) => ({ ...prev, maxDistance: max, distanceCenter: center }))
           setVisibleModal(null)
         }}
       />
@@ -371,49 +337,35 @@ export default function SearchScreen() {
 
 // ─── FilterChip ─────────────────────────────────────────────────────
 
-const AnimatedFilterChip = Animated.createAnimatedComponent(Pressable)
-
 function FilterChip({
   label,
   iconTail,
   active,
-  disabled,
   variant = 'default',
   onPress,
 }: {
   label: string
   iconTail?: 'expand_more'
   active?: boolean
-  disabled?: boolean
-  /** default: chip de filtro (dorado si activo). clear: acción de borrar (negro). */
   variant?: 'default' | 'clear'
   onPress?: () => void
 }) {
   const themeColors = useThemeColors()
-  const scale = useSharedValue(1)
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
   const containerStyle =
     variant === 'clear'
-      ? 'bg-premium-black border-premium-black'
+      ? 'bg-foreground dark:bg-foreground-dark border-foreground dark:border-foreground-dark'
       : active
         ? 'bg-gold border-gold'
         : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark-strong'
 
   const textColor =
-    variant === 'clear'
-      ? 'text-premium-white'
-      : active
-        ? 'text-premium-white'
-        : 'text-foreground dark:text-foreground-dark'
+    variant === 'clear' || active ? 'text-premium-white' : 'text-foreground dark:text-foreground-dark'
 
   return (
-    <AnimatedFilterChip
-      disabled={disabled}
+    <TouchableOpacity
       onPress={onPress}
-      onPressIn={() => { scale.value = withSpring(0.93, { damping: 15, stiffness: 300 }) }}
-      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
-      style={[animatedStyle, disabled ? { opacity: 0.4 } : undefined]}
+      activeOpacity={0.8}
       className={`flex-row items-center px-4 py-2 rounded-full border gap-1.5 ${containerStyle}`}
     >
       {variant === 'clear' && (
@@ -425,60 +377,59 @@ function FilterChip({
       {iconTail === 'expand_more' && (
         <IconExpandMore
           size={16}
-          color={active ? themeColors.premium.white : themeColors.premium.black}
+          color={active || variant === 'clear' ? themeColors.premium.white : themeColors.premium.black}
           strokeWidth={2}
         />
       )}
-    </AnimatedFilterChip>
+    </TouchableOpacity>
   )
 }
 
 // ─── SalonResultRow ─────────────────────────────────────────────────
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-
 function SalonResultRow({ salon }: { salon: SearchSalon }) {
   const themeColors = useThemeColors()
   const router = useRouter()
-  const scale = useSharedValue(1)
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
   return (
-    <AnimatedPressable
+    <TouchableOpacity
       onPress={() => router.push(`/salon/${salon.id}`)}
-      onPressIn={() => { scale.value = withSpring(0.98, { damping: 15, stiffness: 300 }) }}
-      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
-      style={animatedStyle}
-      className="flex-row items-center py-6 px-5 border-b border-premium-white-pale gap-5"
+      activeOpacity={0.85}
+      className="flex-row items-center py-4 px-5 border-b border-border/40 dark:border-border-dark/40 gap-4"
     >
       <Image
         source={{ uri: salon.salons?.logo ?? salon.Image ?? PLACEHOLDER_IMAGE }}
-        className="w-14 h-14 rounded-full border border-border dark:border-border-dark"
+        className="w-16 h-16 rounded-2xl"
       />
       <View className="flex-1">
-        <View className="flex-row justify-between items-center mb-1">
-          <H2 className="font-manrope-extrabold text-[15px] text-foreground dark:text-foreground-dark flex-1">
+        <View className="flex-row justify-between items-start mb-1">
+          <H2 className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark flex-1 pr-2" numberOfLines={1}>
             {salon.salons?.name ?? salon.name}
           </H2>
-          <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-            {salon.distance}km
-          </Caption>
+          {salon.distance > 0 && (
+            <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
+              {salon.distance} km
+            </Caption>
+          )}
         </View>
-        <View className="flex-row items-center gap-1.5">
+        <View className="flex-row items-center gap-2">
           {salon.avgRating !== null && (
             <View className="flex-row items-center gap-1">
-              <IconStar size={12} fill={themeColors.gold.DEFAULT} color={themeColors.gold.DEFAULT} />
+              <IconStar size={11} fill={themeColors.gold.DEFAULT} color={themeColors.gold.DEFAULT} />
               <Caption className="font-manrope-bold text-[12px] text-foreground dark:text-foreground-dark">
                 {salon.avgRating.toFixed(1)}
               </Caption>
             </View>
           )}
-          <Caption className="flex-1 font-manrope-medium text-[12px] text-foreground-subtle dark:text-foreground-subtle-dark" numberOfLines={1}>
-            {salon.address ?? salon.city ?? 'Madrid'}
+          {salon.avgRating !== null && (salon.address ?? salon.city) && (
+            <View className="w-[3px] h-[3px] rounded-full bg-foreground-muted dark:bg-foreground-muted-dark" />
+          )}
+          <Caption className="flex-1 font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark" numberOfLines={1}>
+            {salon.address ?? salon.city ?? ''}
           </Caption>
         </View>
       </View>
-    </AnimatedPressable>
+    </TouchableOpacity>
   )
 }
 
@@ -496,6 +447,7 @@ function RatingFilterModal({
   onApply: (rating: number) => void
 }) {
   const themeColors = useThemeColors()
+  const insets = useSafeAreaInsets()
   const [tempRating, setTempRating] = React.useState(minRating)
 
   // Sincronizar el estado temporal con el valor confirmado cada vez que el modal se abre
@@ -512,7 +464,7 @@ function RatingFilterModal({
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
         <Pressable className="flex-1" onPress={onClose} />
-        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
+        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5" style={{ paddingBottom: insets.bottom + 24 }}>
           <View className="flex-row justify-between items-center mb-6">
             <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
               Filtrar por valoración
@@ -526,7 +478,7 @@ function RatingFilterModal({
             {RATING_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                className={`p-4 rounded-lg border flex-row items-center gap-2 ${
+                className={`p-4 rounded-2xl border flex-row items-center gap-2 ${
                   tempRating === option.value
                     ? 'bg-gold border-gold'
                     : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
@@ -584,26 +536,34 @@ function RatingFilterModal({
 
 function PriceFilterModal({
   visible,
-  priceRange,
+  priceMin,
+  priceMax,
   onClose,
   onApply,
 }: {
   visible: boolean
-  priceRange: number
+  priceMin: number
+  priceMax: number
   onClose: () => void
-  onApply: (priceRange: number) => void
+  onApply: (min: number, max: number) => void
 }) {
   const themeColors = useThemeColors()
-  const [tempPrice, setTempPrice] = React.useState(priceRange)
+  const insets = useSafeAreaInsets()
+  const [values, setValues] = React.useState([priceMin, priceMax])
 
-  React.useEffect(() => { if (visible) setTempPrice(priceRange) }, [visible, priceRange])
+  React.useEffect(() => {
+    if (visible) setValues([priceMin, priceMax])
+  }, [visible, priceMin, priceMax])
+
+  // Import dinámico para evitar problemas de SSR
+  const MultiSlider = require('@ptomasroos/react-native-multi-slider').default
 
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
         <Pressable className="flex-1" onPress={onClose} />
-        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
-          <View className="flex-row justify-between items-center mb-6">
+        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5" style={{ paddingBottom: insets.bottom + 24 }}>
+          <View className="flex-row justify-between items-center mb-8">
             <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
               Intervalo de prezo
             </H2>
@@ -612,37 +572,54 @@ function PriceFilterModal({
             </TouchableOpacity>
           </View>
 
-          <View className="gap-3 mb-6">
-            {PRICE_RANGES.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                className={`p-4 rounded-lg border ${
-                  tempPrice === option.id
-                    ? 'bg-gold border-gold'
-                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
-                }`}
-                onPress={() => setTempPrice(option.id)}
-              >
-                <Body
-                  className={`font-manrope-medium text-[13px] ${
-                    tempPrice === option.id
-                      ? 'text-premium-white'
-                      : 'text-foreground-muted dark:text-foreground-muted-dark'
-                  }`}
-                >
-                  {option.label}
-                </Body>
-              </TouchableOpacity>
-            ))}
+          {/* Rango actual */}
+          <View className="items-center mb-8">
+            <Body className="font-manrope-bold text-[22px] text-foreground dark:text-foreground-dark">
+              {values[0]}€ — {values[1] >= PRICE_MAX ? `${PRICE_MAX}€+` : `${values[1]}€`}
+            </Body>
+          </View>
+
+          {/* Slider */}
+          <View className="items-center mb-2">
+            <MultiSlider
+              values={values}
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={5}
+              onValuesChange={setValues}
+              sliderLength={300}
+              selectedStyle={{ backgroundColor: themeColors.premium.black }}
+              unselectedStyle={{ backgroundColor: themeColors.premium.gray.pale ?? '#E5E7EB' }}
+              markerStyle={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: themeColors.premium.white,
+                borderWidth: 0,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 6,
+                elevation: 4,
+              }}
+              containerStyle={{ height: 44 }}
+              trackStyle={{ height: 2, borderRadius: 1 }}
+              enableLabel={false}
+            />
+          </View>
+
+          {/* Etiquetas extremos */}
+          <View className="flex-row justify-between px-1 mb-10">
+            <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">{PRICE_MIN}€</Caption>
+            <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">{PRICE_MAX}€+</Caption>
           </View>
 
           <TouchableOpacity
-            className="w-full bg-premium-black rounded-full py-3 items-center"
-            onPress={() => {
-              onApply(tempPrice)
-            }}
+            className="w-full bg-foreground dark:bg-foreground-dark rounded-full py-3 items-center"
+            activeOpacity={0.88}
+            onPress={() => onApply(values[0], values[1])}
           >
-            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-premium-white">
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-surface-dark">
               Aplicar filtro
             </Body>
           </TouchableOpacity>
@@ -652,32 +629,399 @@ function PriceFilterModal({
   )
 }
 
-// ─── GenderFilterModal ──────────────────────────────────────────────
+// ─── DistanceFilterModal ─────────────────────────────────────────────
 
-function GenderFilterModal({
+const DEFAULT_COORDS = { latitude: 40.4168, longitude: -3.7038 }
+
+function DistanceFilterModal({
   visible,
-  gender,
+  maxDistance,
+  center,
+  userCoords,
   onClose,
   onApply,
 }: {
   visible: boolean
-  gender: string | null
+  maxDistance: number
+  center: { latitude: number; longitude: number } | null
+  userCoords: { latitude: number; longitude: number } | null
   onClose: () => void
-  onApply: (gender: string | null) => void
+  onApply: (max: number, center: { latitude: number; longitude: number } | null) => void
 }) {
   const themeColors = useThemeColors()
-  const [tempGender, setTempGender] = React.useState(gender)
+  const insets = useSafeAreaInsets()
+  const mapRef = React.useRef<MapView>(null)
 
-  React.useEffect(() => { if (visible) setTempGender(gender) }, [visible, gender])
+  const resolvedUserCoords = userCoords ?? DEFAULT_COORDS
+
+  const [tempMax, setTempMax] = React.useState(maxDistance)
+  const [tempCenter, setTempCenter] = React.useState(center ?? resolvedUserCoords)
+  const [usingCustomCenter, setUsingCustomCenter] = React.useState(center !== null)
+
+  const [locationQuery, setLocationQuery] = React.useState('')
+  const [isGeocoding, setIsGeocoding] = React.useState(false)
+  const [geocodeError, setGeocodeError] = React.useState<string | null>(null)
+
+  // On open: restore saved state
+  React.useEffect(() => {
+    if (!visible) return
+    const initialCenter = center ?? userCoords ?? DEFAULT_COORDS
+    setTempMax(maxDistance)
+    setTempCenter(initialCenter)
+    setUsingCustomCenter(center !== null)
+    setLocationQuery('')
+    setGeocodeError(null)
+    setTimeout(() => animateToRegion(initialCenter, maxDistance), 350)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible])
+
+  // If userCoords arrives after the modal opens and no custom center is set, fly there
+  React.useEffect(() => {
+    if (!visible || usingCustomCenter || !userCoords) return
+    setTempCenter(userCoords)
+    animateToRegion(userCoords, tempMax)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userCoords, visible])
+
+  const animateToRegion = (c: { latitude: number; longitude: number }, radius: number) => {
+    const delta = (radius * 2.6) / 111
+    mapRef.current?.animateToRegion(
+      { latitude: c.latitude, longitude: c.longitude, latitudeDelta: delta, longitudeDelta: delta },
+      350
+    )
+  }
+
+  const handleSliderChange = (value: number) => {
+    const rounded = Math.round(value)
+    setTempMax(rounded)
+    animateToRegion(tempCenter, rounded)
+  }
+
+  const handleMapPress = (e: { nativeEvent: { coordinate: { latitude: number; longitude: number } } }) => {
+    const coord = e.nativeEvent.coordinate
+    setTempCenter(coord)
+    setUsingCustomCenter(true)
+    animateToRegion(coord, tempMax)
+  }
+
+  const handleMarkerDragEnd = (e: { nativeEvent: { coordinate: { latitude: number; longitude: number } } }) => {
+    const coord = e.nativeEvent.coordinate
+    setTempCenter(coord)
+    setUsingCustomCenter(true)
+  }
+
+  const resetToUserLocation = () => {
+    setTempCenter(resolvedUserCoords)
+    setUsingCustomCenter(false)
+    setLocationQuery('')
+    setGeocodeError(null)
+    animateToRegion(resolvedUserCoords, tempMax)
+  }
+
+  const handleLocationSearch = async () => {
+    const q = locationQuery.trim()
+    if (!q) return
+    setIsGeocoding(true)
+    setGeocodeError(null)
+    try {
+      const results = await Location.geocodeAsync(q)
+      if (results.length > 0) {
+        const coord = { latitude: results[0].latitude, longitude: results[0].longitude }
+        setTempCenter(coord)
+        setUsingCustomCenter(true)
+        setLocationQuery('')
+        animateToRegion(coord, tempMax)
+      } else {
+        setGeocodeError('Ubicación non atopada')
+      }
+    } catch {
+      setGeocodeError('Erro ao buscar')
+    } finally {
+      setIsGeocoding(false)
+    }
+  }
+
+  const Slider = require('@react-native-community/slider').default
+
+  // Panel height estimate so the map knows not to center on the hidden area
+  const PANEL_HEIGHT = 280 + insets.bottom
+
+  const initialRegion = {
+    latitude: tempCenter.latitude,
+    longitude: tempCenter.longitude,
+    latitudeDelta: (tempMax * 2.6) / 111,
+    longitudeDelta: (tempMax * 2.6) / 111,
+  }
+
+  const panelBg = themeColors.premium.white       // #FFF in light, #1A1A1A in dark
+  const dividerColor = themeColors.premium.divider.medium
+  const trackFg = themeColors.premium.black       // #000 in light, #F0F0F0 in dark
+  const trackBg = themeColors.premium.gray.pale   // #D1D5DB in light, #3A3A3A in dark
+
+  return (
+    <Modal visible={visible} transparent={false} animationType="slide" statusBarTranslucent>
+      {/* Outer container — no background so map fills everything */}
+      <View style={{ flex: 1 }}>
+
+        {/* ── Full-screen map ── */}
+        <MapView
+          ref={mapRef}
+          style={{ flex: 1 }}
+          initialRegion={initialRegion}
+          onPress={handleMapPress}
+          showsUserLocation
+          showsMyLocationButton={false}
+        >
+          <Circle
+            center={tempCenter}
+            radius={tempMax * 1000}
+            fillColor="rgba(212,175,55,0.12)"
+            strokeColor={themeColors.gold.DEFAULT}
+            strokeWidth={2.5}
+          />
+          <Marker
+            coordinate={tempCenter}
+            draggable
+            onDragEnd={handleMarkerDragEnd}
+            pinColor={themeColors.gold.DEFAULT}
+          />
+        </MapView>
+
+        {/* ── Top bar: close + search (floats over map) ── */}
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + 12,
+            left: 16,
+            right: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          {/* Close */}
+          <TouchableOpacity
+            onPress={onClose}
+            activeOpacity={0.85}
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              backgroundColor: 'rgba(255,255,255,0.97)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.18,
+              shadowRadius: 6,
+              elevation: 6,
+              flexShrink: 0,
+            }}
+          >
+            <IconClose size={18} color="#000" strokeWidth={2.5} />
+          </TouchableOpacity>
+
+          {/* Location search */}
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255,255,255,0.97)',
+              borderRadius: 21,
+              paddingHorizontal: 14,
+              height: 42,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.18,
+              shadowRadius: 6,
+              elevation: 6,
+              gap: 8,
+            }}
+          >
+            <IconSearch size={16} color="#666" strokeWidth={2} />
+            <TextInput
+              style={{ flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 13, color: '#000', padding: 0 }}
+              placeholder="Busca un lugar..."
+              placeholderTextColor="#999"
+              value={locationQuery}
+              onChangeText={(t) => { setLocationQuery(t); setGeocodeError(null) }}
+              onSubmitEditing={handleLocationSearch}
+              returnKeyType="search"
+            />
+            {isGeocoding ? (
+              <ActivityIndicator size="small" color="#666" />
+            ) : locationQuery.length > 0 ? (
+              <TouchableOpacity onPress={handleLocationSearch} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <IconArrowUpRight size={16} color="#000" strokeWidth={2.5} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+
+        {/* ── Geocode error pill ── */}
+        {geocodeError && (
+          <View
+            style={{
+              position: 'absolute',
+              top: insets.top + 66,
+              left: 16,
+              right: 16,
+              backgroundColor: 'rgba(239,68,68,0.92)',
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              alignItems: 'center',
+            }}
+          >
+            <Caption style={{ fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: '#fff' }}>
+              {geocodeError}
+            </Caption>
+          </View>
+        )}
+
+        {/* ── Tap hint (bottom-right of map visible area) ── */}
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + 66,
+            right: 16,
+            backgroundColor: 'rgba(255,255,255,0.88)',
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+          }}
+        >
+          <Caption style={{ fontFamily: 'Manrope_500Medium', fontSize: 10, color: '#555' }}>
+            Toca o mapa para mover
+          </Caption>
+        </View>
+
+        {/* ── Bottom panel (floats over map, no gap/corner bleed) ── */}
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: panelBg,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
+            paddingTop: 12,
+            paddingHorizontal: 20,
+            paddingBottom: insets.bottom + 16,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 16,
+            elevation: 20,
+          }}
+        >
+          {/* Handle */}
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: dividerColor, alignSelf: 'center', marginBottom: 18 }} />
+
+          {/* Radius value + context */}
+          <View style={{ alignItems: 'center', marginBottom: 18 }}>
+            <Body style={{ fontFamily: 'Manrope_800ExtraBold', fontSize: 30, color: trackFg, lineHeight: 36 }}>
+              {tempMax >= DISTANCE_MAX ? `${DISTANCE_MAX} km+` : `${tempMax} km`}
+            </Body>
+            <Caption style={{ fontFamily: 'Manrope_500Medium', fontSize: 12, color: themeColors.premium.gray.DEFAULT, marginTop: 4 }}>
+              {usingCustomCenter ? 'Dende o punto seleccionado' : 'Dende a túa ubicación'}
+            </Caption>
+          </View>
+
+          {/* Slider */}
+          <Slider
+            style={{ width: '100%', height: 44 }}
+            minimumValue={1}
+            maximumValue={DISTANCE_MAX}
+            step={1}
+            value={tempMax}
+            onValueChange={handleSliderChange}
+            minimumTrackTintColor={trackFg}
+            maximumTrackTintColor={trackBg}
+            thumbTintColor={trackFg}
+          />
+
+          {/* Range labels */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 18 }}>
+            <Caption style={{ fontFamily: 'Manrope_500Medium', fontSize: 11, color: themeColors.premium.gray.DEFAULT }}>1 km</Caption>
+            <Caption style={{ fontFamily: 'Manrope_500Medium', fontSize: 11, color: themeColors.premium.gray.DEFAULT }}>{DISTANCE_MAX} km+</Caption>
+          </View>
+
+          {/* Reset to my location */}
+          {usingCustomCenter && (
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                paddingVertical: 12,
+                marginBottom: 10,
+                borderRadius: 50,
+                borderWidth: 1,
+                borderColor: dividerColor,
+              }}
+              activeOpacity={0.8}
+              onPress={resetToUserLocation}
+            >
+              <IconNearMe size={16} color={trackFg} strokeWidth={2} />
+              <Body style={{ fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: trackFg }}>
+                Usar miña ubicación
+              </Body>
+            </TouchableOpacity>
+          )}
+
+          {/* Apply */}
+          <TouchableOpacity
+            style={{ backgroundColor: trackFg, borderRadius: 50, paddingVertical: 14, alignItems: 'center' }}
+            activeOpacity={0.88}
+            onPress={() => onApply(tempMax, usingCustomCenter ? tempCenter : null)}
+          >
+            <Body style={{ fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: panelBg }}>
+              Aplicar filtro
+            </Body>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  )
+}
+
+// ─── ServiceFilterModal ──────────────────────────────────────────────
+
+function ServiceFilterModal({
+  visible,
+  selectedServices,
+  onClose,
+  onApply,
+}: {
+  visible: boolean
+  selectedServices: string[]
+  onClose: () => void
+  onApply: (selectedServices: string[]) => void
+}) {
+  const themeColors = useThemeColors()
+  const insets = useSafeAreaInsets()
+  const [tempServices, setTempServices] = React.useState(selectedServices)
+
+  React.useEffect(() => { if (visible) setTempServices(selectedServices) }, [visible, selectedServices])
+
+  const toggle = (id: string) => {
+    setTempServices((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    )
+  }
 
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View className="flex-1 bg-[rgba(0,0,0,0.5)]">
         <Pressable className="flex-1" onPress={onClose} />
-        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5 pb-10">
+        <View className="bg-surface dark:bg-surface-dark rounded-t-3xl pt-6 px-5" style={{ paddingBottom: insets.bottom + 24 }}>
           <View className="flex-row justify-between items-center mb-6">
             <H2 className="font-manrope-extrabold text-[18px] text-foreground dark:text-foreground-dark">
-              Tipo de salón
+              Servizos
             </H2>
             <TouchableOpacity onPress={onClose}>
               <IconClose size={20} color={themeColors.premium.black} strokeWidth={2} />
@@ -685,36 +1029,33 @@ function GenderFilterModal({
           </View>
 
           <View className="gap-3 mb-6">
-            {GENDERS.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                className={`p-4 rounded-lg border ${
-                  tempGender === option.id
-                    ? 'bg-gold border-gold'
-                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
-                }`}
-                onPress={() => setTempGender(option.id)}
-              >
-                <Body
-                  className={`font-manrope-medium text-[13px] ${
-                    tempGender === option.id
-                      ? 'text-premium-white'
-                      : 'text-foreground-muted dark:text-foreground-muted-dark'
+            {SERVICES.map((service) => {
+              const selected = tempServices.includes(service.id)
+              return (
+                <TouchableOpacity
+                  key={service.id}
+                  activeOpacity={0.8}
+                  className={`p-4 rounded-2xl border ${
+                    selected
+                      ? 'bg-gold border-gold'
+                      : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
                   }`}
+                  onPress={() => toggle(service.id)}
                 >
-                  {option.label}
-                </Body>
-              </TouchableOpacity>
-            ))}
+                  <Body className={`font-manrope-medium text-[13px] ${selected ? 'text-premium-white' : 'text-foreground dark:text-foreground-dark'}`}>
+                    {service.name}
+                  </Body>
+                </TouchableOpacity>
+              )
+            })}
           </View>
 
           <TouchableOpacity
-            className="w-full bg-premium-black rounded-full py-3 items-center"
-            onPress={() => {
-              onApply(tempGender)
-            }}
+            className="w-full bg-foreground dark:bg-foreground-dark rounded-full py-3 items-center"
+            activeOpacity={0.88}
+            onPress={() => onApply(tempServices)}
           >
-            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-premium-white">
+            <Body className="font-manrope-extrabold text-[15px] text-premium-white dark:text-surface-dark">
               Aplicar filtro
             </Body>
           </TouchableOpacity>

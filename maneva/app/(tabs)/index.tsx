@@ -8,13 +8,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Pressable,
 } from 'react-native'
 import Animated, {
   FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
 } from 'react-native-reanimated'
 import { IconSearch, IconCalendar, IconLocation, IconStar, IconTag, IconChevron } from '@/components/ui/icons'
 import { useThemeColors } from '@/hooks/useThemeColors'
@@ -79,7 +75,7 @@ function SearchBar({ anchorRef }: { anchorRef?: (node: View | null) => void }) {
     <View className="px-5 pt-6 pb-2">
       <View ref={anchorRef}>
         <TouchableOpacity
-          className="flex-row items-center bg-surface dark:bg-surface-dark rounded-2xl px-4 py-3.5 gap-3 shadow-input"
+          className="flex-row items-center bg-surface dark:bg-surface-dark rounded-full px-4 py-3.5 gap-3 shadow-input"
           activeOpacity={0.9}
           onPress={() => router.push("/search")}
         >
@@ -123,8 +119,6 @@ function NextAppointmentSection() {
   const { data: appt, loading } = useNextAppointment();
   const router = useRouter();
   const themeColors = useThemeColors();
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   return (
     <View className="px-5 mt-7">
@@ -132,11 +126,9 @@ function NextAppointmentSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : appt ? (
-        <AnimatedPressable
+        <TouchableOpacity
           onPress={() => router.push('/bookings')}
-          onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
-          onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
-          style={animatedStyle}
+          activeOpacity={0.85}
           className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card p-5"
         >
           <View className="flex-row items-start gap-3">
@@ -170,7 +162,7 @@ function NextAppointmentSection() {
               className="w-[90px] h-[90px] rounded-2xl shrink-0"
             />
           </View>
-        </AnimatedPressable>
+        </TouchableOpacity>
       ) : (
         <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card p-5 items-center gap-3.5">
           <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
@@ -197,8 +189,6 @@ function MySalonSection() {
   const { data: salon, loading } = useFavoriteSalon();
   const router = useRouter();
   const themeColors = useThemeColors();
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   return (
     <View className="px-5 mt-7">
@@ -206,11 +196,9 @@ function MySalonSection() {
       {loading ? (
         <LoadingSpinner className="py-6 items-center" />
       ) : salon ? (
-        <AnimatedPressable
+        <TouchableOpacity
           onPress={() => router.push(`/salon/${salon.id}`)}
-          onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
-          onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
-          style={animatedStyle}
+          activeOpacity={0.85}
           className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card flex-row h-[150px] overflow-hidden"
         >
           <Image source={{ uri: salon.Image ?? PLACEHOLDER_IMAGE }} className="w-2/5 h-full" />
@@ -261,7 +249,7 @@ function MySalonSection() {
             </View>
 
           </View>
-        </AnimatedPressable>
+        </TouchableOpacity>
       ) : (
         <View className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card p-5 items-center gap-3.5">
           <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
@@ -275,20 +263,14 @@ function MySalonSection() {
 
 // ─── Sección D: Disponible Hoy ────────────────────────────────────────────────
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-
 function TodayCard({ id, name, city, image }: { id: string; name: string; city: string | null; image: string | null }) {
   const router = useRouter()
   const themeColors = useThemeColors()
-  const scale = useSharedValue(1)
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
   return (
-    <AnimatedPressable
+    <TouchableOpacity
       onPress={() => router.push(`/salon/${id}`)}
-      onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
-      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
-      style={animatedStyle}
+      activeOpacity={0.85}
       className="w-[240px] bg-surface dark:bg-surface-dark rounded-[24px] overflow-hidden border border-border dark:border-border-dark shadow-card"
     >
       <View>
@@ -316,7 +298,7 @@ function TodayCard({ id, name, city, image }: { id: string; name: string; city: 
           </Caption>
         </View>
       </View>
-    </AnimatedPressable>
+    </TouchableOpacity>
   );
 }
 
@@ -360,8 +342,6 @@ function AvailableTodaySection() {
 function OfferCard({ offer }: { offer: CampaignWithSalon }) {
   const router = useRouter()
   const themeColors = useThemeColors()
-  const scale = useSharedValue(1)
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
   const salonName = offer.salon_locations?.name ?? 'Salón'
   const salonCity = offer.salon_locations?.city ?? 'Madrid'
@@ -371,16 +351,10 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
     (parseISO(offer.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   )
 
-  const handlePress = () => {
-    router.push(`/salon/${offer.location_id}`)
-  }
-
   return (
-    <AnimatedPressable
-      onPress={handlePress}
-      onPressIn={() => { scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }) }}
-      onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 300 }) }}
-      style={animatedStyle}
+    <TouchableOpacity
+      onPress={() => router.push(`/salon/${offer.location_id}`)}
+      activeOpacity={0.85}
       className="bg-surface dark:bg-surface-dark rounded-[24px] border border-border dark:border-border-dark shadow-card overflow-hidden"
     >
       {/* Encabezado con tipo de oferta */}
@@ -435,7 +409,7 @@ function OfferCard({ offer }: { offer: CampaignWithSalon }) {
           </View>
         </View>
       </View>
-    </AnimatedPressable>
+    </TouchableOpacity>
   )
 }
 

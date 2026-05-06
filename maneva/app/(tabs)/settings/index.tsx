@@ -143,9 +143,9 @@ export default function SettingsScreen() {
         </View>
 
         <MenuSection title="A miña conta">
-          <MenuRow label="Citas por terceiros" onPress={() => router.push('/(tabs)/settings/bookings-delegation')} />
           <MenuRow label="Preferencias de cita" onPress={() => router.push('/(tabs)/settings/booking-preferences')} />
           <MenuRow label="Cortes de referencia" onPress={() => router.push('/(tabs)/settings/reference-cuts')} />
+          <MenuRow label="Citas por terceiros" onPress={() => router.push('/(tabs)/settings/bookings-delegation')} />
         </MenuSection>
 
         <MenuSection title="Configuración da app">

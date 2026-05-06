@@ -173,6 +173,7 @@ export default function BookingsDelegationScreen() {
   } = useLinkedProfiles()
 
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
   const [phone, setPhone] = useState('')
   const [relationLabel, setRelationLabel] = useState('')
   const [canModify, setCanModify] = useState(true)
@@ -380,8 +381,32 @@ export default function BookingsDelegationScreen() {
             </View>
           ) : null}
 
-          {/* TODO: enlazar a contenido de ayuda real cuando esté disponible */}
-          <InfoCard title="Como engadir administradores" actionLabel="Ver máis" onPress={() => {}} />
+          <InfoCard
+            title="Como engadir administradores"
+            actionLabel={showHelp ? 'Pechar' : 'Ver máis'}
+            onPress={() => setShowHelp((prev) => !prev)}
+          >
+            {showHelp ? (
+              <View className="gap-3 pt-1">
+                {[
+                  'A persoa debe estar rexistrada en Maneva.',
+                  'Preme "Engadir persoa" e introduce o seu teléfono.',
+                  'Indica a relación (opcional) e o nivel de permiso.',
+                  'Garda. A partir de ese momento poderá xestionar as túas citas.',
+                  'Podes eliminar o acceso en calquera momento.',
+                ].map((step, i) => (
+                  <View key={i} className="flex-row items-start gap-3">
+                    <Caption className="font-manrope-extrabold text-[11px] text-gold mt-0.5">
+                      {i + 1}.
+                    </Caption>
+                    <Body className="flex-1 font-manrope text-[13px] leading-5 text-foreground-muted dark:text-foreground-muted-dark">
+                      {step}
+                    </Body>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </InfoCard>
 
           <View className="mx-6 mt-4 rounded-[18px] bg-surface-overlay dark:bg-surface-overlay-dark px-5 py-5 flex-row items-center gap-3">
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">

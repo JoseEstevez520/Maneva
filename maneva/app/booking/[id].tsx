@@ -22,6 +22,7 @@ import {
   IconClock,
   IconUser,
   IconCalendar,
+  IconTag,
 } from '@/components/ui/icons'
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useBookingFlow, BookingStep } from '@/hooks/useAppointments'
@@ -654,37 +655,55 @@ function ConfirmStep({
           </View>
         </View>
 
-        {/* Servicios — filas simples */}
+        {/* Servicios — recibo */}
         <View className="mb-10">
-          <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] uppercase text-foreground-muted dark:text-foreground-muted-dark mb-4">
-            Servizos
-          </Caption>
+          {/* Header de columnas */}
+          <View className="flex-row items-center mb-2 pb-2 border-b border-border dark:border-border-dark">
+            <Caption className="font-manrope-extrabold text-[10px] tracking-[2px] uppercase text-foreground-muted dark:text-foreground-muted-dark flex-1">
+              Servizo
+            </Caption>
+            <View className="w-16 items-end mr-8">
+              <IconClock size={13} color="#6B7280" strokeWidth={2} />
+            </View>
+            <View className="w-14 items-end">
+              <IconTag size={13} color="#6B7280" strokeWidth={2} />
+            </View>
+          </View>
+
           {selectedServices.map((s, index) => (
             <View
               key={s.id}
-              className={`flex-row justify-between items-center py-4 ${
-                index < selectedServices.length - 1 ? 'border-b border-border dark:border-border-dark' : ''
+              className={`flex-row items-center py-3.5 ${
+                index < selectedServices.length - 1
+                  ? 'border-b border-border/40 dark:border-border-dark/40'
+                  : ''
               }`}
             >
-              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1 pr-4">
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1 pr-4" numberOfLines={1}>
                 {s.name}
               </Body>
-              <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark">
+              <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark w-16 text-right mr-8">
+                {s.duration_minutes} min
+              </Body>
+              <Body className="font-manrope-semibold text-[13px] text-foreground dark:text-foreground-dark w-14 text-right">
                 {s.price}€
               </Body>
             </View>
           ))}
-          <View className="flex-row justify-between items-center pt-4 mt-2 border-t border-border dark:border-border-dark">
-            <View className="flex-row items-center gap-1.5">
-              <IconClock size={11} color="#6B7280" strokeWidth={2} />
-              <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-                {totalDuration} min en total
-              </Caption>
+
+          {selectedServices.length > 1 && (
+            <View className="flex-row items-center pt-3.5 mt-1 border-t border-border dark:border-border-dark">
+              <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark flex-1">
+                Total
+              </Body>
+              <Body className="font-manrope-bold text-[13px] text-foreground-muted dark:text-foreground-muted-dark w-16 text-right mr-8">
+                {totalDuration} min
+              </Body>
+              <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark w-14 text-right">
+                {totalPrice}€
+              </Body>
             </View>
-            <Body className="font-manrope-extrabold text-[15px] text-foreground dark:text-foreground-dark">
-              {totalPrice}€
-            </Body>
-          </View>
+          )}
         </View>
 
         {/* Notas */}
@@ -745,73 +764,80 @@ function DoneStep({
   const themeColors = useThemeColors()
   const dateLabel = format(parseISO(slot.start), "EEEE d 'de' MMMM 'ás' HH:mm", { locale: gl })
   const totalPrice = services.reduce((sum, s) => sum + s.price, 0)
-  const serviceNames = services.map((s) => s.name).join(', ')
+  const totalDuration = services.reduce((sum, s) => sum + s.duration_minutes, 0)
   const employeeNames = slot.employees
     .map((e) => [e.firstName, e.lastName].filter(Boolean).join(' ') || 'Profesional')
     .join(' + ')
 
   return (
     <View className="flex-1 px-5">
-      <View className="flex-1 items-center justify-center gap-6">
-        {/* Icono */}
-        <View className="w-24 h-24 rounded-full bg-[rgba(212,175,55,0.15)] items-center justify-center">
-          <IconCheckCircle size={48} color={themeColors.gold.DEFAULT} strokeWidth={1.5} />
-        </View>
+      <View className="flex-1 justify-center gap-8">
 
-        {/* Título */}
-        <View className="items-center gap-2">
-          <H1 className="font-manrope-bold text-[24px] text-foreground dark:text-foreground-dark text-center">
-            Reserva confirmada!
+        {/* Icono + título */}
+        <View className="items-center gap-3">
+          <View className="w-16 h-16 rounded-full bg-surface-raised dark:bg-surface-raised-dark items-center justify-center">
+            <IconCheckCircle size={32} color={themeColors.gold.DEFAULT} strokeWidth={1.5} />
+          </View>
+          <H1 className="font-manrope-extrabold text-[22px] text-foreground dark:text-foreground-dark text-center">
+            Reserva confirmada
           </H1>
-          <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center">
-            Recibirás a confirmación por WhatsApp.
-          </Body>
         </View>
 
-        {/* Resumen de la cita */}
-        <View className="w-full bg-[rgba(212,175,55,0.06)] border border-[rgba(212,175,55,0.25)] rounded-2xl p-4 gap-3">
-          <View className="flex-row items-start gap-2.5">
-            <IconCalendar size={14} color={themeColors.gold.DEFAULT} strokeWidth={2} />
-            <Body className="font-manrope-semibold text-[13px] text-foreground dark:text-foreground-dark flex-1 capitalize">
+        {/* Tarjeta resumen */}
+        <View className="bg-surface-raised dark:bg-surface-raised-dark rounded-2xl px-5 py-4 gap-0">
+
+          {/* Fecha */}
+          <View className="flex-row items-center gap-3 py-3.5 border-b border-border/40 dark:border-border-dark/40">
+            <IconCalendar size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+            <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1 capitalize">
               {dateLabel}
             </Body>
           </View>
 
-          {serviceNames.length > 0 && (
-            <View className="flex-row items-start gap-2.5">
-              <IconCheck size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
-                {serviceNames}
+          {/* Profesional */}
+          <View className="flex-row items-center gap-3 py-3.5 border-b border-border/40 dark:border-border-dark/40">
+            <IconUser size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
+            <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
+              {employeeNames}
+            </Body>
+          </View>
+
+          {/* Servicios */}
+          {services.map((s, index) => (
+            <View
+              key={s.id}
+              className={`flex-row items-center py-3.5 ${
+                index < services.length - 1 ? 'border-b border-border/40 dark:border-border-dark/40' : ''
+              }`}
+            >
+              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1 pr-4" numberOfLines={1}>
+                {s.name}
+              </Body>
+              <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark w-16 text-right mr-8">
+                {s.duration_minutes} min
+              </Body>
+              <Body className="font-manrope-semibold text-[13px] text-foreground dark:text-foreground-dark w-14 text-right">
+                {s.price}€
               </Body>
             </View>
-          )}
+          ))}
 
-          {employeeNames.length > 0 && (
-            <View className="flex-row items-start gap-2.5">
-              <IconUser size={14} color={themeColors.premium.gray.DEFAULT} strokeWidth={2} />
-              <Body className="font-manrope-medium text-[13px] text-foreground dark:text-foreground-dark flex-1">
-                {employeeNames}
+          {/* Total (solo si hay más de uno) */}
+          {services.length > 1 && (
+            <View className="flex-row items-center pt-3.5 mt-1 border-t border-border dark:border-border-dark">
+              <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark flex-1">
+                Total
               </Body>
-            </View>
-          )}
-
-          {totalPrice > 0 && (
-            <View className="border-t border-[rgba(212,175,55,0.2)] pt-3 flex-row justify-between items-center">
-              <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
-                Total estimado
-              </Caption>
-              <Body className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark">
+              <Body className="font-manrope-bold text-[13px] text-foreground-muted dark:text-foreground-muted-dark w-16 text-right mr-8">
+                {totalDuration} min
+              </Body>
+              <Body className="font-manrope-bold text-[13px] text-foreground dark:text-foreground-dark w-14 text-right">
                 {totalPrice}€
               </Body>
             </View>
           )}
         </View>
 
-        <View className="bg-surface-raised dark:bg-surface-raised-dark rounded-lg px-4 py-2">
-          <Caption className="font-manrope-bold text-[11px] text-foreground-muted dark:text-foreground-muted-dark tracking-[1.5px]">
-            Ref: {appointmentId.slice(0, 8).toUpperCase()}
-          </Caption>
-        </View>
       </View>
 
       <View className="pb-6">
@@ -847,32 +873,9 @@ export default function BookingScreen() {
     router.replace('/(tabs)')
   }
 
-  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0)
-  const showContextStrip = flow.step !== 'services' && flow.step !== 'done' && selectedServices.length > 0
-
   return (
     <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark" edges={['top', 'bottom']}>
       <BookingHeader step={flow.step} onBack={handleBack} />
-
-      {/* Franja de contexto persistente */}
-      {showContextStrip && (
-        <View className="flex-row items-center px-5 py-2.5 border-b border-border dark:border-border-dark gap-2 flex-wrap">
-          <Caption className="font-manrope-medium text-[12px] text-foreground dark:text-foreground-dark flex-1" numberOfLines={1}>
-            {selectedServices.map(s => s.name).join(' · ')}
-          </Caption>
-          <View className="flex-row items-center gap-2">
-            <View className="flex-row items-center gap-1">
-              <IconClock size={11} color="#6B7280" strokeWidth={2} />
-              <Caption className="font-manrope-medium text-[11px] text-foreground-muted dark:text-foreground-muted-dark">
-                {totalDuration} min
-              </Caption>
-            </View>
-            <Caption className="font-manrope-extrabold text-[12px] text-foreground dark:text-foreground-dark">
-              {totalPrice}€
-            </Caption>
-          </View>
-        </View>
-      )}
 
       {flow.step === 'services' && (
         <ServicesStep

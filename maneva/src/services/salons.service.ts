@@ -331,6 +331,31 @@ export async function getEmployeesByLocation(locationId: string): Promise<Employ
 }
 
 /**
+ * Devuelve los location_ids de sedes que tienen al menos un empleado
+ * con disponibilidad configurada para el día de la semana actual.
+ * day_of_week: 0 = domingo, 1 = lunes, ..., 6 = sábado
+ */
+export async function getSalonIdsAvailableToday(): Promise<string[]> {
+  const dayOfWeek = new Date().getDay()
+
+  const { data, error } = await supabase
+    .from('employee_availability')
+    .select('employees!inner(location_id)')
+    .eq('day_of_week', dayOfWeek)
+
+  if (error) throw error
+
+  const locationIds = (data ?? [])
+    .map((row: { employees: { location_id: string } | { location_id: string }[] }) => {
+      const emp = Array.isArray(row.employees) ? row.employees[0] : row.employees
+      return emp?.location_id
+    })
+    .filter((id): id is string => Boolean(id))
+
+  return [...new Set(locationIds)]
+}
+
+/**
  * Devuelve sedes cercanas a unas coordenadas (placeholder).
  */
 export async function getSalonsByLocation(
