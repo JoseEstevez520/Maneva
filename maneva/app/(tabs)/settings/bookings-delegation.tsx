@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Switch, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { format, parseISO } from 'date-fns'
@@ -138,7 +138,7 @@ function InfoCard({
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-row items-center gap-3 flex-1 pr-3">
           <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
-            <Text className="text-[11px] font-bold text-premium-white">i</Text>
+            <Caption className="font-manrope-bold text-[11px] text-premium-white">i</Caption>
           </View>
           <Body className="flex-1 font-manrope-medium text-[13px] leading-5 text-foreground-muted dark:text-foreground-muted-dark">
             {title}
@@ -343,7 +343,7 @@ export default function BookingsDelegationScreen() {
 
               <View className="rounded-[18px] bg-surface-overlay dark:bg-surface-overlay-dark px-5 py-5 flex-row items-center gap-3">
                 <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
-                  <Text className="text-[11px] font-bold text-premium-white">i</Text>
+                  <Caption className="font-manrope-bold text-[11px] text-premium-white">i</Caption>
                 </View>
                 <Body className="flex-1 font-manrope text-[13px] leading-6 text-foreground-muted dark:text-foreground-muted-dark">
                   Só poderás conceder permisos a usuarios xa rexistrados en Maneva, buscándoos polo seu teléfono.
@@ -410,7 +410,7 @@ export default function BookingsDelegationScreen() {
 
           <View className="mx-6 mt-4 rounded-[18px] bg-surface-overlay dark:bg-surface-overlay-dark px-5 py-5 flex-row items-center gap-3">
             <View className="w-5 h-5 rounded-full bg-gold items-center justify-center">
-              <Text className="text-[11px] font-bold text-premium-white">!</Text>
+              <Caption className="font-manrope-bold text-[11px] text-premium-white">!</Caption>
             </View>
             <Body className="flex-1 font-manrope text-[13px] leading-6 text-foreground-muted dark:text-foreground-muted-dark">
               As persoas con permiso poderán xestionar as túas citas segundo o acceso concedido. Podes revogalo en calquera momento.

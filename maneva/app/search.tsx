@@ -24,7 +24,7 @@ import {
 import { useThemeColors } from '@/hooks/useThemeColors'
 import { useSalonsWithRating } from '@/hooks/useSalons'
 import { useLocation } from '@/hooks/useLocation'
-import { H1, H2, Body, Caption } from '@/components/ui/Typography'
+import { H2, Body, Caption } from '@/components/ui/Typography'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import type { UnifiedSalon } from '@/services/salons.service'
 import { getSalonIdsAvailableToday } from '@/services/salons.service'
@@ -147,7 +147,7 @@ export default function SearchScreen() {
       })
     }
 
-    if (hasDistanceFilter && coords) {
+    if (hasDistanceFilter && refCoords) {
       result = result.filter((salon) => salon.distance <= filters.maxDistance)
     }
 
@@ -219,7 +219,7 @@ export default function SearchScreen() {
             onPress={() => setVisibleModal('distance')}
           />
           <FilterChip
-            label="Servizo"
+            label={filters.selectedServices.length > 1 ? `Servizo (${filters.selectedServices.length})` : 'Servizo'}
             iconTail="expand_more"
             active={filters.selectedServices.length > 0}
             onPress={() => setVisibleModal('service')}
@@ -250,29 +250,35 @@ export default function SearchScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-10">
         {/* ── Salones ── */}
         <View className="mt-4">
-          <View className="px-5 flex-row items-center justify-between mb-5">
-            <Caption className="font-manrope-extrabold text-[11px] tracking-[2px] text-foreground dark:text-foreground-dark">
-              {!hasActiveFilters
-                ? `TODOS OS SALÓNS (${filteredSalons.length})`
-                : filters.selectedServices.length > 0
-                ? `SALÓNS CON ESTES SERVIZOS (${filteredSalons.length})`
-                : `SALÓNS QUE COINCIDEN (${filteredSalons.length})`}
+          <View className="px-5 flex-row items-center justify-between mb-3">
+            <Caption className="font-manrope-semibold text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
+              {filteredSalons.length === 0
+                ? 'Sen resultados'
+                : `${filteredSalons.length} ${filteredSalons.length === 1 ? 'salón' : 'salóns'}`}
             </Caption>
+            {hasActiveFilters && (
+              <Caption className="font-manrope-semibold text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
+                Filtros activos
+              </Caption>
+            )}
           </View>
 
           {loading ? (
             <LoadingSpinner className="pt-10 items-center" />
           ) : filteredSalons.length === 0 ? (
-            <View className="px-5">
-              <Body className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark mb-2">
-                Non se atoparon resultados
+            <View className="items-center px-8 pt-16 pb-10">
+              <View className="w-16 h-16 rounded-full bg-surface-raised dark:bg-surface-raised-dark items-center justify-center mb-5">
+                <IconSearch size={28} color={themeColors.premium.gray.pale} strokeWidth={1.8} />
+              </View>
+              <Body className="font-manrope-bold text-[15px] text-foreground dark:text-foreground-dark mb-2 text-center">
+                Non se atoparon salóns
               </Body>
-              <Caption className="font-manrope-medium text-[12px] text-foreground-muted dark:text-foreground-muted-dark">
+              <Caption className="font-manrope-medium text-[13px] text-foreground-muted dark:text-foreground-muted-dark text-center leading-5">
                 {filters.selectedServices.length > 0
-                  ? 'Proba con outros servizos'
+                  ? 'Proba con outros servizos ou amplía os filtros'
                   : query.length > 0
-                  ? 'Proba a cambiar o nome da busca'
-                  : 'Proba a cambiar os filtros'}
+                  ? 'Proba con outro nome ou amplía a busca'
+                  : 'Proba a axustar os filtros activos'}
               </Caption>
             </View>
           ) : (
@@ -357,7 +363,7 @@ function FilterChip({
       ? 'bg-foreground dark:bg-foreground-dark border-foreground dark:border-foreground-dark'
       : active
         ? 'bg-gold border-gold'
-        : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark-strong'
+        : 'bg-surface dark:bg-surface-dark border-border dark:border-border-dark'
 
   const textColor =
     variant === 'clear' || active ? 'text-premium-white' : 'text-foreground dark:text-foreground-dark'
@@ -398,7 +404,7 @@ function SalonResultRow({ salon }: { salon: SearchSalon }) {
       className="flex-row items-center py-4 px-5 border-b border-border/40 dark:border-border-dark/40 gap-4"
     >
       <Image
-        source={{ uri: salon.salons?.logo ?? salon.Image ?? PLACEHOLDER_IMAGE }}
+        source={{ uri: salon.salons?.logo ?? PLACEHOLDER_IMAGE }}
         className="w-16 h-16 rounded-2xl"
       />
       <View className="flex-1">
@@ -481,7 +487,7 @@ function RatingFilterModal({
                 className={`p-4 rounded-2xl border flex-row items-center gap-2 ${
                   tempRating === option.value
                     ? 'bg-gold border-gold'
-                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
+                    : 'bg-background dark:bg-background-dark border-border dark:border-border-dark'
                 }`}
                 onPress={() => setTempRating(option.value)}
               >
@@ -742,9 +748,6 @@ function DistanceFilterModal({
   }
 
   const Slider = require('@react-native-community/slider').default
-
-  // Panel height estimate so the map knows not to center on the hidden area
-  const PANEL_HEIGHT = 280 + insets.bottom
 
   const initialRegion = {
     latitude: tempCenter.latitude,
@@ -1038,7 +1041,7 @@ function ServiceFilterModal({
                   className={`p-4 rounded-2xl border ${
                     selected
                       ? 'bg-gold border-gold'
-                      : 'bg-background dark:bg-background-dark border-border dark:border-border-dark-strong'
+                      : 'bg-background dark:bg-background-dark border-border dark:border-border-dark'
                   }`}
                   onPress={() => toggle(service.id)}
                 >
