@@ -19,6 +19,11 @@ export type EmployeeWithUser = Employee & {
 type Campaign = Database['public']['Tables']['campaigns']['Row']
 type Review = Database['public']['Tables']['reviews']['Row']
 type EcoLabel = Database['public']['Tables']['eco_labels']['Row']
+type LocationHour = Database['public']['Tables']['location_hours']['Row']
+
+export type ReviewWithUser = Review & {
+  users: Pick<User, 'first_name' | 'last_name'> | null
+}
 
 /**
  * Tipo unificado para la UI
@@ -32,8 +37,9 @@ export type SalonDetail = UnifiedSalon & {
   services: Service[] | null
   employees: EmployeeWithUser[] | null
   campaigns: Campaign[] | null
-  reviews: Review[] | null
+  reviews: ReviewWithUser[] | null
   eco_labels: EcoLabel[] | null
+  location_hours: LocationHour[] | null
   avgRating: number | null
 }
 
@@ -132,7 +138,8 @@ export async function getSalonById(id: string): Promise<SalonDetail> {
         id,
         name,
         description,
-        price
+        price,
+        duration_minutes
       ),
       employees (
         id,
@@ -156,12 +163,22 @@ export async function getSalonById(id: string): Promise<SalonDetail> {
         id,
         rating,
         comment,
-        created_at
+        created_at,
+        users (
+          first_name,
+          last_name
+        )
       ),
       eco_labels (
         id,
         label_type,
         valid_until
+      ),
+      location_hours (
+        id,
+        day_of_week,
+        open_time,
+        close_time
       )
     `)
     .eq('id', id)
@@ -173,8 +190,9 @@ export async function getSalonById(id: string): Promise<SalonDetail> {
     services: Service[] | null
     employees: EmployeeWithUser[] | null
     campaigns: Campaign[] | null
-    reviews: Review[] | null
+    reviews: ReviewWithUser[] | null
     eco_labels: EcoLabel[] | null
+    location_hours: LocationHour[] | null
   }
 
   const salon = data as SalonWithAll

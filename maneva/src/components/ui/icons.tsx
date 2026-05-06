@@ -29,6 +29,9 @@ import {
   Send,
   Trash2,
   Heart,
+  Leaf,
+  Recycle,
+  Wind,
 } from 'lucide-react-native'
 
 export {
@@ -60,4 +63,7 @@ export {
   Send          as IconSend,
   Trash2        as IconTrash,
   Heart         as IconHeart,
+  Leaf          as IconLeaf,
+  Recycle       as IconRecycle,
+  Wind          as IconWind,
 }
